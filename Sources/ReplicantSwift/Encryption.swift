@@ -9,37 +9,13 @@ import Foundation
 import Security
 import CommonCrypto
 
+let keySize = 64
+let keyDataSize = keySize + 1
+let aesOverheadSize = 81
+
 class Encryption: NSObject
 {
-    let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorX963SHA256AESGCM
-    //var privateKey: SecKey
-    
-//    public init?(withPrivateKey initKey: Data?)
-//    {
-//        if let providedKey = initKey
-//        {
-//            guard let secKey = Encryption.decodeKey(fromData: providedKey)
-//                else
-//            {
-//                print("\nFailed to initialize Replicant: Unable to create SecKey from key data provided.")
-//                return nil
-//            }
-//
-//            privateKey = secKey
-//        }
-//        else
-//        {
-//            guard let newKey = Encryption.generatePrivateKey()
-//                else
-//            {
-//                return nil
-//            }
-//
-//            privateKey = newKey
-//        }
-//
-//    }
-    
+    let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
     
     func generatePrivateKey() -> SecKey?
     {
@@ -78,12 +54,10 @@ class Encryption: NSObject
     /**
      Generate a public key from the provided private key and encodes it as data.
      
-     - Returns: optional, encoded key as data
+     - Returns: optional, encoded key as SecKey
      */
-    func generatePublicKey(usingPrivateKey privateKey: SecKey) -> Data?
+    func generatePublicKey(usingPrivateKey privateKey: SecKey) -> SecKey?
     {
-        var error: Unmanaged<CFError>?
-        
         guard let alicePublic = SecKeyCopyPublicKey(privateKey)
             else
         {
@@ -91,23 +65,64 @@ class Encryption: NSObject
             return nil
         }
         
-        // Encode public key as data
-        guard let alicePublicData = SecKeyCopyExternalRepresentation(alicePublic, &error) as Data?
+        return alicePublic
+    }
+    
+    public func generateKeyPair() -> (privateKey: SecKey, publicKey: SecKey)?
+    {
+        guard let privateKey = generatePrivateKey()
+        else
+        {
+            return nil
+        }
+        
+        guard let publicKey = generatePublicKey(usingPrivateKey: privateKey)
+        else
+        {
+            return nil
+        }
+        
+        return (privateKey, publicKey)
+    }
+    
+    /// This is the format needed to send the key to the server.
+    public func generateAndEncryptPaddedKeyData(fromKey key: SecKey, withChunkSize chunkSize: Int, usingServerKey serverKey: SecKey) -> Data?
+    {
+        var error: Unmanaged<CFError>?
+        var newKeyData: Data
+        
+        // Encode key as data
+        guard let keyData = SecKeyCopyExternalRepresentation(key, &error) as Data?
             else
         {
             print("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
             return nil
         }
         
-        return alicePublicData
+        newKeyData = keyData
+        
+        // Add padding if needed
+        if let padding = getKeyPadding(chunkSize: chunkSize)
+        {
+            newKeyData = keyData + padding
+        }
+        
+        // Encrypt the key
+        guard let encryptedKeyData = encrypt(payload: newKeyData, usingServerKey: serverKey)
+        else
+        {
+            return nil
+        }
+        
+        return encryptedKeyData
     }
     
-    /// Decode data to get public key
+    /// Decode data to get public key. This only decodes key data that is NOT padded.
     static func decodeKey(fromData publicKeyData: Data) -> SecKey?
     {
         var error: Unmanaged<CFError>?
         
-        let options: [String: Any] = [kSecAttrKeyType as String: kSecAttrKeyTypeEC,
+        let options: [String: Any] = [kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
                                       kSecAttrKeyClass as String: kSecAttrKeyClassPublic,
                                       kSecAttrKeySizeInBits as String: 256]
         
@@ -153,67 +168,18 @@ class Encryption: NSObject
         return decryptedText
     }
     
-    func cleanKeyData(keyData: Data) -> Data?
+    func getKeyPadding(chunkSize: Int) -> Data?
     {
-        if keyData.count == keyDataSize
+        let paddingSize = chunkSize - (keySize + aesOverheadSize)
+        if paddingSize > 0
         {
-            if keyData.first! == 4
-            {
-                // Strip the redundant 4 from the key data
-                let cleanKey = keyData.dropFirst()
-                return cleanKey
-            }
-            else
-            {
-                print("\nFailed to clean key: Data was 65 bytes but the first byte was not 4.\n")
-                return nil
-            }
-        }
-        else if keyData.count == keySize
-        {
-            print("\nReturning unchanged key data, the byte count was already 64.\n")
-            return keyData
-        }
-        else
-        {
-            print("Failed to clean key data: unexpected byte count of \(keyData.count)")
-            return nil
-        }
-    }
-    
-    func getKeyPadding() -> Data?
-    {
-        var bytes = [UInt8](repeating: 0, count: chunkSize - keySize)
-        let status = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
-        
-        if status == errSecSuccess
-        {
-            // Always test the status.
-            print(bytes)
-            // Prints something different every time you run.
+            let bytes = [UInt8](repeating: 0, count: paddingSize)
             return Data(array: bytes)
         }
         else
         {
-            print("\nFailed to gnerate padding: \(status)\n")
             return nil
         }
-    }
-    
-    func cleanAndPadKey(keyData: Data) -> Data?
-    {
-        guard let cleanKey = cleanKeyData(keyData: keyData)
-        else
-        {
-            return nil
-        }
-        
-        guard let padding = getKeyPadding()
-        else
-        {
-            return nil
-        }
-        
-        return cleanKey + padding
     }
 }
+
