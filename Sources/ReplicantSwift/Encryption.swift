@@ -13,7 +13,7 @@ let keySize = 64
 let keyDataSize = keySize + 1
 let aesOverheadSize = 81
 
-class Encryption: NSObject
+public class Encryption: NSObject
 {
     let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
     
@@ -51,11 +51,6 @@ class Encryption: NSObject
         return alicePrivate
     }
     
-    /**
-     Generate a public key from the provided private key and encodes it as data.
-     
-     - Returns: optional, encoded key as SecKey
-     */
     func generatePublicKey(usingPrivateKey privateKey: SecKey) -> SecKey?
     {
         guard let alicePublic = SecKeyCopyPublicKey(privateKey)
@@ -137,7 +132,7 @@ class Encryption: NSObject
     }
     
     /// Encrypt payload
-    func encrypt(payload: Data, usingServerKey serverPublicKey: SecKey) -> Data?
+    public func encrypt(payload: Data, usingServerKey serverPublicKey: SecKey) -> Data?
     {
         var error: Unmanaged<CFError>?
         
@@ -154,7 +149,7 @@ class Encryption: NSObject
     /// Decrypt payload
     /// - Parameter payload: Data
     /// - Parameter privateKey: SecKey
-    func decrypt(payload: Data, usingPrivateKey privateKey: SecKey) -> Data?
+    public func decrypt(payload: Data, usingPrivateKey privateKey: SecKey) -> Data?
     {
         var error: Unmanaged<CFError>?
         

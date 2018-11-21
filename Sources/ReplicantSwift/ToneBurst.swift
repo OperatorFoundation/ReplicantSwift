@@ -81,7 +81,7 @@ public class ToneBurst: NSObject
         }
     }
     
-    func generate() -> SendState
+    public func generate() -> SendState
     {
         guard addIndex < addSequences.count
         else
