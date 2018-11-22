@@ -9,11 +9,11 @@ import Foundation
 
 public struct ReplicantConfig
 {
-    var serverPublicKey: SecKey
-    var chunkSize: Int
-    var chunkTimeout: Int
-    var addSequences: [SequenceModel]?
-    var removeSequences: [SequenceModel]?
+    public var serverPublicKey: SecKey
+    public var chunkSize: Int
+    public var chunkTimeout: Int
+    public var addSequences: [SequenceModel]?
+    public var removeSequences: [SequenceModel]?
     
     
     public init?(serverPublicKey: SecKey, chunkSize: Int, chunkTimeout: Int, addSequences: [SequenceModel]?, removeSequences: [SequenceModel]?)
