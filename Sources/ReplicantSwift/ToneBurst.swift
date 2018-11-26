@@ -21,6 +21,20 @@ public class ToneBurst: NSObject
     var removeIndex = 0
     var receiveBuffer = Data()
     
+    public var nextRemoveSequenceLength: UInt?
+    {
+        get
+        {
+            guard removeIndex < removeSequences.count
+                else
+            {
+                return nil
+            }
+            
+            return removeSequences[removeIndex].length
+        }
+    }
+    
     public init?(addSequences: [SequenceModel], removeSequences: [SequenceModel])
     {
         self.addSequences = addSequences
