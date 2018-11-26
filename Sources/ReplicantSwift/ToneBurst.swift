@@ -100,7 +100,7 @@ public class ToneBurst: NSObject
         guard addIndex < addSequences.count
         else
         {
-            return .failure
+            return .completion
         }
 
         guard let newPacket = makePacket(model: addSequences[addIndex])
@@ -110,38 +110,40 @@ public class ToneBurst: NSObject
         }
         
         addIndex += 1
-        
-        if addIndex == addSequences.count
-        {
-            return .completion(newPacket)
-        }
-        else
-        {
-            return .generating(newPacket)
-        }
+        return .generating(newPacket)
     }
     
     public func remove(newData: Data) -> ReceiveState
     {
-        receiveBuffer.append(newData)
+        guard let length = nextRemoveSequenceLength
+        else
+        {
+            return .completion
+        }
+        
+        guard newData.count == Int(length)
+        else
+        {
+            return .failure
+        }
         
         switch findRemoveSequenceInBuffer()
         {
             case .success:
                 if removeIndex == removeSequences.count
                 {
-                    return .completion(receiveBuffer)
+                    return .completion
                 }
                 else if removeIndex < removeSequences.count
                 {
-                    return .waiting
+                    return .receiving
                 }
                 else
                 {
                     return .failure
                 }
             case .insufficientData:
-                return .waiting
+                return .failure
             case .failure:
                 return .failure
         }
@@ -151,15 +153,15 @@ public class ToneBurst: NSObject
 
 public enum ReceiveState
 {
-    case waiting
-    case completion(Data)
+    case receiving
+    case completion
     case failure
 }
 
 public enum SendState
 {
     case generating(Data)
-    case completion(Data)
+    case completion
     case failure
 }
 
