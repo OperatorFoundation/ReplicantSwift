@@ -16,11 +16,32 @@ let aesOverheadSize = 81
 public class Encryption: NSObject
 {
     let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
+    public var serverPublicKey: SecKey
+    public var clientPublicKey: SecKey
+    public var clientPrivateKey: SecKey
     
-    func generatePrivateKey() -> SecKey?
+    public init?(serverPublicKey: SecKey)
+    {
+        guard let newKeyPair = Encryption.generateKeyPair()
+        else
+        {
+            return nil
+        }
+        
+        self.clientPrivateKey = newKeyPair.privateKey
+        self.clientPublicKey = newKeyPair.publicKey
+        self.serverPublicKey = serverPublicKey
+    }
+    
+    deinit
+    {
+        //TODO: Remove client keys from secure enclave
+    }
+    
+    static func generatePrivateKey() -> SecKey?
     {
         // Generate private key
-        let tag = "com.example.keys.mykey".data(using: .utf8)!
+        let tag = "org.operatorfoundation.replicant.client".data(using: .utf8)!
         
         let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault,
                                             kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
@@ -51,7 +72,7 @@ public class Encryption: NSObject
         return alicePrivate
     }
     
-    func generatePublicKey(usingPrivateKey privateKey: SecKey) -> SecKey?
+    static func generatePublicKey(usingPrivateKey privateKey: SecKey) -> SecKey?
     {
         guard let alicePublic = SecKeyCopyPublicKey(privateKey)
             else
@@ -63,7 +84,7 @@ public class Encryption: NSObject
         return alicePublic
     }
     
-    public func generateKeyPair() -> (privateKey: SecKey, publicKey: SecKey)?
+    static func generateKeyPair() -> (privateKey: SecKey, publicKey: SecKey)?
     {
         guard let privateKey = generatePrivateKey()
         else

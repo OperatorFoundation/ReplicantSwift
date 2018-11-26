@@ -4,17 +4,13 @@ import CommonCrypto
 
 public struct Replicant
 {
-    public let encryptor = Encryption()
-    
+    public let encryptor: Encryption
     public var config: ReplicantConfig
-    public var serverPublicKey: SecKey
-    public var clientPublicKey: SecKey
-    public var clientPrivateKey: SecKey
     public var toneBurst: ToneBurst?
     
     public init?(withConfig config: ReplicantConfig)
     {
-        guard let keyPair = encryptor.generateKeyPair()
+        guard let encryption = Encryption(serverPublicKey: config.serverPublicKey)
         else
         {
             return nil
@@ -26,9 +22,7 @@ public struct Replicant
         }
         
         self.config = config
-        self.serverPublicKey = config.serverPublicKey
-        self.clientPublicKey = keyPair.publicKey
-        self.clientPrivateKey = keyPair.privateKey
+        self.encryptor = encryption
     }
 }
 
