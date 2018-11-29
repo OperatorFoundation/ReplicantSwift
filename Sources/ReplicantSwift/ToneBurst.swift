@@ -127,6 +127,8 @@ public class ToneBurst: NSObject
             return .failure
         }
         
+        receiveBuffer.append(newData)
+        
         switch findRemoveSequenceInBuffer()
         {
             case .success:

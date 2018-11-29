@@ -5,7 +5,7 @@ import Foundation
 
 final class ReplicantSwiftTests: XCTestCase
 {
-    let encryptor = Encryption()
+    var polish: Polish!
     let attributes: [String: Any] =
         [kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
          kSecAttrKeySizeInBits as String: 256,
@@ -13,31 +13,51 @@ final class ReplicantSwiftTests: XCTestCase
                                          kSecAttrApplicationTag as String: "com.example.keys.mykey".data(using: .utf8)!]
     ]
     
-    // MARK: Encryption Tests
+    override func setUp()
+    {
+        super.setUp()
+        
+        // Generate private key
+        var error: Unmanaged<CFError>?
+        guard let bobPrivate = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else
+        {
+            print(error!)
+            XCTFail()
+            return
+        }
+        
+        // Generate public key
+        let bobPublic = SecKeyCopyPublicKey(bobPrivate)!
+        
+        polish = Polish(serverPublicKey: bobPublic)!
+        
+    }
+    
+    // MARK: Polish Tests
     
     func testGeneratePrivateUsingPublic()
     {
-        guard let privateKey = encryptor.generatePrivateKey()
+        guard let privateKey = Polish.generatePrivateKey()
         else
         {
             XCTFail()
             return
         }
         
-        let maybePuplicKey = encryptor.generatePublicKey(usingPrivateKey: privateKey)
+        let maybePuplicKey = Polish.generatePublicKey(usingPrivateKey: privateKey)
         XCTAssertNotNil(maybePuplicKey)
     }
     
     func testDecodeKeyFromData()
     {
-        guard let privateKey = encryptor.generatePrivateKey()
+        guard let privateKey = Polish.generatePrivateKey()
             else
         {
             XCTFail()
             return
         }
         
-        guard let alicePuplicKey = encryptor.generatePublicKey(usingPrivateKey: privateKey)
+        guard let alicePuplicKey = Polish.generatePublicKey(usingPrivateKey: privateKey)
         else
         {
             print("\nUnable to generate publicKeyData from private key.\n")
@@ -55,7 +75,7 @@ final class ReplicantSwiftTests: XCTestCase
             return
         }
         
-        guard let decodedKey = Encryption.decodeKey(fromData: keyData)
+        guard let decodedKey = Polish.decodeKey(fromData: keyData)
         else
         {
             XCTFail()
@@ -109,7 +129,7 @@ final class ReplicantSwiftTests: XCTestCase
         let plainText = Data(repeating: 0x0A, count: 4096)
         
         // Encrypt Plain Text
-        let maybeCipherText = encryptor.encrypt(payload: plainText, usingServerKey: bobPublic)
+        let maybeCipherText = polish.encrypt(payload: plainText, usingServerKey: bobPublic)
         
         XCTAssertNotNil(maybeCipherText)
         XCTAssertNotEqual(maybeCipherText!, plainText)
@@ -132,14 +152,14 @@ final class ReplicantSwiftTests: XCTestCase
         let bobPublic = SecKeyCopyPublicKey(bobPrivate)!
         
         let plainText = Data(repeating: 0x0A, count: 4096)
-        guard let cipherText = encryptor.encrypt(payload: plainText, usingServerKey: bobPublic)
+        guard let cipherText = polish.encrypt(payload: plainText, usingServerKey: bobPublic)
         else
         {
             XCTFail()
             return
         }
         
-        guard let maybeDecoded = encryptor.decrypt(payload: cipherText, usingPrivateKey: bobPrivate)
+        guard let maybeDecoded = polish.decrypt(payload: cipherText, usingPrivateKey: bobPrivate)
         else
         {
             XCTFail()
@@ -174,7 +194,13 @@ final class ReplicantSwiftTests: XCTestCase
             return
         }
         
-        let sendState = toneBurst.generate()
+        _ = toneBurst.generate()
+        
+        // Fill the buffer
+        let randomBytes = Data(repeating: 0, count: 256)
+        toneBurst.receiveBuffer.append(sequence1)
+        toneBurst.receiveBuffer.append(randomBytes)
+        
         let matchState = toneBurst.findRemoveSequenceInBuffer()
         XCTAssertTrue(matchState == .success)
         switch matchState
@@ -210,29 +236,20 @@ final class ReplicantSwiftTests: XCTestCase
             
             case .generating(let transformResult):
                 let restoreState = toneBurst.remove(newData: transformResult)
-                print("\nBuffer to transform: \n \(sequence1.bytes)\n")
-                print("\nTransform Result: \n \(transformResult.bytes)\n")
+                print("\nBuffer to transform: \n \(sequence1)\n")
+                print("\nTransform Result: \n \(transformResult)\n")
                 
                 switch restoreState
                 {
-                case .completion(let restoreResult):
-                    print("\nRestore Result: \n \(restoreResult.bytes)\n")
+                case .completion:
+                    print("\nRestore Result: Complete\n")
                 default:
+                    print("\nRestore Result: \(restoreState)\n")
                     XCTFail()
                 }
             
-            case .completion(let transformResult):
-                let restoreState = toneBurst.remove(newData: transformResult)
-                print("\nBuffer to transform: \n \(sequence1.bytes)\n")
-                print("\nTransform Result: \n \(transformResult.bytes)\n")
-            
-                switch restoreState
-                {
-                case .completion(let restoreResult):
-                    print("\nRestore Result: \n \(restoreResult.bytes)\n")
-                default:
-                    XCTFail()
-                }
+            case .completion:
+                print("\nTransform Complete\n")
         }
     }
 }

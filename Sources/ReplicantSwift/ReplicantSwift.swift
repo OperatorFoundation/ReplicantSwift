@@ -4,13 +4,13 @@ import CommonCrypto
 
 public struct Replicant
 {
-    public let encryptor: Encryption
+    public let polish: Polish
     public var config: ReplicantConfig
     public var toneBurst: ToneBurst?
     
     public init?(withConfig config: ReplicantConfig)
     {
-        guard let encryption = Encryption(serverPublicKey: config.serverPublicKey)
+        guard let polish = Polish(serverPublicKey: config.serverPublicKey)
         else
         {
             return nil
@@ -22,7 +22,7 @@ public struct Replicant
         }
         
         self.config = config
-        self.encryptor = encryption
+        self.polish = polish
     }
 }
 

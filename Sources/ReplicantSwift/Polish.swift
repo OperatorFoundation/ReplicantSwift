@@ -1,5 +1,5 @@
 //
-//  Encryption.swift
+//  Polish.swift
 //  ReplicantSwift
 //
 //  Created by Adelita Schule on 11/9/18.
@@ -11,9 +11,9 @@ import CommonCrypto
 
 let keySize = 64
 let keyDataSize = keySize + 1
-let aesOverheadSize = 81
+public let aesOverheadSize = 81
 
-public class Encryption: NSObject
+public class Polish: NSObject
 {
     let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
     public var serverPublicKey: SecKey
@@ -22,7 +22,7 @@ public class Encryption: NSObject
     
     public init?(serverPublicKey: SecKey)
     {
-        guard let newKeyPair = Encryption.generateKeyPair()
+        guard let newKeyPair = Polish.generateKeyPair()
         else
         {
             return nil
