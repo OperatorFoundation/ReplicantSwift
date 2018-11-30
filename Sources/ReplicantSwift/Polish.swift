@@ -9,8 +9,7 @@ import Foundation
 import Security
 import CommonCrypto
 
-let keySize = 64
-let keyDataSize = keySize + 1
+public let keySize = 64
 public let aesOverheadSize = 81
 
 public class Polish: NSObject
