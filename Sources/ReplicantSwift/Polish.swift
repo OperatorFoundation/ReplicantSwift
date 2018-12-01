@@ -37,7 +37,7 @@ public class Polish: NSObject
         //TODO: Remove client keys from secure enclave
     }
     
-    static func generatePrivateKey() -> SecKey?
+    public static func generatePrivateKey() -> SecKey?
     {
         // Generate private key
         let tag = "org.operatorfoundation.replicant.client".data(using: .utf8)!

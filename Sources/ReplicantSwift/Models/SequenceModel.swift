@@ -15,7 +15,7 @@ public struct SequenceModel
     /// Target sequence Length.
     var length: UInt
     
-    init?(sequence: Data, length: UInt)
+    public init?(sequence: Data, length: UInt)
     {
         ///FIXME: Is this still correct? Length must be no larger than 1440 bytes
         if length == 0 || length > 65535
