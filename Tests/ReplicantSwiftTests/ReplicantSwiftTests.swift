@@ -129,7 +129,7 @@ final class ReplicantSwiftTests: XCTestCase
         let plainText = Data(repeating: 0x0A, count: 4096)
         
         // Encrypt Plain Text
-        let maybeCipherText = polish.encrypt(payload: plainText, usingServerKey: bobPublic)
+        let maybeCipherText = polish.encrypt(payload: plainText, usingPublicKey: bobPublic)
         
         XCTAssertNotNil(maybeCipherText)
         XCTAssertNotEqual(maybeCipherText!, plainText)
@@ -152,7 +152,7 @@ final class ReplicantSwiftTests: XCTestCase
         let bobPublic = SecKeyCopyPublicKey(bobPrivate)!
         
         let plainText = Data(repeating: 0x0A, count: 4096)
-        guard let cipherText = polish.encrypt(payload: plainText, usingServerKey: bobPublic)
+        guard let cipherText = polish.encrypt(payload: plainText, usingPublicKey: bobPublic)
         else
         {
             XCTFail()

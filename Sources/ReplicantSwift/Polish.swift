@@ -12,15 +12,20 @@ import CommonCrypto
 public let keySize = 64
 public let aesOverheadSize = 81
 
+
 public class Polish: NSObject
 {
+    static let clientTag = "org.operatorfoundation.replicant.client".data(using: .utf8)!
     let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
+    
     public var serverPublicKey: SecKey
     public var clientPublicKey: SecKey
     public var clientPrivateKey: SecKey
     
     public init?(serverPublicKey: SecKey)
     {
+        Polish.deleteKeys()
+        
         guard let newKeyPair = Polish.generateKeyPair()
         else
         {
@@ -34,34 +39,24 @@ public class Polish: NSObject
     
     deinit
     {
-        //TODO: Remove client keys from secure enclave
+        Polish.deleteKeys()
+    }
+    
+    static func deleteKeys()
+    {
+        //Remove client keys from secure enclave
+        let query = Polish.generateKeyAttributesDictionary()
+        let deleteStatus = SecItemDelete(query)
+        print("\nAttempted to delete key from secure enclave. Status: \(deleteStatus)\n")
     }
     
     public static func generatePrivateKey() -> SecKey?
     {
         // Generate private key
-        let tag = "org.operatorfoundation.replicant.client".data(using: .utf8)!
-        
-        let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault,
-                                            kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
-                                            .privateKeyUsage,
-                                            nil)!
-        
-        let privateKeyAttributes: [String: Any] = [
-            kSecAttrIsPermanent as String: true,
-            kSecAttrApplicationTag as String: tag
-            /*kSecAttrAccessControl as String: access*/
-        ]
-        
-        let attributes: [String: Any] = [
-            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
-            kSecAttrKeySizeInBits as String: 256,
-            /*kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,*/
-            kSecPrivateKeyAttrs as String: privateKeyAttributes
-        ]
-        
         var error: Unmanaged<CFError>?
-        guard let alicePrivate = SecKeyCreateRandomKey(attributes as CFDictionary, &error)
+        let attributes = Polish.generateKeyAttributesDictionary()
+        
+        guard let alicePrivate = SecKeyCreateRandomKey(attributes, &error)
             else
         {
             print("\nUnable to generate the client private key: \(error!.takeRetainedValue() as Error)\n")
@@ -69,6 +64,29 @@ public class Polish: NSObject
         }
         
         return alicePrivate
+    }
+    
+    static func generateKeyAttributesDictionary() -> CFDictionary
+    {
+        let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault,
+                                                     kSecAttrAccessibleAlwaysThisDeviceOnly,
+                                                     .privateKeyUsage,
+                                                     nil)!
+        
+        let privateKeyAttributes: [String: Any] = [
+            kSecAttrIsPermanent as String: true,
+            kSecAttrApplicationTag as String: Polish.clientTag,
+            kSecAttrAccessControl as String: access
+        ]
+        
+        let attributes: [String: Any] = [
+            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrKeySizeInBits as String: 256,
+            kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
+            kSecPrivateKeyAttrs as String: privateKeyAttributes
+        ]
+        
+        return attributes as CFDictionary
     }
     
     static func generatePublicKey(usingPrivateKey privateKey: SecKey) -> SecKey?
@@ -123,7 +141,7 @@ public class Polish: NSObject
         }
         
         // Encrypt the key
-        guard let encryptedKeyData = encrypt(payload: newKeyData, usingServerKey: serverKey)
+        guard let encryptedKeyData = encrypt(payload: newKeyData, usingPublicKey: serverKey)
         else
         {
             return nil
@@ -152,11 +170,11 @@ public class Polish: NSObject
     }
     
     /// Encrypt payload
-    public func encrypt(payload: Data, usingServerKey serverPublicKey: SecKey) -> Data?
+    public func encrypt(payload: Data, usingPublicKey publicKey: SecKey) -> Data?
     {
         var error: Unmanaged<CFError>?
         
-        guard let cipherText = SecKeyCreateEncryptedData(serverPublicKey, algorithm, payload as CFData, &error) as Data?
+        guard let cipherText = SecKeyCreateEncryptedData(publicKey, algorithm, payload as CFData, &error) as Data?
             else
         {
             print("\nUnable to encrypt payload: \(error!.takeRetainedValue() as Error)\n")
