@@ -12,17 +12,16 @@ import CommonCrypto
 public let keySize = 64
 public let aesOverheadSize = 81
 
-
 public class Polish: NSObject
 {
     static let clientTag = "org.operatorfoundation.replicant.client".data(using: .utf8)!
     let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
     
-    public var serverPublicKey: SecKey
-    public var clientPublicKey: SecKey
-    public var clientPrivateKey: SecKey
+    public var recipientPublicKey: SecKey?
+    public var publicKey: SecKey
+    public var privateKey: SecKey
     
-    public init?(serverPublicKey: SecKey)
+    public init?(recipientPublicKey: SecKey?)
     {
         Polish.deleteKeys()
         
@@ -32,9 +31,9 @@ public class Polish: NSObject
             return nil
         }
         
-        self.clientPrivateKey = newKeyPair.privateKey
-        self.clientPublicKey = newKeyPair.publicKey
-        self.serverPublicKey = serverPublicKey
+        self.privateKey = newKeyPair.privateKey
+        self.publicKey = newKeyPair.publicKey
+        self.recipientPublicKey = recipientPublicKey
     }
     
     deinit
@@ -76,13 +75,13 @@ public class Polish: NSObject
         let privateKeyAttributes: [String: Any] = [
             kSecAttrIsPermanent as String: true,
             kSecAttrApplicationTag as String: Polish.clientTag,
-            kSecAttrAccessControl as String: access
+            //kSecAttrAccessControl as String: access
         ]
         
         let attributes: [String: Any] = [
             kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
             kSecAttrKeySizeInBits as String: 256,
-            kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
+            //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
             kSecPrivateKeyAttrs as String: privateKeyAttributes
         ]
         

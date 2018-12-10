@@ -10,7 +10,7 @@ public struct Replicant
     
     public init?(withConfig config: ReplicantConfig)
     {
-        guard let polish = Polish(serverPublicKey: config.serverPublicKey)
+        guard let polish = Polish(recipientPublicKey: config.serverPublicKey)
         else
         {
             return nil
@@ -28,29 +28,24 @@ public struct Replicant
 
 public struct ReplicantServer
 {
-    public var polish: Polish?
+    public var polish: Polish
     public var config: ReplicantServerConfig
     public var toneBurst: ToneBurst?
     
-    public init?(withConfig config: ReplicantServerConfig)
+    public init?(withConfig config: ReplicantServerConfig, andPublicKey receiverPublicKey: SecKey)
     {
+        guard let polish = Polish(recipientPublicKey: receiverPublicKey)
+            else
+        {
+            return nil
+        }
+
         if let addSequences = config.addSequences, let removeSequences = config.removeSequences
         {
             self.toneBurst = ToneBurst(addSequences: addSequences, removeSequences: removeSequences)
         }
         
         self.config = config
-    }
-    
-    public init?(withConfig config: ReplicantServerConfig, andPublicKey receiverPublicKey: SecKey)
-    {
-        guard let polish = Polish(serverPublicKey: receiverPublicKey)
-            else
-        {
-            return nil
-        }
-
-        self.init(withConfig: config)
         self.polish = polish
     }
 }

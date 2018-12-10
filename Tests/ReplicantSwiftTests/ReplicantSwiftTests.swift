@@ -29,7 +29,7 @@ final class ReplicantSwiftTests: XCTestCase
         // Generate public key
         let bobPublic = SecKeyCopyPublicKey(bobPrivate)!
         
-        polish = Polish(serverPublicKey: bobPublic)!
+        polish = Polish(recipientPublicKey: bobPublic)!
         
     }
     
