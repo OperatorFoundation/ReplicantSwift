@@ -150,7 +150,7 @@ public class Polish: NSObject
     }
     
     /// Decode data to get public key. This only decodes key data that is NOT padded.
-    static func decodeKey(fromData publicKeyData: Data) -> SecKey?
+    public static func decodeKey(fromData publicKeyData: Data) -> SecKey?
     {
         var error: Unmanaged<CFError>?
         
