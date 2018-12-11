@@ -32,9 +32,9 @@ public struct ReplicantServer
     public var config: ReplicantServerConfig
     public var toneBurst: ToneBurst?
     
-    public init?(withConfig config: ReplicantServerConfig, andPublicKey receiverPublicKey: SecKey)
+    public init?(withConfig config: ReplicantServerConfig)
     {
-        guard let polish = Polish(recipientPublicKey: receiverPublicKey)
+        guard let polish = Polish(recipientPublicKey: nil)
             else
         {
             return nil
