@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct SequenceModel
+public struct SequenceModel: Codable
 {
     /// Byte Sequence.
     var sequence: Data

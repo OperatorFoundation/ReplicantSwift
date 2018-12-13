@@ -7,7 +7,7 @@
 
 import Foundation
 
-public struct ReplicantServerConfig
+public struct ReplicantServerConfig: Codable
 {
     public var chunkSize: Int
     public var chunkTimeout: Int

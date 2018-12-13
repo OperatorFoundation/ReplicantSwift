@@ -10,7 +10,7 @@ public struct Replicant
     
     public init?(withConfig config: ReplicantConfig)
     {
-        guard let polish = Polish(recipientPublicKey: config.serverPublicKey)
+        guard let polish = Polish(recipientPublicKeyData: config.serverPublicKey)
         else
         {
             return nil
@@ -34,7 +34,7 @@ public struct ReplicantServer
     
     public init?(withConfig config: ReplicantServerConfig)
     {
-        guard let polish = Polish(recipientPublicKey: nil)
+        guard let polish = Polish(recipientPublicKeyData: nil)
             else
         {
             return nil

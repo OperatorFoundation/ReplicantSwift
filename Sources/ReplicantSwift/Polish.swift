@@ -21,9 +21,14 @@ public class Polish: NSObject
     public var publicKey: SecKey
     public var privateKey: SecKey
     
-    public init?(recipientPublicKey: SecKey?)
+    public init?(recipientPublicKeyData: Data?)
     {
         Polish.deleteKeys()
+        
+        if let rPublicKeyData = recipientPublicKeyData
+        {
+            recipientPublicKey = Polish.decodeKey(fromData: rPublicKeyData)
+        }
         
         guard let newKeyPair = Polish.generateKeyPair()
         else
@@ -33,7 +38,6 @@ public class Polish: NSObject
         
         self.privateKey = newKeyPair.privateKey
         self.publicKey = newKeyPair.publicKey
-        self.recipientPublicKey = recipientPublicKey
     }
     
     deinit

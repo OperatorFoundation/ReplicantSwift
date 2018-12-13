@@ -7,16 +7,16 @@
 
 import Foundation
 
-public struct ReplicantConfig
+public struct ReplicantConfig: Codable
 {
-    public var serverPublicKey: SecKey
+    public var serverPublicKey: Data
     public var chunkSize: Int
     public var chunkTimeout: Int
     public var addSequences: [SequenceModel]?
     public var removeSequences: [SequenceModel]?
     
     
-    public init?(serverPublicKey: SecKey, chunkSize: Int, chunkTimeout: Int, addSequences: [SequenceModel]?, removeSequences: [SequenceModel]?)
+    public init?(serverPublicKey: Data, chunkSize: Int, chunkTimeout: Int, addSequences: [SequenceModel]?, removeSequences: [SequenceModel]?)
     {
         guard chunkSize >= keySize + aesOverheadSize
         else
