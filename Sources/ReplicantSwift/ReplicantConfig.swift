@@ -48,10 +48,17 @@ public struct ReplicantConfig: Codable
         }
     }
     
-    static public func parseJSON(jsonString: String) -> ReplicantConfig?
+    static public func parseJSON(atPath path: String) -> ReplicantConfig?
     {
+        let fileManager = FileManager()
         let decoder = JSONDecoder()
-        let jsonData = jsonString.data
+        
+        guard let jsonData = fileManager.contents(atPath: path)
+        else
+        {
+            print("\nUnable to get JSON data at pathe: \(path)\n")
+            return nil
+        }
         
         do
         {
