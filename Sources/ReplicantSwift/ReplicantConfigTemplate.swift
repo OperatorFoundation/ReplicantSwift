@@ -70,7 +70,7 @@ public struct ReplicantConfigTemplate: Codable
         }
     }
     
-    public mutating func createConfig(withServerKey serverPublicKey: SecKey) -> String?
+    public func createConfig(withServerKey serverPublicKey: SecKey) -> String?
     {
         // Encode key as data
         var error: Unmanaged<CFError>?
