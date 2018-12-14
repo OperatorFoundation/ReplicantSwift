@@ -1,30 +1,28 @@
 //
-//  ReplicantConfig.swift
+//  ReplicantConfigTemplate.swift
 //  ReplicantSwift
 //
-//  Created by Adelita Schule on 11/14/18.
+//  Created by Adelita Schule on 12/14/18.
 //
 
 import Foundation
 
-public struct ReplicantConfig: Codable
+public struct ReplicantConfigTemplate: Codable
 {
-    public var serverPublicKey: Data
     public var chunkSize: Int
     public var chunkTimeout: Int
     public var addSequences: [SequenceModel]?
     public var removeSequences: [SequenceModel]?
     
     
-    public init?(serverPublicKey: Data, chunkSize: Int, chunkTimeout: Int, addSequences: [SequenceModel]?, removeSequences: [SequenceModel]?)
+    public init?(chunkSize: Int, chunkTimeout: Int, addSequences: [SequenceModel]?, removeSequences: [SequenceModel]?)
     {
         guard chunkSize >= keySize + aesOverheadSize
-        else
+            else
         {
             print("\nUnable to initialize ReplicantConfig: chunkSize (\(chunkSize)) cannot be smaller than keySize + aesOverheadSize (\(keySize + aesOverheadSize))\n")
             return nil
         }
-        self.serverPublicKey = serverPublicKey
         self.chunkSize = chunkSize
         self.chunkTimeout = chunkTimeout
         self.addSequences = addSequences
@@ -48,20 +46,41 @@ public struct ReplicantConfig: Codable
         }
     }
     
-    static public func parseJSON(jsonString: String) -> ReplicantConfig?
+    static public func parseJSON(jsonString: String) -> ReplicantConfigTemplate?
     {
         let decoder = JSONDecoder()
         let jsonData = jsonString.data
         
         do
         {
-            let config = try decoder.decode(ReplicantConfig.self, from: jsonData)
+            let config = try decoder.decode(ReplicantConfigTemplate.self, from: jsonData)
             return config
         }
         catch (let error)
         {
-            print("\nUnable to decode JSON into ReplicantConfig: \(error)\n")
+            print("\nUnable to decode JSON into ReplicantConfigTemplate: \(error)\n")
             return nil
         }
+    }
+    
+    public mutating func createConfig(withServerKey serverPublicKey: SecKey) -> String?
+    {
+        // Encode key as data
+        var error: Unmanaged<CFError>?
+        
+        guard let keyData = SecKeyCopyExternalRepresentation(serverPublicKey, &error) as Data?
+            else
+        {
+            print("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
+            return nil
+        }
+        
+        guard let replicantConfig = ReplicantConfig(serverPublicKey: keyData, chunkSize: self.chunkSize, chunkTimeout: self.chunkTimeout, addSequences: self.addSequences, removeSequences: self.removeSequences)
+        else
+        {
+            return nil
+        }
+        
+        return replicantConfig.createJSON()
     }
 }

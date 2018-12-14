@@ -14,7 +14,6 @@ public struct ReplicantServerConfig: Codable
     public var addSequences: [SequenceModel]?
     public var removeSequences: [SequenceModel]?
     
-    
     public init?(serverPublicKey: SecKey, chunkSize: Int, chunkTimeout: Int, addSequences: [SequenceModel]?, removeSequences: [SequenceModel]?)
     {
         guard chunkSize >= keySize + aesOverheadSize
@@ -28,4 +27,39 @@ public struct ReplicantServerConfig: Codable
         self.addSequences = addSequences
         self.removeSequences = removeSequences
     }
+    
+    public func createJSON() -> String?
+    {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        
+        do
+        {
+            let serverConfigData = try encoder.encode(self)
+            return String(data: serverConfigData, encoding: .utf8)
+        }
+        catch (let error)
+        {
+            print("Failed to encode Server config into JSON format: \(error)")
+            return nil
+        }
+    }
+    
+    static public func parseJSON(jsonString: String) -> ReplicantServerConfig?
+    {
+        let decoder = JSONDecoder()
+        let jsonData = jsonString.data
+        
+        do
+        {
+            let config = try decoder.decode(ReplicantServerConfig.self, from: jsonData)
+            return config
+        }
+        catch (let error)
+        {
+            print("\nUnable to decode JSON into ReplicantServerConfig: \(error)\n")
+            return nil
+        }
+    }
+
 }
