@@ -9,15 +9,24 @@ import Foundation
 
 public class PolishServerModel
 {
-    let controller = PolishController()
+    public let controller = PolishController()
     
+    public var clientPublicKey: SecKey?
     public var publicKey: SecKey
     public var privateKey: SecKey
     
     
-    public init?()
+    public init?(clientPublicKeyData: Data? = nil)
     {
         controller.deleteKeys()
+        
+        if let publicKeyData = clientPublicKeyData
+        {
+           if let cPublicKey = controller.decodeKey(fromData: publicKeyData)
+           {
+                self.clientPublicKey = cPublicKey
+           }
+        }
         
         guard let newKeyPair = controller.generateKeyPair()
             else

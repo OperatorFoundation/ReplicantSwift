@@ -9,7 +9,7 @@ import Foundation
 
 public class PolishClientModel
 {
-    let controller = PolishController()
+    public let controller = PolishController()
     
     public var serverPublicKey: SecKey
     public var publicKey: SecKey
