@@ -29,7 +29,7 @@ public struct ReplicantConfigTemplate: Codable
         self.removeSequences = removeSequences
     }
     
-    public func createJSON() -> String?
+    public func createJSON() -> Data?
     {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
@@ -37,7 +37,7 @@ public struct ReplicantConfigTemplate: Codable
         do
         {
             let configData = try encoder.encode(self)
-            return String(data: configData, encoding: .utf8)
+            return configData
         }
         catch (let error)
         {
@@ -70,24 +70,39 @@ public struct ReplicantConfigTemplate: Codable
         }
     }
     
-    public func createConfig(withServerKey serverPublicKey: SecKey) -> String?
+     /// Creates a Replicant client configuration file at the specified path.
+    ///
+    ///  - Parameters:
+    ///      - path: The filepath where the new config file should be saved, this should included the desired file name.
+    ///      - serverPublicKey: The public key for the Replicant server. This is required in order for the client to be able to communicate with the server.
+    /// - Returns: A boolean indicating whether or not the config was created successfully
+    public func createConfig(atPath path: String, withServerKey serverPublicKey: SecKey) -> Bool
     {
-        // Encode key as data
+        let fileManager = FileManager()
         var error: Unmanaged<CFError>?
         
+        // Encode key as data
         guard let keyData = SecKeyCopyExternalRepresentation(serverPublicKey, &error) as Data?
             else
         {
             print("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
-            return nil
+            return false
         }
         
         guard let replicantConfig = ReplicantConfig(serverPublicKey: keyData, chunkSize: self.chunkSize, chunkTimeout: self.chunkTimeout, addSequences: self.addSequences, removeSequences: self.removeSequences)
         else
         {
-            return nil
+            return false
         }
         
-        return replicantConfig.createJSON()
+        guard let jsonData = replicantConfig.createJSON()
+        else
+        {
+            return false
+        }
+        
+        let configCreated = fileManager.createFile(atPath: path, contents: jsonData)
+        
+        return configCreated
     }
 }

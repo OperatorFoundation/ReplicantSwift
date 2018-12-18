@@ -28,7 +28,8 @@ public struct ReplicantServerConfig: Codable
         self.removeSequences = removeSequences
     }
     
-    public func createJSON() -> String?
+    /// Creates and returns a JSON representation of the ReplicantServerConfig struct.
+    public func createJSON() -> Data?
     {
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
@@ -36,7 +37,7 @@ public struct ReplicantServerConfig: Codable
         do
         {
             let serverConfigData = try encoder.encode(self)
-            return String(data: serverConfigData, encoding: .utf8)
+            return serverConfigData
         }
         catch (let error)
         {
@@ -45,6 +46,10 @@ public struct ReplicantServerConfig: Codable
         }
     }
     
+    /// Checks for a valid JSON at the provided path and attempts to decode it into a Replicant server configuration file. Returns a ReplicantConfig struct if it is successful
+    /// - Parameters:
+    ///     - path: The complete path where the config file is located.
+    /// - Returns: The ReplicantServerConfig struct that was decoded from the JSON file located at the provided path, or nil if the file was invalid or missing.
     static public func parseJSON(atPath path: String) -> ReplicantServerConfig?
     {
         let filemanager = FileManager()
