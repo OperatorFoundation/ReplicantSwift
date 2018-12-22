@@ -18,8 +18,7 @@ public class PolishServerModel
     
     public init?(clientPublicKeyData: Data? = nil)
     {
-        controller.deleteKeys()
-        
+        // The client's key if we get one on init
         if let publicKeyData = clientPublicKeyData
         {
            if let cPublicKey = controller.decodeKey(fromData: publicKeyData)
@@ -28,7 +27,9 @@ public class PolishServerModel
            }
         }
         
-        guard let newKeyPair = controller.generateKeyPair()
+        // Check to see if the server already has a keypair first
+        // If not, create one.
+        guard let newKeyPair = controller.fetchOrCreateServerKeyPair()
             else
         {
             return nil

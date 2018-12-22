@@ -14,6 +14,7 @@ public struct PolishController
 {
     let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
     let polishTag = "org.operatorfoundation.replicant.polish".data(using: .utf8)!
+    let polishServerTag = "org.operatorfoundation.replicant.polishServer".data(using: .utf8)!
     
     /// Decode data to get public key. This only decodes key data that is NOT padded.
     public func decodeKey(fromData publicKeyData: Data) -> SecKey?
@@ -34,11 +35,11 @@ public struct PolishController
         return decodedPublicKey
     }
     
-    public func generatePrivateKey() -> SecKey?
+    public func generatePrivateKey(withAttributes attributes: CFDictionary) -> SecKey?
     {
         // Generate private key
         var error: Unmanaged<CFError>?
-        let attributes = self.generateKeyAttributesDictionary()
+        //let attributes = self.generateKeyAttributesDictionary()
         
         guard let privateKey = SecKeyCreateRandomKey(attributes, &error)
             else
@@ -62,9 +63,9 @@ public struct PolishController
         return publicKey
     }
     
-    func generateKeyPair() -> (privateKey: SecKey, publicKey: SecKey)?
+    func generateKeyPair(withAttributes attributes: CFDictionary) -> (privateKey: SecKey, publicKey: SecKey)?
     {
-        guard let privateKey = generatePrivateKey()
+        guard let privateKey = generatePrivateKey(withAttributes: attributes)
             else
         {
             return nil
@@ -77,6 +78,45 @@ public struct PolishController
         }
         
         return (privateKey, publicKey)
+    }
+    
+    func fetchOrCreateServerKeyPair() ->(privateKey: SecKey, publicKey: SecKey)?
+    {
+        
+        // Do we already have a key?
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(generateServerKeySearchQuery(), &item)
+        
+        switch status
+        {
+        case errSecItemNotFound:
+            // We don't?
+            // Let's create some and return those
+            return generateKeyPair(withAttributes: generateServerKeyAttributesDictionary())
+        case errSecSuccess:
+            // Return the pair
+            guard let itemDictionary = item as? [String: Any]
+            else
+            {
+                print("Received unexpected key data.")
+                return nil
+            }
+            
+            // FIXME: Casting issues here
+            let privateKey = itemDictionary[kSecValueRef as String] as! SecKey
+            guard let publicKey = generatePublicKey(usingPrivateKey: privateKey)
+            else
+            {
+                print("Unable to generate a public key uding the provided private key.")
+                return nil
+            }
+            
+            return (privateKey, publicKey)
+            
+        default:
+            print("\nReceived an unexpacted response while checking for an existing server key: \(status)\n")
+            return nil
+        }
     }
     
     func deleteKeys()
@@ -108,6 +148,41 @@ public struct PolishController
         ]
         
         return attributes as CFDictionary
+    }
+    
+    func generateServerKeyAttributesDictionary() -> CFDictionary
+    {
+        let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault,
+                                                     kSecAttrAccessibleAlwaysThisDeviceOnly,
+                                                     .privateKeyUsage,
+                                                     nil)!
+        
+        let privateKeyAttributes: [String: Any] = [
+            kSecAttrIsPermanent as String: true,
+            kSecAttrApplicationTag as String: polishServerTag,
+            //kSecAttrAccessControl as String: access
+        ]
+        
+        let attributes: [String: Any] = [
+            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+            kSecAttrKeySizeInBits as String: 256,
+            //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
+            kSecPrivateKeyAttrs as String: privateKeyAttributes
+        ]
+        
+        return attributes as CFDictionary
+    }
+    
+    func generateServerKeySearchQuery() -> CFDictionary
+    {
+        let query: [String: Any] = [kSecClass as String: kSecClassKey,
+                                    kSecAttrApplicationTag as String: polishServerTag,
+                                    kSecMatchLimit as String: kSecMatchLimitOne,
+                                    kSecReturnRef as String: true,
+                                    kSecReturnAttributes as String: false,
+                                    kSecReturnData as String: false]
+        
+        return query as CFDictionary
     }
     
     /// This is the format needed to send the key to the server.
