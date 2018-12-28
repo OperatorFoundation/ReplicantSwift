@@ -182,7 +182,7 @@ public struct PolishController
     }
     
     /// This is the format needed to send the key to the server.
-    public func generateAndEncryptPaddedKeyData(fromKey key: SecKey, withChunkSize chunkSize: Int, usingServerKey serverKey: SecKey) -> Data?
+    public func generateAndEncryptPaddedKeyData(fromKey key: SecKey, withChunkSize chunkSize: UInt16, usingServerKey serverKey: SecKey) -> Data?
     {
         var error: Unmanaged<CFError>?
         var newKeyData: Data
@@ -247,9 +247,9 @@ public struct PolishController
         return decryptedText
     }
     
-    func getKeyPadding(chunkSize: Int) -> Data?
+    func getKeyPadding(chunkSize: UInt16) -> Data?
     {
-        let paddingSize = chunkSize - (keySize + aesOverheadSize)
+        let paddingSize = Int(chunkSize) - (keySize + aesOverheadSize)
         if paddingSize > 0
         {
             let bytes = [UInt8](repeating: 0, count: paddingSize)
