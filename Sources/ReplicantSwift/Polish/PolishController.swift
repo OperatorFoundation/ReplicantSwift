@@ -129,10 +129,8 @@ public struct PolishController
     
     func generateKeyAttributesDictionary() -> CFDictionary
     {
-        let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault,
-                                                     kSecAttrAccessibleAlwaysThisDeviceOnly,
-                                                     .privateKeyUsage,
-                                                     nil)!
+        //FIXME: Secure Enclave
+        //let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleAlwaysThisDeviceOnly, .privateKeyUsage, nil)!
         
         let privateKeyAttributes: [String: Any] = [
             kSecAttrIsPermanent as String: true,
@@ -152,10 +150,8 @@ public struct PolishController
     
     func generateServerKeyAttributesDictionary() -> CFDictionary
     {
-        let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault,
-                                                     kSecAttrAccessibleAlwaysThisDeviceOnly,
-                                                     .privateKeyUsage,
-                                                     nil)!
+        //FIXME: Secure Enclave
+        // let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleAlwaysThisDeviceOnly, .privateKeyUsage, nil)!
         
         let privateKeyAttributes: [String: Any] = [
             kSecAttrIsPermanent as String: true,

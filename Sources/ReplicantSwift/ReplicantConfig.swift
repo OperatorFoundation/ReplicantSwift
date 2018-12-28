@@ -10,12 +10,12 @@ import Foundation
 public struct ReplicantConfig: Codable
 {
     public var serverPublicKey: Data
-    public var chunkSize: Int
+    public var chunkSize: UInt16
     public var chunkTimeout: Int
     public var addSequences: [SequenceModel]?
     public var removeSequences: [SequenceModel]?
     
-    public init?(serverPublicKey: Data, chunkSize: Int, chunkTimeout: Int, addSequences: [SequenceModel]?, removeSequences: [SequenceModel]?)
+    public init?(serverPublicKey: Data, chunkSize: UInt16, chunkTimeout: Int, addSequences: [SequenceModel]?, removeSequences: [SequenceModel]?)
     {
         guard chunkSize >= keySize + aesOverheadSize
         else
