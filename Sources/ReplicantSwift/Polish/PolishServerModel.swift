@@ -41,6 +41,6 @@ public class PolishServerModel
     
     deinit
     {
-        controller.deleteKeys()
+        controller.deleteClientKeys()
     }
 }

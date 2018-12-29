@@ -5,7 +5,7 @@ import Foundation
 
 final class ReplicantSwiftTests: XCTestCase
 {
-    var polish: Polish!
+    var polishClientModel: PolishClientModel!
     let attributes: [String: Any] =
         [kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
          kSecAttrKeySizeInBits as String: 256,
@@ -29,35 +29,105 @@ final class ReplicantSwiftTests: XCTestCase
         // Generate public key
         let bobPublic = SecKeyCopyPublicKey(bobPrivate)!
         
-        polish = Polish(recipientPublicKey: bobPublic)!
+        // Encode key as data
+        guard let keyData = SecKeyCopyExternalRepresentation(bobPublic, &error) as Data?
+            else
+        {
+            print("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
+            return
+        }
         
+        guard let clientModel = PolishClientModel(serverPublicKeyData: keyData)
+        else
+        {
+            return
+        }
+        
+        polishClientModel = clientModel
     }
     
     // MARK: Polish Tests
     
-    func testGeneratePrivateUsingPublic()
+    func testFetchOrCreateServerKey()
     {
-        guard let privateKey = Polish.generatePrivateKey()
+        let controller = PolishController()
+        
+        // Ask for the keypair and accept either the existing key or a new one
+        guard let _ = controller.fetchOrCreateServerKeyPair()
         else
         {
             XCTFail()
             return
         }
         
-        let maybePuplicKey = Polish.generatePublicKey(usingPrivateKey: privateKey)
-        XCTAssertNotNil(maybePuplicKey)
-    }
-    
-    func testDecodeKeyFromData()
-    {
-        guard let privateKey = Polish.generatePrivateKey()
+        // Delete the existing key
+        let query: [String: Any] = [kSecClass as String: kSecClassKey,
+                                    kSecAttrApplicationTag as String: controller.polishServerTag]
+        let deleteStatus = SecItemDelete(query as CFDictionary)
+        
+        switch deleteStatus
+        {
+        case errSecItemNotFound:
+            print("Could not find a client key to delete.\n")
+            XCTFail()
+            return
+        case noErr:
+            print("Deleted client keys.\n")
+        default:
+            print("Unexpected status: \(deleteStatus.description)\n")
+            XCTFail()
+            return
+        }
+        
+        // Ask for keys again
+        guard let _ = controller.fetchOrCreateServerKeyPair()
             else
         {
             XCTFail()
             return
         }
         
-        guard let alicePuplicKey = Polish.generatePublicKey(usingPrivateKey: privateKey)
+        // Clean up, delete the existing key
+        let cleanUpStatus = SecItemDelete(query as CFDictionary)
+        
+        switch cleanUpStatus
+        {
+        case errSecItemNotFound:
+            print("Could not find a client key to delete.\n")
+            XCTFail()
+            return
+        case noErr:
+            print("Deleted client keys.\n")
+        default:
+            print("Unexpected status: \(deleteStatus.description)\n")
+            XCTFail()
+            return
+        }
+    }
+    
+    func testGeneratePrivateUsingPublic()
+    {
+        guard let privateKey = polishClientModel.controller.generatePrivateKey(withAttributes: attributes as CFDictionary)
+        else
+        {
+            XCTFail()
+            return
+        }
+        
+        let maybePuplicKey = polishClientModel.controller.generatePublicKey(usingPrivateKey: privateKey)
+        XCTAssertNotNil(maybePuplicKey)
+    }
+    
+    func testDecodeKeyFromData()
+    {
+        guard let privateKey = polishClientModel.controller.generatePrivateKey(withAttributes: attributes as CFDictionary)
+            else
+        {
+            XCTFail()
+            return
+        }
+        
+        guard let alicePuplicKey = polishClientModel.controller.generatePublicKey(usingPrivateKey: privateKey)
         else
         {
             print("\nUnable to generate publicKeyData from private key.\n")
@@ -75,7 +145,7 @@ final class ReplicantSwiftTests: XCTestCase
             return
         }
         
-        guard let decodedKey = Polish.decodeKey(fromData: keyData)
+        guard let decodedKey = polishClientModel.controller.decodeKey(fromData: keyData)
         else
         {
             XCTFail()
@@ -129,7 +199,7 @@ final class ReplicantSwiftTests: XCTestCase
         let plainText = Data(repeating: 0x0A, count: 4096)
         
         // Encrypt Plain Text
-        let maybeCipherText = polish.encrypt(payload: plainText, usingPublicKey: bobPublic)
+        let maybeCipherText = polishClientModel.controller.encrypt(payload: plainText, usingPublicKey: bobPublic)
         
         XCTAssertNotNil(maybeCipherText)
         XCTAssertNotEqual(maybeCipherText!, plainText)
@@ -152,14 +222,14 @@ final class ReplicantSwiftTests: XCTestCase
         let bobPublic = SecKeyCopyPublicKey(bobPrivate)!
         
         let plainText = Data(repeating: 0x0A, count: 4096)
-        guard let cipherText = polish.encrypt(payload: plainText, usingPublicKey: bobPublic)
+        guard let cipherText = polishClientModel.controller.encrypt(payload: plainText, usingPublicKey: bobPublic)
         else
         {
             XCTFail()
             return
         }
         
-        guard let maybeDecoded = polish.decrypt(payload: cipherText, usingPrivateKey: bobPrivate)
+        guard let maybeDecoded = polishClientModel.controller.decrypt(payload: cipherText, usingPrivateKey: bobPrivate)
         else
         {
             XCTFail()

@@ -17,7 +17,7 @@ public class PolishClientModel
     
     public init?(serverPublicKeyData: Data)
     {
-        controller.deleteKeys()
+        controller.deleteClientKeys()
         
         guard let sPublicKey = controller.decodeKey(fromData: serverPublicKeyData)
         else
@@ -38,6 +38,6 @@ public class PolishClientModel
     
     deinit
     {
-        controller.deleteKeys()
+        controller.deleteClientKeys()
     }
 }

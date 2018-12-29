@@ -84,8 +84,8 @@ public struct PolishController
     {
         
         // Do we already have a key?
-        var item: CFTypeRef?
-        let status = SecItemCopyMatching(generateServerKeySearchQuery(), &item)
+        var maybeItem: CFTypeRef?
+        let status = SecItemCopyMatching(generateServerKeySearchQuery(), &maybeItem)
         
         switch status
         {
@@ -94,16 +94,16 @@ public struct PolishController
             // Let's create some and return those
             return generateKeyPair(withAttributes: generateServerKeyAttributesDictionary())
         case errSecSuccess:
-            // Return the pair
-            guard let itemDictionary = item as? [String: Any]
+            guard let item = maybeItem
             else
             {
-                print("Received unexpected key data.")
+                print("\nKey query returned a nil item.\n")
                 return nil
             }
             
             // FIXME: Casting issues here
-            let privateKey = itemDictionary[kSecValueRef as String] as! SecKey
+            let privateKey = item as! SecKey
+            
             guard let publicKey = generatePublicKey(usingPrivateKey: privateKey)
             else
             {
@@ -119,12 +119,24 @@ public struct PolishController
         }
     }
     
-    func deleteKeys()
+    func deleteClientKeys()
     {
+        print("\nAttempted to delete key from secure enclave.")
         //Remove client keys from secure enclave
-        let query = generateKeyAttributesDictionary()
-        let deleteStatus = SecItemDelete(query)
-        print("\nAttempted to delete key from secure enclave. Status: \(deleteStatus)\n")
+        let query: [String: Any] = [kSecClass as String: kSecClassKey,
+                                    kSecAttrApplicationTag as String: polishTag]
+        let deleteStatus = SecItemDelete(query as CFDictionary)
+        
+        switch deleteStatus
+        {
+        case errSecItemNotFound:
+            print("Could not find a client key to delete.\n")
+        case noErr:
+            print("Deleted client keys.\n")
+        default:
+            print("Unexpected status: \(deleteStatus.description)\n")
+        }
+       
     }
     
     func generateKeyAttributesDictionary() -> CFDictionary
@@ -186,7 +198,7 @@ public struct PolishController
     {
         var error: Unmanaged<CFError>?
         var newKeyData: Data
-        
+
         // Encode key as data
         guard let keyData = SecKeyCopyExternalRepresentation(key, &error) as Data?
             else
@@ -194,7 +206,7 @@ public struct PolishController
             print("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
             return nil
         }
-        
+
         newKeyData = keyData
         
         // Add padding if needed
