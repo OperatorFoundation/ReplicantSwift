@@ -35,6 +35,8 @@ public struct PolishController
         return decodedPublicKey
     }
     
+    /// This doesn't work with a key returned from the keychain.
+    /// Use generate with data instead.
     public func generatePrivateKey(withAttributes attributes: CFDictionary) -> SecKey?
     {
         // Generate private key
@@ -51,12 +53,29 @@ public struct PolishController
         return privateKey
     }
     
+    /// This doesn't work with a key returned from the keychain.
+    /// Use generate with data instead.
     func generatePublicKey(usingPrivateKey privateKey: SecKey) -> SecKey?
     {
         guard let publicKey = SecKeyCopyPublicKey(privateKey)
             else
         {
             print("\nUnable to generate a public key from the provided private key.\n")
+            return nil
+        }
+        
+        return publicKey
+    }
+    
+    func generatePublicKey(usingPrivateKeyData privateKeyData: Data) -> SecKey?
+    {
+        var error: Unmanaged<CFError>?
+        let attributes = [kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom, kSecAttrKeyClass: kSecAttrKeyClassPrivate]
+        
+        guard let publicKey = SecKeyCreateWithData(privateKeyData as CFData, attributes as CFDictionary, &error)
+            else
+        {
+            print("\nUnable to generate a public key from the provided private key.\(String(describing: error))\n")
             return nil
         }
         
@@ -101,13 +120,33 @@ public struct PolishController
                 return nil
             }
             
-            // FIXME: Casting issues here
             let privateKey = item as! SecKey
             
-            guard let publicKey = generatePublicKey(usingPrivateKey: privateKey)
-            else
+            // This is weirdly broken so we have to use data instead
+//            guard let publicKey = generatePublicKey(usingPrivateKey: privateKey)
+//            else
+//            {
+//                print("Unable to generate a public key uding the provided private key.")
+//                return nil
+//            }
+            
+            var error: Unmanaged<CFError>?
+            var newKeyData: Data
+            
+            // Encode key as data
+            guard let keyData = SecKeyCopyExternalRepresentation(privateKey, &error) as Data?
+                else
             {
-                print("Unable to generate a public key uding the provided private key.")
+                print("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
+                return nil
+            }
+            
+            newKeyData = keyData
+            
+            guard let publicKey = generatePublicKey(usingPrivateKeyData: newKeyData)
+                else
+            {
+                print("Unable to generate a public key using the provided private key data.")
                 return nil
             }
             
