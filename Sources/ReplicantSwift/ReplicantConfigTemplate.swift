@@ -29,6 +29,17 @@ public struct ReplicantConfigTemplate: Codable
         self.removeSequences = removeSequences
     }
     
+    public init?(withConfigAtPath path: String)
+    {
+        guard let config = ReplicantConfigTemplate.parseJSON(atPath: path)
+        else
+        {
+            return nil
+        }
+        
+        self = config
+    }
+    
     public func createJSON() -> Data?
     {
         let encoder = JSONEncoder()
@@ -46,7 +57,7 @@ public struct ReplicantConfigTemplate: Codable
         }
     }
     
-    static public func parseJSON(atPath path: String) -> ReplicantConfigTemplate?
+    static func parseJSON(atPath path: String) -> ReplicantConfigTemplate?
     {
         let fileManager = FileManager()
         let decoder = JSONDecoder()

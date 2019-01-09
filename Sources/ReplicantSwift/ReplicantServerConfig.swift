@@ -28,6 +28,17 @@ public struct ReplicantServerConfig: Codable
         self.removeSequences = removeSequences
     }
     
+    public init?(withConfigAtPath path: String)
+    {
+        guard let config = ReplicantServerConfig.parseJSON(atPath: path)
+        else
+        {
+            return nil
+        }
+        
+        self = config
+    }
+    
     /// Creates and returns a JSON representation of the ReplicantServerConfig struct.
     public func createJSON() -> Data?
     {
@@ -50,7 +61,7 @@ public struct ReplicantServerConfig: Codable
     /// - Parameters:
     ///     - path: The complete path where the config file is located.
     /// - Returns: The ReplicantServerConfig struct that was decoded from the JSON file located at the provided path, or nil if the file was invalid or missing.
-    static public func parseJSON(atPath path: String) -> ReplicantServerConfig?
+    static func parseJSON(atPath path: String) -> ReplicantServerConfig?
     {
         let filemanager = FileManager()
         let decoder = JSONDecoder()
