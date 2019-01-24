@@ -28,3 +28,12 @@ public struct SequenceModel: Codable
         self.length = length
     }
 }
+
+extension SequenceModel: Equatable
+{
+    public static func == (lhs: SequenceModel, rhs: SequenceModel) -> Bool
+    {
+        return lhs.sequence == rhs.sequence &&
+            lhs.length == rhs.length
+    }
+}

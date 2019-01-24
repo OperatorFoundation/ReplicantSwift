@@ -87,3 +87,16 @@ public struct ReplicantConfig: Codable
         }
     }
 }
+
+extension ReplicantConfig: Equatable
+{
+    public static func == (lhs: ReplicantConfig, rhs: ReplicantConfig) -> Bool
+    {
+        
+        return lhs.chunkSize == rhs.chunkSize &&
+            lhs.chunkTimeout == rhs.chunkTimeout &&
+            lhs.addSequences == rhs.addSequences &&
+            lhs.removeSequences == rhs.removeSequences &&
+            lhs.serverPublicKey == rhs.serverPublicKey
+    }
+}
