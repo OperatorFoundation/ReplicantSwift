@@ -63,7 +63,7 @@ public struct ReplicantConfig: Codable
     /// - Parameters:
     ///     - path: The complete path where the config file is located.
     /// - Returns: The ReplicantConfig struct that was decoded from the JSON file located at the provided path, or nil if the file was invalid or missing.
-    static func parseJSON(atPath path: String) -> ReplicantConfig?
+    public static func parseJSON(atPath path: String) -> ReplicantConfig?
     {
         let fileManager = FileManager()
         let decoder = JSONDecoder()
