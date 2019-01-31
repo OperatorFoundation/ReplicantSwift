@@ -14,7 +14,7 @@ public struct ReplicantServerConfig: Codable
     public var addSequences: [SequenceModel]?
     public var removeSequences: [SequenceModel]?
     
-    public init?(serverPublicKey: SecKey, chunkSize: UInt16, chunkTimeout: Int, addSequences: [SequenceModel]?, removeSequences: [SequenceModel]?)
+    public init?(chunkSize: UInt16, chunkTimeout: Int, addSequences: [SequenceModel]?, removeSequences: [SequenceModel]?)
     {
         guard chunkSize >= keySize + aesOverheadSize
             else

@@ -7,8 +7,38 @@
 
 import Foundation
 
-public struct ReplicantConfig: Codable
+public class ReplicantConfig: NSObject, Codable, NSSecureCoding
 {
+    let replicantConfigKey = "ReplicantConfig"
+    public static var supportsSecureCoding: Bool = true
+    
+    public func encode(with aCoder: NSCoder)
+    {
+        aCoder.encode(self, forKey: replicantConfigKey)
+    }
+    
+    public required init?(coder aDecoder: NSCoder)
+    {
+        if let obj = aDecoder.decodeObject(of:ReplicantConfig.self, forKey: replicantConfigKey)
+        {
+            guard obj.chunkSize >= keySize + aesOverheadSize
+                else
+            {
+                print("\nUnable to initialize ReplicantConfig: chunkSize (\(obj.chunkSize)) cannot be smaller than keySize + aesOverheadSize (\(keySize + aesOverheadSize))\n")
+                return nil
+            }
+            self.serverPublicKey = obj.serverPublicKey
+            self.chunkSize = obj.chunkSize
+            self.chunkTimeout = obj.chunkTimeout
+            self.addSequences = obj.addSequences
+            self.removeSequences = obj.removeSequences
+        }
+        else
+        {
+            return nil
+        }
+    }
+    
     public var serverPublicKey: Data
     public var chunkSize: UInt16
     public var chunkTimeout: Int
@@ -18,7 +48,7 @@ public struct ReplicantConfig: Codable
     public init?(serverPublicKey: Data, chunkSize: UInt16, chunkTimeout: Int, addSequences: [SequenceModel]?, removeSequences: [SequenceModel]?)
     {
         guard chunkSize >= keySize + aesOverheadSize
-        else
+            else
         {
             print("\nUnable to initialize ReplicantConfig: chunkSize (\(chunkSize)) cannot be smaller than keySize + aesOverheadSize (\(keySize + aesOverheadSize))\n")
             return nil
@@ -30,15 +60,19 @@ public struct ReplicantConfig: Codable
         self.removeSequences = removeSequences
     }
     
-    public init?(withConfigAtPath path: String)
+    public convenience init?(withConfigAtPath path: String)
     {
         guard let config = ReplicantConfig.parseJSON(atPath:path)
-        else
+            else
         {
             return nil
         }
         
-        self = config
+        self.init(serverPublicKey: config.serverPublicKey,
+                  chunkSize: config.chunkSize,
+                  chunkTimeout: config.chunkTimeout,
+                  addSequences: config.addSequences,
+                  removeSequences: config.removeSequences)
     }
     
     /// Creates and returns a JSON representation of the ReplicantConfig struct.
@@ -69,7 +103,7 @@ public struct ReplicantConfig: Codable
         let decoder = JSONDecoder()
         
         guard let jsonData = fileManager.contents(atPath: path)
-        else
+            else
         {
             print("\nUnable to get JSON data at pathe: \(path)\n")
             return nil
@@ -88,15 +122,15 @@ public struct ReplicantConfig: Codable
     }
 }
 
-extension ReplicantConfig: Equatable
-{
-    public static func == (lhs: ReplicantConfig, rhs: ReplicantConfig) -> Bool
-    {
-        
-        return lhs.chunkSize == rhs.chunkSize &&
-            lhs.chunkTimeout == rhs.chunkTimeout &&
-            lhs.addSequences == rhs.addSequences &&
-            lhs.removeSequences == rhs.removeSequences &&
-            lhs.serverPublicKey == rhs.serverPublicKey
-    }
-}
+//extension ReplicantConfig: Equatable
+//{
+//    public static func == (lhs: ReplicantConfig, rhs: ReplicantConfig) -> Bool
+//    {
+//
+//        return lhs.chunkSize == rhs.chunkSize &&
+//            lhs.chunkTimeout == rhs.chunkTimeout &&
+//            lhs.addSequences == rhs.addSequences &&
+//            lhs.removeSequences == rhs.removeSequences &&
+//            lhs.serverPublicKey == rhs.serverPublicKey
+//    }
+//}
