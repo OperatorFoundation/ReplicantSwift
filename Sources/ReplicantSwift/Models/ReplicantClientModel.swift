@@ -16,9 +16,9 @@ public struct ReplicantClientModel
             return nil
         }
         
-        if let addSequences = config.addSequences, let removeSequences = config.removeSequences
+        if let toneBurst = config.toneBurst
         {
-            self.toneBurst = ToneBurst(addSequences: addSequences, removeSequences: removeSequences)
+            self.toneBurst = toneBurst.getToneBurst()
         }
         
         self.config = config

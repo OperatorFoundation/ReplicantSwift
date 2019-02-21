@@ -11,10 +11,9 @@ public struct ReplicantServerConfig: Codable
 {
     public var chunkSize: UInt16
     public var chunkTimeout: Int
-    public var addSequences: [SequenceModel]?
-    public var removeSequences: [SequenceModel]?
+    public var toneBurst: ToneBurstServerConfig?
     
-    public init?(chunkSize: UInt16, chunkTimeout: Int, addSequences: [SequenceModel]?, removeSequences: [SequenceModel]?)
+    public init?(chunkSize: UInt16, chunkTimeout: Int, toneBurst: ToneBurstServerConfig?)
     {
         guard chunkSize >= keySize + aesOverheadSize
             else
@@ -24,8 +23,7 @@ public struct ReplicantServerConfig: Codable
         }
         self.chunkSize = chunkSize
         self.chunkTimeout = chunkTimeout
-        self.addSequences = addSequences
-        self.removeSequences = removeSequences
+        self.toneBurst = toneBurst
     }
     
     public init?(withConfigAtPath path: String)

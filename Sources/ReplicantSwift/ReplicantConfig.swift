@@ -12,6 +12,11 @@ public class ReplicantConfig: NSObject, Codable, NSSecureCoding
     let replicantConfigKey = "ReplicantConfig"
     public static var supportsSecureCoding: Bool = true
     
+    public var serverPublicKey: Data
+    public var chunkSize: UInt16
+    public var chunkTimeout: Int
+    public var toneBurst: ToneBurstClientConfig?
+    
     public func encode(with aCoder: NSCoder)
     {
         aCoder.encode(self, forKey: replicantConfigKey)
@@ -30,8 +35,7 @@ public class ReplicantConfig: NSObject, Codable, NSSecureCoding
             self.serverPublicKey = obj.serverPublicKey
             self.chunkSize = obj.chunkSize
             self.chunkTimeout = obj.chunkTimeout
-            self.addSequences = obj.addSequences
-            self.removeSequences = obj.removeSequences
+            self.toneBurst=obj.toneBurst
         }
         else
         {
@@ -39,13 +43,7 @@ public class ReplicantConfig: NSObject, Codable, NSSecureCoding
         }
     }
     
-    public var serverPublicKey: Data
-    public var chunkSize: UInt16
-    public var chunkTimeout: Int
-    public var addSequences: [SequenceModel]?
-    public var removeSequences: [SequenceModel]?
-    
-    public init?(serverPublicKey: Data, chunkSize: UInt16, chunkTimeout: Int, addSequences: [SequenceModel]?, removeSequences: [SequenceModel]?)
+    public init?(serverPublicKey: Data, chunkSize: UInt16, chunkTimeout: Int, toneBurst: ToneBurstClientConfig?)
     {
         guard chunkSize >= keySize + aesOverheadSize
             else
@@ -56,8 +54,7 @@ public class ReplicantConfig: NSObject, Codable, NSSecureCoding
         self.serverPublicKey = serverPublicKey
         self.chunkSize = chunkSize
         self.chunkTimeout = chunkTimeout
-        self.addSequences = addSequences
-        self.removeSequences = removeSequences
+        self.toneBurst = toneBurst
     }
     
     public convenience init?(withConfigAtPath path: String)
@@ -71,8 +68,7 @@ public class ReplicantConfig: NSObject, Codable, NSSecureCoding
         self.init(serverPublicKey: config.serverPublicKey,
                   chunkSize: config.chunkSize,
                   chunkTimeout: config.chunkTimeout,
-                  addSequences: config.addSequences,
-                  removeSequences: config.removeSequences)
+                  toneBurst: config.toneBurst)
     }
     
     /// Creates and returns a JSON representation of the ReplicantConfig struct.

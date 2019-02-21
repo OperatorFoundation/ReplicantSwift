@@ -250,14 +250,14 @@ final class ReplicantSwiftTests: XCTestCase
     func testToneBurstInit()
     {
         let sequence = SequenceModel(sequence: sequence1, length: 256)!
-        let toneBurst = ToneBurst(addSequences: [sequence], removeSequences: [sequence])
+        let toneBurst = Whalesong(addSequences: [sequence], removeSequences: [sequence])
         XCTAssertNotNil(toneBurst)
     }
     
     func testFindMatchingPacket()
     {
         let sequence = SequenceModel(sequence: sequence1, length: 256)!
-        guard let toneBurst = ToneBurst(addSequences: [sequence], removeSequences: [sequence])
+        guard let toneBurst = Whalesong(addSequences: [sequence], removeSequences: [sequence])
         else
         {
             XCTFail()
@@ -289,7 +289,7 @@ final class ReplicantSwiftTests: XCTestCase
     func testOneSequence()
     {
         let sequence = SequenceModel(sequence: sequence1, length: 256)!
-        guard let toneBurst = ToneBurst(addSequences: [sequence], removeSequences: [sequence])
+        guard let toneBurst = Whalesong(addSequences: [sequence], removeSequences: [sequence])
             else
         {
             XCTFail()
