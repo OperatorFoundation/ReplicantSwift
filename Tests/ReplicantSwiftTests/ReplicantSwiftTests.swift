@@ -1,5 +1,6 @@
 import XCTest
 import Foundation
+import Datable
 
 @testable import ReplicantSwift
 
@@ -153,6 +154,24 @@ final class ReplicantSwiftTests: XCTestCase
         }
         
         XCTAssertTrue(compare(secKey1: decodedKey, secKey2: alicePuplicKey))
+    }
+    
+    func testDecodeProvidedKey()
+    {
+        
+        //
+        
+        let providedKeyString = "BMfps8ZfYYvIdU2eSNsbHJfYnFKGgtlTK3Osyqo/BHOP8Djzkxk03SHD8auOFhI4PxfrhSeIQ8q8JDNJOy+2ulQ="
+        
+        guard let providedKeyData = Data(base64Encoded: providedKeyString)
+        else
+        {
+            XCTFail()
+            return
+        }
+        
+        let decodedKey = polishClientModel.controller.decodeKey(fromData: providedKeyData)
+        XCTAssertNotNil(decodedKey)
     }
     
     func compare(secKey1: SecKey, secKey2: SecKey) -> Bool
