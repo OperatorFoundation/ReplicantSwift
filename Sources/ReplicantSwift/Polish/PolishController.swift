@@ -7,8 +7,8 @@
 
 import Foundation
 
-public let keySize = 64
 public let aesOverheadSize = 81
+public var keySize = 65
 
 public struct PolishController
 {
@@ -247,9 +247,10 @@ public struct PolishController
         }
 
         newKeyData = keyData
+        keySize = newKeyData.count
         
         // Add padding if needed
-        if let padding = getKeyPadding(chunkSize: chunkSize)
+        if let padding = getKeyPadding(chunkSize: chunkSize, keySize: keySize)
         {
             newKeyData = keyData + padding
         }
@@ -298,7 +299,7 @@ public struct PolishController
         return decryptedText
     }
     
-    func getKeyPadding(chunkSize: UInt16) -> Data?
+    func getKeyPadding(chunkSize: UInt16, keySize: Int) -> Data?
     {
         let paddingSize = Int(chunkSize) - (keySize + aesOverheadSize)
         if paddingSize > 0
