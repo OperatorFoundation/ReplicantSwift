@@ -1,6 +1,7 @@
 import Foundation
 import Security
 import CommonCrypto
+import SwiftQueue
 
 public struct ReplicantClientModel
 {
@@ -8,9 +9,9 @@ public struct ReplicantClientModel
     public var config: ReplicantConfig
     public var toneBurst: ToneBurst?
     
-    public init?(withConfig config: ReplicantConfig)
+    public init?(withConfig config: ReplicantConfig, logQueue: Queue<String>)
     {
-        guard let polish = PolishClientModel(serverPublicKeyData: config.serverPublicKey)
+        guard let polish = PolishClientModel(serverPublicKeyData: config.serverPublicKey, logQueue: logQueue)
         else
         {
             return nil

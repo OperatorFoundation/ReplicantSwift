@@ -6,17 +6,19 @@
 //
 
 import Foundation
+import SwiftQueue
 
 public class PolishClientModel
 {
-    public let controller = PolishController()
+    public let controller: PolishController
     
     public var serverPublicKey: SecKey
     public var publicKey: SecKey
     public var privateKey: SecKey
     
-    public init?(serverPublicKeyData: Data)
+    public init?(serverPublicKeyData: Data, logQueue: Queue<String>)
     {
+        self.controller = PolishController(logQueue: logQueue)
         controller.deleteClientKeys()
         
         guard let sPublicKey = controller.decodeKey(fromData: serverPublicKeyData)

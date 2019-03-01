@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftQueue
 
 public let aesOverheadSize = 113
 public var keySize = 65
@@ -15,6 +16,13 @@ public struct PolishController
     let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
     let polishTag = "org.operatorfoundation.replicant.polish".data(using: .utf8)!
     let polishServerTag = "org.operatorfoundation.replicant.polishServer".data(using: .utf8)!
+    
+    var logQueue: Queue<String>
+    
+    public init(logQueue: Queue<String>)
+    {
+        self.logQueue = logQueue
+    }
     
     /// Decode data to get public key. This only decodes key data that is NOT padded.
     public func decodeKey(fromData publicKeyData: Data) -> SecKey?
@@ -28,7 +36,7 @@ public struct PolishController
         guard let decodedPublicKey = SecKeyCreateWithData(publicKeyData as CFData, options as CFDictionary, &error)
             else
         {
-            print("\nUnable to decode server public key: \(error!.takeRetainedValue() as Error)\n")
+            logQueue.enqueue("\nUnable to decode server public key: \(error!.takeRetainedValue() as Error)\n")
             return nil
         }
         
@@ -46,7 +54,7 @@ public struct PolishController
         guard let privateKey = SecKeyCreateRandomKey(attributes, &error)
             else
         {
-            print("\nUnable to generate the client private key: \(error!.takeRetainedValue() as Error)\n")
+            logQueue.enqueue("\nUnable to generate the client private key: \(error!.takeRetainedValue() as Error)\n")
             return nil
         }
         
@@ -60,7 +68,7 @@ public struct PolishController
         guard let publicKey = SecKeyCopyPublicKey(privateKey)
             else
         {
-            print("\nUnable to generate a public key from the provided private key.\n")
+            logQueue.enqueue("\nUnable to generate a public key from the provided private key.\n")
             return nil
         }
         
@@ -75,7 +83,7 @@ public struct PolishController
         guard let publicKey = SecKeyCreateWithData(privateKeyData as CFData, attributes as CFDictionary, &error)
             else
         {
-            print("\nUnable to generate a public key from the provided private key.\(String(describing: error))\n")
+            logQueue.enqueue("\nUnable to generate a public key from the provided private key.\(String(describing: error))\n")
             return nil
         }
         
@@ -116,7 +124,7 @@ public struct PolishController
             guard let item = maybeItem
             else
             {
-                print("\nKey query returned a nil item.\n")
+                logQueue.enqueue("\nKey query returned a nil item.\n")
                 return nil
             }
             
@@ -126,7 +134,7 @@ public struct PolishController
 //            guard let publicKey = generatePublicKey(usingPrivateKey: privateKey)
 //            else
 //            {
-//                print("Unable to generate a public key uding the provided private key.")
+//                logQueue.enqueue("Unable to generate a public key uding the provided private key.")
 //                return nil
 //            }
             
@@ -137,7 +145,7 @@ public struct PolishController
             guard let keyData = SecKeyCopyExternalRepresentation(privateKey, &error) as Data?
                 else
             {
-                print("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
+                logQueue.enqueue("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
                 return nil
             }
             
@@ -146,21 +154,21 @@ public struct PolishController
             guard let publicKey = generatePublicKey(usingPrivateKeyData: newKeyData)
                 else
             {
-                print("Unable to generate a public key using the provided private key data.")
+                logQueue.enqueue("Unable to generate a public key using the provided private key data.")
                 return nil
             }
             
             return (privateKey, publicKey)
             
         default:
-            print("\nReceived an unexpacted response while checking for an existing server key: \(status)\n")
+            logQueue.enqueue("\nReceived an unexpacted response while checking for an existing server key: \(status)\n")
             return nil
         }
     }
     
     func deleteClientKeys()
     {
-        print("\nAttempted to delete key from secure enclave.")
+        logQueue.enqueue("\nAttempted to delete key from secure enclave.")
         //Remove client keys from secure enclave
         let query: [String: Any] = [kSecClass as String: kSecClassKey,
                                     kSecAttrApplicationTag as String: polishTag]
@@ -169,11 +177,11 @@ public struct PolishController
         switch deleteStatus
         {
         case errSecItemNotFound:
-            print("Could not find a client key to delete.\n")
+            logQueue.enqueue("Could not find a client key to delete.\n")
         case noErr:
-            print("Deleted client keys.\n")
+            logQueue.enqueue("Deleted client keys.\n")
         default:
-            print("Unexpected status: \(deleteStatus.description)\n")
+            logQueue.enqueue("Unexpected status: \(deleteStatus.description)\n")
         }
        
     }
@@ -242,7 +250,7 @@ public struct PolishController
         guard let keyData = SecKeyCopyExternalRepresentation(key, &error) as Data?
             else
         {
-            print("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
+            logQueue.enqueue("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
             return nil
         }
 
@@ -275,7 +283,7 @@ public struct PolishController
         guard let cipherText = SecKeyCreateEncryptedData(publicKey, algorithm, payload as CFData, &error) as Data?
             else
         {
-            print("\nUnable to encrypt payload: \(error!.takeRetainedValue() as Error)\n")
+            logQueue.enqueue("\nUnable to encrypt payload: \(error!.takeRetainedValue() as Error)\n")
             return nil
         }
         
@@ -292,7 +300,7 @@ public struct PolishController
         guard let decryptedText = SecKeyCreateDecryptedData(privateKey, algorithm, payload as CFData, &error) as Data?
             else
         {
-            print("\nUnable to decrypt payload: \(error!.takeRetainedValue() as Error)\n")
+            logQueue.enqueue("\nUnable to decrypt payload: \(error!.takeRetainedValue() as Error)\n")
             return nil
         }
         

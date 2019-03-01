@@ -6,18 +6,21 @@
 //
 
 import Foundation
+import SwiftQueue
 
 public class PolishServerModel
 {
-    public let controller = PolishController()
+    public let controller: PolishController
     
     public var clientPublicKey: SecKey?
     public var publicKey: SecKey
     public var privateKey: SecKey
     
     
-    public init?(clientPublicKeyData: Data? = nil)
+    public init?(clientPublicKeyData: Data? = nil, logQueue: Queue<String>)
     {
+        controller = PolishController(logQueue: logQueue)
+        
         // The client's key if we get one on init
         if let publicKeyData = clientPublicKeyData
         {
