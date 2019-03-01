@@ -7,7 +7,7 @@
 
 import Foundation
 
-public let aesOverheadSize = 81
+public let aesOverheadSize = 113
 public var keySize = 65
 
 public struct PolishController
