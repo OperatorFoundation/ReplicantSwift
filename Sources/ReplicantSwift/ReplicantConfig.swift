@@ -96,7 +96,7 @@ public class ReplicantConfig: NSObject, Codable, NSSecureCoding
     public static func parseJSON(atPath path: String) -> ReplicantConfig?
     {
         let fileManager = FileManager()
-        let decoder = JSONDecoder()
+        
         
         guard let jsonData = fileManager.contents(atPath: path)
             else
@@ -104,6 +104,13 @@ public class ReplicantConfig: NSObject, Codable, NSSecureCoding
             print("\nUnable to get JSON data at pathe: \(path)\n")
             return nil
         }
+        
+        return parse(jsonData: jsonData)
+    }
+    
+    public static func parse(jsonData: Data) -> ReplicantConfig?
+    {
+        let decoder = JSONDecoder()
         
         do
         {
