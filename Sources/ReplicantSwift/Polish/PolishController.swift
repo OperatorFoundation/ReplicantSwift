@@ -155,15 +155,21 @@ public struct PolishController
         
         let privateKeyAttributes: [String: Any] = [
             kSecAttrIsPermanent as String: true,
-            kSecAttrApplicationTag as String: polishTag,
+            kSecAttrApplicationTag as String: polishTag
             //kSecAttrAccessControl as String: access
+        ]
+        
+        let publicKeyAttributes: [String: Any] = [
+            kSecAttrIsPermanent as String: true,
+            kSecAttrApplicationTag as String: polishTag
         ]
         
         let attributes: [String: Any] = [
             kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
             kSecAttrKeySizeInBits as String: 256,
             //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
-            kSecPrivateKeyAttrs as String: privateKeyAttributes
+            kSecPrivateKeyAttrs as String: privateKeyAttributes,
+            kSecPublicKeyAttrs as String: publicKeyAttributes
         ]
         
         return attributes as CFDictionary
@@ -176,15 +182,21 @@ public struct PolishController
         
         let privateKeyAttributes: [String: Any] = [
             kSecAttrIsPermanent as String: true,
-            kSecAttrApplicationTag as String: polishServerTag,
+            kSecAttrApplicationTag as String: polishServerTag
             //kSecAttrAccessControl as String: access
+        ]
+        
+        let publicKeyAttributes: [String: Any] = [
+            kSecAttrIsPermanent as String: true,
+            kSecAttrApplicationTag as String: polishServerTag
         ]
         
         let attributes: [String: Any] = [
             kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
             kSecAttrKeySizeInBits as String: 256,
             //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
-            kSecPrivateKeyAttrs as String: privateKeyAttributes
+            kSecPrivateKeyAttrs as String: privateKeyAttributes,
+            kSecPublicKeyAttrs as String: publicKeyAttributes
         ]
         
         return attributes as CFDictionary
