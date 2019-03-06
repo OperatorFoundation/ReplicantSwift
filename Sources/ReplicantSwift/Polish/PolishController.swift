@@ -49,15 +49,14 @@ public struct PolishController
     {
         // Generate private key
         var error: Unmanaged<CFError>?
-        //let attributes = self.generateKeyAttributesDictionary()
-        
+
         guard let privateKey = SecKeyCreateRandomKey(attributes, &error)
             else
         {
             logQueue.enqueue("\nUnable to generate the client private key: \(error!.takeRetainedValue() as Error)\n")
             return nil
         }
-        
+
         return privateKey
     }
     
@@ -69,21 +68,6 @@ public struct PolishController
             else
         {
             logQueue.enqueue("\nUnable to generate a public key from the provided private key.\n")
-            return nil
-        }
-        
-        return publicKey
-    }
-    
-    func generatePublicKey(usingPrivateKeyData privateKeyData: Data) -> SecKey?
-    {
-        var error: Unmanaged<CFError>?
-        let attributes = [kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom, kSecAttrKeyClass: kSecAttrKeyClassPrivate]
-        
-        guard let publicKey = SecKeyCreateWithData(privateKeyData as CFData, attributes as CFDictionary, &error)
-            else
-        {
-            logQueue.enqueue("\nUnable to generate a public key from the provided private key.\(String(describing: error))\n")
             return nil
         }
         
@@ -109,7 +93,6 @@ public struct PolishController
     
     func fetchOrCreateServerKeyPair() ->(privateKey: SecKey, publicKey: SecKey)?
     {
-        
         // Do we already have a key?
         var maybeItem: CFTypeRef?
         let status = SecItemCopyMatching(generateServerKeySearchQuery(), &maybeItem)
@@ -130,31 +113,10 @@ public struct PolishController
             
             let privateKey = item as! SecKey
             
-            // This is weirdly broken so we have to use data instead
-//            guard let publicKey = generatePublicKey(usingPrivateKey: privateKey)
-//            else
-//            {
-//                logQueue.enqueue("Unable to generate a public key uding the provided private key.")
-//                return nil
-//            }
-            
-            var error: Unmanaged<CFError>?
-            var newKeyData: Data
-            
-            // Encode key as data
-            guard let keyData = SecKeyCopyExternalRepresentation(privateKey, &error) as Data?
+            guard let publicKey = generatePublicKey(usingPrivateKey: privateKey)
                 else
             {
-                logQueue.enqueue("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
-                return nil
-            }
-            
-            newKeyData = keyData
-            
-            guard let publicKey = generatePublicKey(usingPrivateKeyData: newKeyData)
-                else
-            {
-                logQueue.enqueue("Unable to generate a public key using the provided private key data.")
+                logQueue.enqueue("Unable to generate a public key using the provided private key.")
                 return nil
             }
             
@@ -186,7 +148,7 @@ public struct PolishController
        
     }
     
-    func generateKeyAttributesDictionary() -> CFDictionary
+    func generateClientKeyAttributesDictionary() -> CFDictionary
     {
         //FIXME: Secure Enclave
         //let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleAlwaysThisDeviceOnly, .privateKeyUsage, nil)!

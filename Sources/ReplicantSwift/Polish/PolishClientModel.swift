@@ -27,7 +27,7 @@ public class PolishClientModel
             return nil
         }
 
-        guard let newKeyPair = controller.generateKeyPair(withAttributes: controller.generateKeyAttributesDictionary())
+        guard let newKeyPair = controller.generateKeyPair(withAttributes: controller.generateClientKeyAttributesDictionary())
             else
         {
             return nil

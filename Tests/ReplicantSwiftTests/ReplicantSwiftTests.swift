@@ -1,25 +1,35 @@
 import XCTest
 import Foundation
 import Datable
+import SwiftQueue
 
 @testable import ReplicantSwift
 
 final class ReplicantSwiftTests: XCTestCase
 {
     var polishClientModel: PolishClientModel!
-    let attributes: [String: Any] =
-        [kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
-         kSecAttrKeySizeInBits as String: 256,
-         kSecPrivateKeyAttrs as String: [kSecAttrIsPermanent as String: true,
-                                         kSecAttrApplicationTag as String: "com.example.keys.mykey".data(using: .utf8)!]
-    ]
-    
+    let logQueue = Queue<String>()
+    var polishController: PolishController!
+    var attributes: CFDictionary!
+//    let attributes: [String: Any] =
+//        [kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+//         kSecAttrKeySizeInBits as String: 256,
+//         kSecPrivateKeyAttrs as String: [kSecAttrIsPermanent as String: true,
+//                                         kSecAttrApplicationTag as String: "com.example.keys.mykey".data(using: .utf8)!]
+//    ]
+
     override func setUp()
     {
         super.setUp()
         
+        polishController = PolishController(logQueue: logQueue)
+        attributes = polishController.generateClientKeyAttributesDictionary()
+        
         // Generate private key
         var error: Unmanaged<CFError>?
+        
+        
+        
         guard let bobPrivate = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else
         {
             print(error!)
@@ -38,7 +48,7 @@ final class ReplicantSwiftTests: XCTestCase
             return
         }
         
-        guard let clientModel = PolishClientModel(serverPublicKeyData: keyData)
+        guard let clientModel = PolishClientModel(serverPublicKeyData: keyData, logQueue: logQueue)
         else
         {
             return
@@ -51,7 +61,7 @@ final class ReplicantSwiftTests: XCTestCase
     
     func testFetchOrCreateServerKey()
     {
-        let controller = PolishController()
+        let controller = PolishController(logQueue: logQueue)
         
         // Ask for the keypair and accept either the existing key or a new one
         guard let _ = controller.fetchOrCreateServerKeyPair()
@@ -108,6 +118,7 @@ final class ReplicantSwiftTests: XCTestCase
     
     func testGeneratePrivateUsingPublic()
     {
+        let attributes = polishController.generateClientKeyAttributesDictionary()
         guard let privateKey = polishClientModel.controller.generatePrivateKey(withAttributes: attributes as CFDictionary)
         else
         {
@@ -205,7 +216,7 @@ final class ReplicantSwiftTests: XCTestCase
         var error: Unmanaged<CFError>?
         
         // Generate private key
-        guard let bobPrivate = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else
+        guard let bobPrivate = SecKeyCreateRandomKey(attributes, &error) else
         {
             print(error!)
             XCTFail()
@@ -213,7 +224,8 @@ final class ReplicantSwiftTests: XCTestCase
         }
         
         // Generate public key
-        let bobPublic = SecKeyCopyPublicKey(bobPrivate)!
+        let bobPublic = polishController.generatePublicKey(usingPrivateKey: bobPrivate)!
+            //SecKeyCopyPublicKey(bobPrivate)!
         
         let plainText = Data(repeating: 0x0A, count: 4096)
         
@@ -238,7 +250,7 @@ final class ReplicantSwiftTests: XCTestCase
         }
         
         // Generate public key
-        let bobPublic = SecKeyCopyPublicKey(bobPrivate)!
+        let bobPublic = polishController.generatePublicKey(usingPrivateKey: bobPrivate)!
         
         let plainText = Data(repeating: 0x0A, count: 4096)
         guard let cipherText = polishClientModel.controller.encrypt(payload: plainText, usingPublicKey: bobPublic)
@@ -248,15 +260,15 @@ final class ReplicantSwiftTests: XCTestCase
             return
         }
         
-        guard let maybeDecoded = polishClientModel.controller.decrypt(payload: cipherText, usingPrivateKey: bobPrivate)
+        guard let maybeDecrypted = polishClientModel.controller.decrypt(payload: cipherText, usingPrivateKey: bobPrivate)
         else
         {
             XCTFail()
             return
         }
         
-        XCTAssertNotNil(maybeDecoded)
-        XCTAssertEqual(maybeDecoded, plainText)
+        XCTAssertNotNil(maybeDecrypted)
+        XCTAssertEqual(maybeDecrypted.bytes, plainText.bytes)
     }
     
     
