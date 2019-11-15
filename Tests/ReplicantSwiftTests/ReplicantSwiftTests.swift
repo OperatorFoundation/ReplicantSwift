@@ -7,9 +7,9 @@ import SwiftQueue
 
 final class ReplicantSwiftTests: XCTestCase
 {
-    var polishClientModel: PolishClientModel!
+    var polishClientModel: ChromeClientModel!
     let logQueue = Queue<String>()
-    var polishController: PolishController!
+    var polishController: ChromeController!
     var attributes: CFDictionary!
 //    let attributes: [String: Any] =
 //        [kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
@@ -22,7 +22,7 @@ final class ReplicantSwiftTests: XCTestCase
     {
         super.setUp()
         
-        polishController = PolishController(logQueue: logQueue)
+        polishController = ChromeController(logQueue: logQueue)
         attributes = polishController.generateClientKeyAttributesDictionary()
         
         // Generate private key
@@ -48,7 +48,7 @@ final class ReplicantSwiftTests: XCTestCase
             return
         }
         
-        guard let clientModel = PolishClientModel(serverPublicKeyData: keyData, logQueue: logQueue)
+        guard let clientModel = ChromeClientModel(serverPublicKeyData: keyData, logQueue: logQueue)
         else
         {
             return
@@ -61,7 +61,7 @@ final class ReplicantSwiftTests: XCTestCase
     
     func testFetchOrCreateServerKey()
     {
-        let controller = PolishController(logQueue: logQueue)
+        let controller = ChromeController(logQueue: logQueue)
         
         // Ask for the keypair and accept either the existing key or a new one
         guard let _ = controller.fetchOrCreateServerKeyPair()

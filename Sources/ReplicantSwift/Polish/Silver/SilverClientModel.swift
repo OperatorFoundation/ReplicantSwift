@@ -1,16 +1,16 @@
 //
-//  PolishClientModel.swift
+//  SilverClientModel.swift
 //  ReplicantSwift
 //
-//  Created by Adelita Schule on 12/18/18.
+//  Created by Mafalda on 11/14/19.
 //
 
 import Foundation
 import SwiftQueue
 
-public class PolishClientModel
+public class SilverClientModel
 {
-    public let controller: PolishController
+    public let controller: SilverController
     
     public var serverPublicKey: SecKey
     public var publicKey: SecKey
@@ -18,7 +18,7 @@ public class PolishClientModel
     
     public init?(serverPublicKeyData: Data, logQueue: Queue<String>)
     {
-        self.controller = PolishController(logQueue: logQueue)
+        self.controller = SilverController(logQueue: logQueue)
         controller.deleteClientKeys()
         
         guard let sPublicKey = controller.decodeKey(fromData: serverPublicKeyData)

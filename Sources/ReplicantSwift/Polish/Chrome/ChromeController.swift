@@ -7,11 +7,9 @@
 
 import Foundation
 import SwiftQueue
+import CryptoKit
 
-public let aesOverheadSize = 113
-public var keySize = 65
-
-public struct PolishController
+public struct ChromeController
 {
     let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
     let polishTag = "org.operatorfoundation.replicant.polish".data(using: .utf8)!
@@ -27,6 +25,7 @@ public struct PolishController
     /// Decode data to get public key. This only decodes key data that is NOT padded.
     public func decodeKey(fromData publicKeyData: Data) -> SecKey?
     {
+        // TODO: Use CryptoKit's CompactRepresentation Initializer
         var error: Unmanaged<CFError>?
         
         let options: [String: Any] = [kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
@@ -270,6 +269,13 @@ public struct PolishController
     public func decrypt(payload: Data, usingPrivateKey privateKey: SecKey) -> Data?
     {
         var error: Unmanaged<CFError>?
+        
+        guard SecKeyIsAlgorithmSupported(privateKey, .decrypt, algorithm)
+            else
+        {
+            print("Private key does not support \(algorithm) algorithm for decryption.")
+            return nil
+        }
         
         guard let decryptedText = SecKeyCreateDecryptedData(privateKey, algorithm, payload as CFData, &error) as Data?
             else

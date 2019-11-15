@@ -1,16 +1,16 @@
 //
-//  PolishServerModel.swift
+//  SilverServerModel.swift
 //  ReplicantSwift
 //
-//  Created by Adelita Schule on 12/18/18.
+//  Created by Mafalda on 11/14/19.
 //
 
 import Foundation
 import SwiftQueue
 
-public class PolishServerModel
+public class SilverServerModel
 {
-    public let controller: PolishController
+    public let controller: ChromeController
     
     public var clientPublicKey: SecKey?
     public var publicKey: SecKey
@@ -19,7 +19,7 @@ public class PolishServerModel
     
     public init?(clientPublicKeyData: Data? = nil, logQueue: Queue<String>)
     {
-        controller = PolishController(logQueue: logQueue)
+        controller = ChromeController(logQueue: logQueue)
         
         // The client's key if we get one on init
         if let publicKeyData = clientPublicKeyData

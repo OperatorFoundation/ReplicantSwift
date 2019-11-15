@@ -10,13 +10,13 @@ import SwiftQueue
 
 public struct ReplicantServerModel
 {
-    public var polish: PolishServerModel
+    public var polish: ChromeServerModel
     public var config: ReplicantServerConfig
     public var toneBurst: ToneBurst?
     
     public init?(withConfig config: ReplicantServerConfig, logQueue: Queue<String>)
     {
-        guard let polish = PolishServerModel(logQueue: logQueue)
+        guard let polish = ChromeServerModel(logQueue: logQueue)
             else
         {
             return nil
