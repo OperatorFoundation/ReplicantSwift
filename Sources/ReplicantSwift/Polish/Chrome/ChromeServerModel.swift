@@ -7,15 +7,21 @@
 
 import Foundation
 import SwiftQueue
+import CryptoKit
 
 public class ChromeServerModel
 {
     public let controller: ChromeController
     
-    public var clientPublicKey: SecKey?
-    public var publicKey: SecKey
-    public var privateKey: SecKey
+    let clientPublicEphemeralEncryptionKey: P256.KeyAgreement.PublicKey
+    let serverPrivateEncryptionKey: PrivateEncryptionKey
     
+    public init(publicEncryptionKeyData: Data, privateEncryption: PrivateEncryptionKey, logQueue: Queue<String>) throws
+    {
+        self.controller = ChromeController(logQueue: logQueue)
+        self.clientPublicEphemeralEncryptionKey = try P256.KeyAgreement.PublicKey(rawRepresentation: publicEncryptionKeyData)
+        self.serverPrivateEncryptionKey = privateEncryption
+    }
     
     public init?(clientPublicKeyData: Data? = nil, logQueue: Queue<String>)
     {
@@ -26,20 +32,19 @@ public class ChromeServerModel
         {
            if let cPublicKey = controller.decodeKey(fromData: publicKeyData)
            {
-                self.clientPublicKey = cPublicKey
+                self.clientPublicEphemeralEncryptionKey = cPublicKey
            }
         }
         
         // Check to see if the server already has a keypair first
         // If not, create one.
-        guard let newKeyPair = controller.fetchOrCreateServerKeyPair()
+        guard let newServerKey = controller.fetchOrCreateServerKeyPair()
             else
         {
             return nil
         }
         
-        self.privateKey = newKeyPair.privateKey
-        self.publicKey = newKeyPair.publicKey
+        self.serverPrivateEncryptionKey = newServerKey
     }
     
     deinit

@@ -11,6 +11,33 @@ import CryptoKit
 
 public struct ChromeController
 {
+    
+    public func generatePrivateKey() -> PrivateEncryptionKey?
+    {
+        if SecureEnclave.isAvailable
+        {
+            guard let privateEncryptionKey = try? SecureEnclave.P256.KeyAgreement.PrivateKey() else
+            {
+                return nil
+            }
+            
+            return .enclave(privateEncryptionKey)
+        }
+        else
+        {
+            return .noenclave(P256.KeyAgreement.PrivateKey())
+        }
+    }
+    
+    
+    
+    
+    
+    
+    
+    /// MARK: Old Polish Code
+    
+    
     let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
     let polishTag = "org.operatorfoundation.replicant.polish".data(using: .utf8)!
     let polishServerTag = "org.operatorfoundation.replicant.polishServer".data(using: .utf8)!
@@ -23,7 +50,7 @@ public struct ChromeController
     }
     
     /// Decode data to get public key. This only decodes key data that is NOT padded.
-    public func decodeKey(fromData publicKeyData: Data) -> SecKey?
+    public func decodeKey(fromData publicKeyData: Data) -> P256.KeyAgreement.PublicKey?
     {
         // TODO: Use CryptoKit's CompactRepresentation Initializer
         var error: Unmanaged<CFError>?
@@ -42,55 +69,7 @@ public struct ChromeController
         return decodedPublicKey
     }
     
-    /// This doesn't work with a key returned from the keychain.
-    /// Use generate with data instead.
-    public func generatePrivateKey(withAttributes attributes: CFDictionary) -> SecKey?
-    {
-        // Generate private key
-        var error: Unmanaged<CFError>?
-
-        guard let privateKey = SecKeyCreateRandomKey(attributes, &error)
-            else
-        {
-            logQueue.enqueue("\nUnable to generate the client private key: \(error!.takeRetainedValue() as Error)\n")
-            return nil
-        }
-
-        return privateKey
-    }
-    
-    /// This doesn't work with a key returned from the keychain.
-    /// Use generate with data instead.
-    func generatePublicKey(usingPrivateKey privateKey: SecKey) -> SecKey?
-    {
-        guard let publicKey = SecKeyCopyPublicKey(privateKey)
-            else
-        {
-            logQueue.enqueue("\nUnable to generate a public key from the provided private key.\n")
-            return nil
-        }
-        
-        return publicKey
-    }
-    
-    func generateKeyPair(withAttributes attributes: CFDictionary) -> (privateKey: SecKey, publicKey: SecKey)?
-    {
-        guard let privateKey = generatePrivateKey(withAttributes: attributes)
-            else
-        {
-            return nil
-        }
-        
-        guard let publicKey = generatePublicKey(usingPrivateKey: privateKey)
-            else
-        {
-            return nil
-        }
-        
-        return (privateKey, publicKey)
-    }
-    
-    func fetchOrCreateServerKeyPair() ->(privateKey: SecKey, publicKey: SecKey)?
+    func fetchOrCreateServerKeyPair() -> PrivateEncryptionKey?
     {
         // Do we already have a key?
         var maybeItem: CFTypeRef?
@@ -101,7 +80,7 @@ public struct ChromeController
         case errSecItemNotFound:
             // We don't?
             // Let's create some and return those
-            return generateKeyPair(withAttributes: generateServerKeyAttributesDictionary())
+            return newPrivateEncryptionKey()
         case errSecSuccess:
             guard let item = maybeItem
             else
@@ -110,16 +89,9 @@ public struct ChromeController
                 return nil
             }
             
-            let privateKey = item as! SecKey
+            let privateKey = item as! PrivateEncryptionKey
             
-            guard let publicKey = generatePublicKey(usingPrivateKey: privateKey)
-                else
-            {
-                logQueue.enqueue("Unable to generate a public key using the provided private key.")
-                return nil
-            }
-            
-            return (privateKey, publicKey)
+            return (privateKey)
             
         default:
             logQueue.enqueue("\nReceived an unexpacted response while checking for an existing server key: \(status)\n")
@@ -127,79 +99,97 @@ public struct ChromeController
         }
     }
     
+    func newPrivateEncryptionKey() -> PrivateEncryptionKey?
+    {
+        if SecureEnclave.isAvailable
+        {
+            guard let privateEncryptionKey = try? SecureEnclave.P256.KeyAgreement.PrivateKey() else
+            {
+                return nil
+            }
+            
+            return .enclave(privateEncryptionKey)
+        }
+        else
+        {
+            return .noenclave(P256.KeyAgreement.PrivateKey())
+        }
+    }
+    
+    // TODO: Delete Client Keys
     func deleteClientKeys()
     {
-        logQueue.enqueue("\nAttempted to delete key from secure enclave.")
-        //Remove client keys from secure enclave
-        let query: [String: Any] = [kSecClass as String: kSecClassKey,
-                                    kSecAttrApplicationTag as String: polishTag]
-        let deleteStatus = SecItemDelete(query as CFDictionary)
-        
-        switch deleteStatus
-        {
-        case errSecItemNotFound:
-            logQueue.enqueue("Could not find a client key to delete.\n")
-        case noErr:
-            logQueue.enqueue("Deleted client keys.\n")
-        default:
-            logQueue.enqueue("Unexpected status: \(deleteStatus.description)\n")
-        }
+//        logQueue.enqueue("\nAttempted to delete key from secure enclave.")
+//        //Remove client keys from secure enclave
+//        let query: [String: Any] = [kSecClass as String: kSecClassKey,
+//                                    kSecAttrApplicationTag as String: polishTag]
+//        let deleteStatus = SecItemDelete(query as CFDictionary)
+//
+//        switch deleteStatus
+//        {
+//        case errSecItemNotFound:
+//            logQueue.enqueue("Could not find a client key to delete.\n")
+//        case noErr:
+//            logQueue.enqueue("Deleted client keys.\n")
+//        default:
+//            logQueue.enqueue("Unexpected status: \(deleteStatus.description)\n")
+//        }
        
     }
     
-    func generateClientKeyAttributesDictionary() -> CFDictionary
-    {
-        //FIXME: Secure Enclave
-        //let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleAlwaysThisDeviceOnly, .privateKeyUsage, nil)!
-        
-        let privateKeyAttributes: [String: Any] = [
-            kSecAttrIsPermanent as String: true,
-            kSecAttrApplicationTag as String: polishTag
-            //kSecAttrAccessControl as String: access
-        ]
-        
-        let publicKeyAttributes: [String: Any] = [
-            kSecAttrIsPermanent as String: true,
-            kSecAttrApplicationTag as String: polishTag
-        ]
-        
-        let attributes: [String: Any] = [
-            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
-            kSecAttrKeySizeInBits as String: 256,
-            //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
-            kSecPrivateKeyAttrs as String: privateKeyAttributes,
-            kSecPublicKeyAttrs as String: publicKeyAttributes
-        ]
-        
-        return attributes as CFDictionary
-    }
+//    func generateClientKeyAttributesDictionary() -> CFDictionary
+//    {
+//        //FIXME: Secure Enclave
+//        //let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleAlwaysThisDeviceOnly, .privateKeyUsage, nil)!
+//
+//        let privateKeyAttributes: [String: Any] = [
+//            kSecAttrIsPermanent as String: true,
+//            kSecAttrApplicationTag as String: polishTag
+//            //kSecAttrAccessControl as String: access
+//        ]
+//
+//        let publicKeyAttributes: [String: Any] = [
+//            kSecAttrIsPermanent as String: true,
+//            kSecAttrApplicationTag as String: polishTag
+//        ]
+//
+//        let attributes: [String: Any] = [
+//            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+//            kSecAttrKeySizeInBits as String: 256,
+//            //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
+//            kSecPrivateKeyAttrs as String: privateKeyAttributes,
+//            kSecPublicKeyAttrs as String: publicKeyAttributes
+//        ]
+//
+//        return attributes as CFDictionary
+//    }
     
-    func generateServerKeyAttributesDictionary() -> CFDictionary
-    {
-        //FIXME: Secure Enclave
-        // let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleAlwaysThisDeviceOnly, .privateKeyUsage, nil)!
-        
-        let privateKeyAttributes: [String: Any] = [
-            kSecAttrIsPermanent as String: true,
-            kSecAttrApplicationTag as String: polishServerTag
-            //kSecAttrAccessControl as String: access
-        ]
-        
-        let publicKeyAttributes: [String: Any] = [
-            kSecAttrIsPermanent as String: true,
-            kSecAttrApplicationTag as String: polishServerTag
-        ]
-        
-        let attributes: [String: Any] = [
-            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
-            kSecAttrKeySizeInBits as String: 256,
-            //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
-            kSecPrivateKeyAttrs as String: privateKeyAttributes,
-            kSecPublicKeyAttrs as String: publicKeyAttributes
-        ]
-        
-        return attributes as CFDictionary
-    }
+//    func generateServerKeyAttributesDictionary() -> CFDictionary
+//    {
+//        //FIXME: Secure Enclave
+//        // let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleAlwaysThisDeviceOnly, .privateKeyUsage, nil)!
+//
+//        let privateKeyAttributes: [String: Any] = [
+//            kSecAttrIsPermanent as String: true,
+//            kSecAttrApplicationTag as String: polishServerTag
+//            //kSecAttrAccessControl as String: access
+//        ]
+//
+//        let publicKeyAttributes: [String: Any] = [
+//            kSecAttrIsPermanent as String: true,
+//            kSecAttrApplicationTag as String: polishServerTag
+//        ]
+//
+//        let attributes: [String: Any] = [
+//            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+//            kSecAttrKeySizeInBits as String: 256,
+//            //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
+//            kSecPrivateKeyAttrs as String: privateKeyAttributes,
+//            kSecPublicKeyAttrs as String: publicKeyAttributes
+//        ]
+//
+//        return attributes as CFDictionary
+//    }
     
     func generateServerKeySearchQuery() -> CFDictionary
     {
@@ -298,6 +288,37 @@ public struct ChromeController
         else
         {
             return nil
+        }
+    }
+}
+
+public enum PrivateEncryptionKey
+{
+    case enclave(SecureEnclave.P256.KeyAgreement.PrivateKey)
+    case noenclave(P256.KeyAgreement.PrivateKey)
+    
+    var publicKey: P256.KeyAgreement.PublicKey
+    {
+        get
+        {
+            switch(self)
+            {
+                case .enclave(let privateKey):
+                    return privateKey.publicKey
+                case .noenclave(let privateKey):
+                    return privateKey.publicKey
+            }
+        }
+    }
+    
+    func sharedSecretFromKeyAgreement(with publicEncryptionKey: P256.KeyAgreement.PublicKey) throws -> SharedSecret
+    {
+        switch(self)
+        {
+            case .enclave(let privateKey):
+                return try privateKey.sharedSecretFromKeyAgreement(with: publicEncryptionKey)
+            case .noenclave(let privateKey):
+                return try privateKey.sharedSecretFromKeyAgreement(with: publicEncryptionKey)
         }
     }
 }

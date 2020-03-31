@@ -13,8 +13,7 @@ public class ChromeClientModel
     public let controller: ChromeController
     
     public var serverPublicKey: SecKey
-    public var publicKey: SecKey
-    public var privateKey: SecKey
+    public var privateKey: PrivateEncryptionKey
     
     public init?(serverPublicKeyData: Data, logQueue: Queue<String>)
     {
@@ -27,15 +26,14 @@ public class ChromeClientModel
             return nil
         }
 
-        guard let newKeyPair = controller.generateKeyPair(withAttributes: controller.generateClientKeyAttributesDictionary())
-            else
+        guard let newPrivateKey = controller.newPrivateEncryptionKey()
+        else
         {
             return nil
         }
         
         self.serverPublicKey = sPublicKey
-        self.privateKey = newKeyPair.privateKey
-        self.publicKey = newKeyPair.publicKey
+        self.privateKey = newPrivateKey
     }
     
     deinit

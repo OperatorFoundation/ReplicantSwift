@@ -9,6 +9,7 @@ import Foundation
 import Datable
 import Transport
 import Network
+import Monolith
 
 /// Injects byte sequences into a stream of bytes
 public class MonotoneClient: Whalesong
@@ -19,6 +20,7 @@ extension MonotoneClient: ToneBurst
 {
     public func play(connection: Connection, completion: @escaping (Error?) -> Void)
     {
+        
         let sendState = generate()
         
         switch sendState
