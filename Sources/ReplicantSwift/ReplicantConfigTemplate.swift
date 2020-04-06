@@ -6,14 +6,16 @@
 //
 
 import Foundation
+import CryptoKit
 
 public struct ReplicantConfigTemplate: Codable
 {
+    public var salt: Data
     public var chunkSize: UInt16
     public var chunkTimeout: Int
     public var toneBurst: ToneBurstClientConfig?
-
-    public init?(chunkSize: UInt16, chunkTimeout: Int, toneBurst: ToneBurstClientConfig?)
+    
+    public init?(salt: Data, chunkSize: UInt16, chunkTimeout: Int, toneBurst: ToneBurstClientConfig?)
     {
         guard chunkSize >= keySize + aesOverheadSize
             else
@@ -21,6 +23,7 @@ public struct ReplicantConfigTemplate: Codable
             print("\nUnable to initialize ReplicantConfig: chunkSize (\(chunkSize)) cannot be smaller than keySize + aesOverheadSize (\(keySize + aesOverheadSize))\n")
             return nil
         }
+        self.salt = salt
         self.chunkSize = chunkSize
         self.chunkTimeout = chunkTimeout
         self.toneBurst = toneBurst
@@ -84,20 +87,14 @@ public struct ReplicantConfigTemplate: Codable
     ///      - path: The filepath where the new config file should be saved, this should included the desired file name.
     ///      - serverPublicKey: The public key for the Replicant server. This is required in order for the client to be able to communicate with the server.
     /// - Returns: A boolean indicating whether or not the config was created successfully
-    public func createConfig(atPath path: String, withServerKey serverPublicKey: SecKey) -> Bool
+    public func createConfig(atPath path: String, serverPublicKey: P256.KeyAgreement.PublicKey) -> Bool
     {
         let fileManager = FileManager()
-        var error: Unmanaged<CFError>?
         
         // Encode key as data
-        guard let keyData = SecKeyCopyExternalRepresentation(serverPublicKey, &error) as Data?
-            else
-        {
-            print("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
-            return false
-        }
-        
-        guard let replicantConfig = ReplicantConfig(serverPublicKey: keyData, chunkSize: self.chunkSize, chunkTimeout: self.chunkTimeout, toneBurst: toneBurst)
+        let keyData = serverPublicKey.x963Representation
+
+        guard let replicantConfig = ReplicantConfig(salt: self.salt, serverPublicKey: keyData, chunkSize: self.chunkSize, chunkTimeout: self.chunkTimeout, toneBurst: self.toneBurst)
         else
         {
             return false

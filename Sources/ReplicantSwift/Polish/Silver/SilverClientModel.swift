@@ -7,17 +7,20 @@
 
 import Foundation
 import SwiftQueue
+import CryptoKit
 
 public class SilverClientModel
 {
     public let controller: SilverController
+    public let salt: Data
     
-    public var serverPublicKey: SecKey
-    public var publicKey: SecKey
-    public var privateKey: SecKey
+    public var serverPublicKey: P256.KeyAgreement.PublicKey
+    public var publicKey: P256.KeyAgreement.PublicKey
+    public var privateKey: P256.KeyAgreement.PrivateKey
     
-    public init?(serverPublicKeyData: Data, logQueue: Queue<String>)
+    public init?(salt: Data, logQueue: Queue<String>, serverPublicKeyData: Data)
     {
+        self.salt = salt
         self.controller = SilverController(logQueue: logQueue)
         controller.deleteClientKeys()
         
@@ -27,15 +30,12 @@ public class SilverClientModel
             return nil
         }
 
-        guard let newKeyPair = controller.generateKeyPair(withAttributes: controller.generateClientKeyAttributesDictionary())
-            else
-        {
-            return nil
-        }
+        let clientPrivateKey = P256.KeyAgreement.PrivateKey()
+        let clientPublicKey = clientPrivateKey.publicKey
         
         self.serverPublicKey = sPublicKey
-        self.privateKey = newKeyPair.privateKey
-        self.publicKey = newKeyPair.publicKey
+        self.privateKey = clientPrivateKey
+        self.publicKey = clientPublicKey
     }
     
     deinit

@@ -7,19 +7,21 @@
 
 import Foundation
 import SwiftQueue
+import CryptoKit
 
 public class SilverServerModel
 {
-    public let controller: ChromeController
+    public let controller: SilverController
     
-    public var clientPublicKey: SecKey?
-    public var publicKey: SecKey
-    public var privateKey: SecKey
+    public let salt: Data
+    public var publicKey: P256.KeyAgreement.PublicKey
+    public var privateKey: P256.KeyAgreement.PrivateKey
+    public var clientPublicKey: P256.KeyAgreement.PublicKey?
     
-    
-    public init?(clientPublicKeyData: Data? = nil, logQueue: Queue<String>)
+    public init?(salt: Data, logQueue: Queue<String>, clientPublicKeyData: Data? = nil)
     {
-        controller = ChromeController(logQueue: logQueue)
+        self.salt = salt
+        self.controller = SilverController(logQueue: logQueue)
         
         // The client's key if we get one on init
         if let publicKeyData = clientPublicKeyData

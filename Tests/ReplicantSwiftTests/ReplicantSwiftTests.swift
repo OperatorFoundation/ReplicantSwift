@@ -1,15 +1,17 @@
 import XCTest
 import Foundation
+import CryptoKit
 import Datable
 import SwiftQueue
 
 @testable import ReplicantSwift
 
+
 final class ReplicantSwiftTests: XCTestCase
 {
-    var polishClientModel: ChromeClientModel!
+    var polishClientModel: SilverClientModel!
     let logQueue = Queue<String>()
-    var polishController: ChromeController!
+    var polishController: SilverController!
     var attributes: CFDictionary!
 //    let attributes: [String: Any] =
 //        [kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
@@ -22,33 +24,18 @@ final class ReplicantSwiftTests: XCTestCase
     {
         super.setUp()
         
-        polishController = ChromeController(logQueue: logQueue)
+        polishController = SilverController(logQueue: logQueue)
         attributes = polishController.generateClientKeyAttributesDictionary()
         
+        let salt = "Salt".data(using: .utf8)!
+        
         // Generate private key
-        var error: Unmanaged<CFError>?
-        
-        
-        
-        guard let bobPrivate = SecKeyCreateRandomKey(attributes as CFDictionary, &error) else
-        {
-            print(error!)
-            XCTFail()
-            return
-        }
-        
-        // Generate public key
-        let bobPublic = SecKeyCopyPublicKey(bobPrivate)!
-        
+        let bobPrivate = P256.KeyAgreement.PrivateKey()
+
         // Encode key as data
-        guard let keyData = SecKeyCopyExternalRepresentation(bobPublic, &error) as Data?
-            else
-        {
-            print("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
-            return
-        }
+        let keyData = bobPrivate.publicKey.x963Representation
         
-        guard let clientModel = ChromeClientModel(serverPublicKeyData: keyData, logQueue: logQueue)
+        guard let clientModel = SilverClientModel(salt: salt, logQueue: logQueue, serverPublicKeyData: keyData)
         else
         {
             return
@@ -61,7 +48,7 @@ final class ReplicantSwiftTests: XCTestCase
     
     func testFetchOrCreateServerKey()
     {
-        let controller = ChromeController(logQueue: logQueue)
+        let controller = SilverController(logQueue: logQueue)
         
         // Ask for the keypair and accept either the existing key or a new one
         guard let _ = controller.fetchOrCreateServerKeyPair()
@@ -72,14 +59,13 @@ final class ReplicantSwiftTests: XCTestCase
         }
         
         // Delete the existing key
-        let query: [String: Any] = [kSecClass as String: kSecClassKey,
-                                    kSecAttrApplicationTag as String: controller.polishServerTag]
+        let query = controller.generateServerKeySearchQuery(withLabel: controller.serverKeyLabel)
         let deleteStatus = SecItemDelete(query as CFDictionary)
         
         switch deleteStatus
         {
         case errSecItemNotFound:
-            print("Could not find a client key to delete.\n")
+            print("Could not find a server key to delete.\n")
             XCTFail()
             return
         case noErr:
@@ -99,7 +85,7 @@ final class ReplicantSwiftTests: XCTestCase
         }
         
         // Clean up, delete the existing key
-        let cleanUpStatus = SecItemDelete(query as CFDictionary)
+        let cleanUpStatus = SecItemDelete(query)
         
         switch cleanUpStatus
         {
@@ -116,61 +102,8 @@ final class ReplicantSwiftTests: XCTestCase
         }
     }
     
-    func testGeneratePrivateUsingPublic()
-    {
-        let attributes = polishController.generateClientKeyAttributesDictionary()
-        guard let privateKey = polishClientModel.controller.generatePrivateKey(withAttributes: attributes as CFDictionary)
-        else
-        {
-            XCTFail()
-            return
-        }
-        
-        let maybePuplicKey = polishClientModel.controller.generatePublicKey(usingPrivateKey: privateKey)
-        XCTAssertNotNil(maybePuplicKey)
-    }
-    
-    func testDecodeKeyFromData()
-    {
-        guard let privateKey = polishClientModel.controller.generatePrivateKey(withAttributes: attributes as CFDictionary)
-            else
-        {
-            XCTFail()
-            return
-        }
-        
-        guard let alicePuplicKey = polishClientModel.controller.generatePublicKey(usingPrivateKey: privateKey)
-        else
-        {
-            print("\nUnable to generate publicKeyData from private key.\n")
-            XCTFail()
-            return
-        }
-        
-        var error: Unmanaged<CFError>?
-        
-        // Encode public key as data
-        guard let keyData = SecKeyCopyExternalRepresentation(alicePuplicKey, &error) as Data?
-        else
-        {
-            XCTFail()
-            return
-        }
-        
-        guard let decodedKey = polishClientModel.controller.decodeKey(fromData: keyData)
-        else
-        {
-            XCTFail()
-            return
-        }
-        
-        XCTAssertTrue(compare(secKey1: decodedKey, secKey2: alicePuplicKey))
-    }
-    
     func testDecodeProvidedKey()
     {
-        
-        //
         
         let providedKeyString = "BMfps8ZfYYvIdU2eSNsbHJfYnFKGgtlTK3Osyqo/BHOP8Djzkxk03SHD8auOFhI4PxfrhSeIQ8q8JDNJOy+2ulQ="
         
@@ -211,56 +144,23 @@ final class ReplicantSwiftTests: XCTestCase
         }
     }
     
-    func testEncryptData()
-    {
-        var error: Unmanaged<CFError>?
-        
-        // Generate private key
-        guard let bobPrivate = SecKeyCreateRandomKey(attributes, &error) else
-        {
-            print(error!)
-            XCTFail()
-            return
-        }
-        
-        // Generate public key
-        let bobPublic = polishController.generatePublicKey(usingPrivateKey: bobPrivate)!
-            //SecKeyCopyPublicKey(bobPrivate)!
-        
-        let plainText = Data(repeating: 0x0A, count: 4096)
-        
-        // Encrypt Plain Text
-        let maybeCipherText = polishClientModel.controller.encrypt(payload: plainText, usingPublicKey: bobPublic)
-        
-        XCTAssertNotNil(maybeCipherText)
-        XCTAssertNotEqual(maybeCipherText!, plainText)
-    }
-    
     func testDecryptData()
     {
-        var error: Unmanaged<CFError>?
-        
-        // Generate private key
-        guard let bobPrivate = SecKeyCreateRandomKey(attributes as CFDictionary, &error)
-        else
-        {
-            print(error!)
-            XCTFail()
-            return
-        }
-        
-        // Generate public key
-        let bobPublic = polishController.generatePublicKey(usingPrivateKey: bobPrivate)!
-        
+        let salt = "Salt".data(using: .utf8)!
+        let senderPrivateKey = P256.KeyAgreement.PrivateKey()
+        let receiverPrivateKey = P256.KeyAgreement.PrivateKey()
         let plainText = Data(repeating: 0x0A, count: 4096)
-        guard let cipherText = polishClientModel.controller.encrypt(payload: plainText, usingPublicKey: bobPublic)
+        
+        
+
+        guard let cipherText = polishClientModel.controller.encrypt(payload: plainText, usingReceiverPublicKey: receiverPrivateKey.publicKey, senderPrivateKey: senderPrivateKey, andSalt: salt)
         else
         {
             XCTFail()
             return
         }
         
-        guard let maybeDecrypted = polishClientModel.controller.decrypt(payload: cipherText, usingPrivateKey: bobPrivate)
+        guard let maybeDecrypted = polishClientModel.controller.decrypt(payload: cipherText, usingReceiverPrivateKey: receiverPrivateKey, senderPublicKey: senderPrivateKey.publicKey, andSalt: salt)
         else
         {
             XCTFail()
@@ -271,9 +171,7 @@ final class ReplicantSwiftTests: XCTestCase
         XCTAssertEqual(maybeDecrypted.bytes, plainText.bytes)
     }
     
-    
     // MARK: ToneBurst
-    
     let sequence1 = Data(string: "OH HELLO")
     let sequence2 = Data(string: "You say hello, and I say goodbye.")
     let sequence3 = Data(string: "I don't know why you say 'Goodbye', I say 'Hello'.")

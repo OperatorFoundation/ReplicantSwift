@@ -5,13 +5,13 @@ import SwiftQueue
 
 public struct ReplicantClientModel
 {
-    public let polish: ChromeClientModel
+    public let polish: SilverClientModel
     public var config: ReplicantConfig
     public var toneBurst: ToneBurst?
     
     public init?(withConfig config: ReplicantConfig, logQueue: Queue<String>)
     {
-        guard let polish = ChromeClientModel(serverPublicKeyData: config.serverPublicKey, logQueue: logQueue)
+        guard let polish = SilverClientModel(salt: config.salt, logQueue: logQueue, serverPublicKeyData: config.serverPublicKey)
         else
         {
             return nil

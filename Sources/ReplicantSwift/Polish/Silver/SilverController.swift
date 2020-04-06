@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftQueue
+import CryptoKit
 
 public let aesOverheadSize = 113
 public var keySize = 65
@@ -16,6 +17,7 @@ public struct SilverController
     let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
     let polishTag = "org.operatorfoundation.replicant.polish".data(using: .utf8)!
     let polishServerTag = "org.operatorfoundation.replicant.polishServer".data(using: .utf8)!
+    let serverKeyLabel = "ServerKey"
     
     var logQueue: Queue<String>
     
@@ -25,107 +27,118 @@ public struct SilverController
     }
     
     /// Decode data to get public key. This only decodes key data that is NOT padded.
-    public func decodeKey(fromData publicKeyData: Data) -> SecKey?
+    public func decodeKey(fromData publicKeyData: Data) -> P256.KeyAgreement.PublicKey?
     {
-        var error: Unmanaged<CFError>?
-        
-        let options: [String: Any] = [kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
-                                      kSecAttrKeyClass as String: kSecAttrKeyClassPublic,
-                                      kSecAttrKeySizeInBits as String: 256]
-        
-        guard let decodedPublicKey = SecKeyCreateWithData(publicKeyData as CFData, options as CFDictionary, &error)
-            else
-        {
-            logQueue.enqueue("\nUnable to decode server public key: \(error!.takeRetainedValue() as Error)\n")
-            return nil
-        }
-        
-        return decodedPublicKey
+        return try? P256.KeyAgreement.PublicKey(x963Representation: publicKeyData)
     }
     
-    /// This doesn't work with a key returned from the keychain.
-    /// Use generate with data instead.
-    public func generatePrivateKey(withAttributes attributes: CFDictionary) -> SecKey?
-    {
-        // Generate private key
-        var error: Unmanaged<CFError>?
-
-        guard let privateKey = SecKeyCreateRandomKey(attributes, &error)
-            else
-        {
-            logQueue.enqueue("\nUnable to generate the client private key: \(error!.takeRetainedValue() as Error)\n")
-            return nil
-        }
-
-        return privateKey
-    }
-    
-    /// This doesn't work with a key returned from the keychain.
-    /// Use generate with data instead.
-    func generatePublicKey(usingPrivateKey privateKey: SecKey) -> SecKey?
-    {
-        guard let publicKey = SecKeyCopyPublicKey(privateKey)
-            else
-        {
-            logQueue.enqueue("\nUnable to generate a public key from the provided private key.\n")
-            return nil
-        }
-        
-        return publicKey
-    }
-    
-    func generateKeyPair(withAttributes attributes: CFDictionary) -> (privateKey: SecKey, publicKey: SecKey)?
-    {
-        guard let privateKey = generatePrivateKey(withAttributes: attributes)
-            else
-        {
-            return nil
-        }
-        
-        guard let publicKey = generatePublicKey(usingPrivateKey: privateKey)
-            else
-        {
-            return nil
-        }
-        
-        return (privateKey, publicKey)
-    }
-    
-    func fetchOrCreateServerKeyPair() ->(privateKey: SecKey, publicKey: SecKey)?
+    func fetchOrCreateServerKeyPair() ->(privateKey: P256.KeyAgreement.PrivateKey, publicKey: P256.KeyAgreement.PublicKey)?
     {
         // Do we already have a key?
-        var maybeItem: CFTypeRef?
-        let status = SecItemCopyMatching(generateServerKeySearchQuery(), &maybeItem)
-        
-        switch status
+        let searchQuery = generateServerKeySearchQuery(withLabel: serverKeyLabel)
+        if let key = retreiveKey(query: searchQuery)
         {
-        case errSecItemNotFound:
-            // We don't?
-            // Let's create some and return those
-            return generateKeyPair(withAttributes: generateServerKeyAttributesDictionary())
-        case errSecSuccess:
-            guard let item = maybeItem
-            else
-            {
-                logQueue.enqueue("\nKey query returned a nil item.\n")
-                return nil
-            }
-            
-            let privateKey = item as! SecKey
-            
-            guard let publicKey = generatePublicKey(usingPrivateKey: privateKey)
-                else
-            {
-                logQueue.enqueue("Unable to generate a public key using the provided private key.")
-                return nil
-            }
-            
-            return (privateKey, publicKey)
-            
-        default:
-            logQueue.enqueue("\nReceived an unexpacted response while checking for an existing server key: \(status)\n")
+            return (key, key.publicKey)
+        }
+        
+        // We don't?
+        // Let's create some and return those
+        let privateKey = P256.KeyAgreement.PrivateKey()
+        
+        // Save the key we stored
+        let stored = storeKey(privateKey, label: serverKeyLabel)
+        if !stored
+        {
+            print("😱 Failed to store our new server key.")
             return nil
         }
+        return (privateKey, privateKey.publicKey)
+    }
+    
+    func retreiveKey(query: CFDictionary) -> P256.KeyAgreement.PrivateKey?
+    {
+//        // Seek an elliptic-curve key with a given label.
+//        let query = [kSecClass: kSecClassKey,
+//                     kSecAttrApplicationLabel: label,
+//                     kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom,
+//                     kSecUseDataProtectionKeychain: true,
+//                     kSecReturnRef: true] as [String: Any]
+
+        // Find and cast the result as a SecKey instance.
+        var item: CFTypeRef?
+        var secKey: SecKey
+        switch SecItemCopyMatching(query as CFDictionary, &item) {
+        case errSecSuccess: secKey = item as! SecKey
+        case errSecItemNotFound: return nil
+        case let status:
+            print("Keychain read failed: \(status.string)")
+            return nil
+        }
+        
+        // Convert the SecKey into a CryptoKit key.
+        var error: Unmanaged<CFError>?
+        guard let data = SecKeyCopyExternalRepresentation(secKey, &error) as Data?
+        else
+        {
+            print(error.debugDescription)
+            return nil
+        }
+        
+        do {
+            let key = try P256.KeyAgreement.PrivateKey(x963Representation: data)
+            return key
+        }
+        catch let keyError
+        {
+            print("Error decoding key: \(keyError)")
+            return nil
+        }
+    }
+    
+    func storeKey(_ key: P256.KeyAgreement.PrivateKey, label: String) -> Bool
+    {
+        
+        let attributes = [kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom,
+                          kSecAttrKeyClass: kSecAttrKeyClassPrivate] as [String: Any]
+
+        // Get a SecKey representation.
+        var error: Unmanaged<CFError>?
+        let keyData = key.x963Representation as CFData
+        guard let secKey = SecKeyCreateWithData(keyData,
+                                                attributes as CFDictionary,
+                                                &error)
+            else
+        {
+            print("Unable to create SecKey representation.")
+            if let secKeyError = error
+            {
+                print(secKeyError)
+            }
+            return false
+        }
+        
+        // Describe the add operation.
+        let query = [kSecClass: kSecClassKey,
+                     kSecAttrApplicationLabel: label,
+                     kSecAttrAccessible: kSecAttrAccessibleWhenUnlocked,
+                     kSecUseDataProtectionKeychain: true,
+                     kSecValueRef: secKey] as [String: Any]
+
+        // Add the key to the keychain.
+        let status = SecItemAdd(query as CFDictionary, nil)
+        
+        switch status {
+        case errSecSuccess:
+            return true
+        default:
+            if let statusString = SecCopyErrorMessageString(status, nil)
+            {
+                print("Unable to store item: \(statusString)")
+            }
+            
+            return false
+        }
+
     }
     
     func deleteClientKeys()
@@ -145,7 +158,6 @@ public struct SilverController
         default:
             logQueue.enqueue("Unexpected status: \(deleteStatus.description)\n")
         }
-       
     }
     
     func generateClientKeyAttributesDictionary() -> CFDictionary
@@ -192,6 +204,7 @@ public struct SilverController
         ]
         
         let attributes: [String: Any] = [
+            kSecClass as String: kSecClassKey,
             kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
             kSecAttrKeySizeInBits as String: 256,
             //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
@@ -202,9 +215,10 @@ public struct SilverController
         return attributes as CFDictionary
     }
     
-    func generateServerKeySearchQuery() -> CFDictionary
+    func generateServerKeySearchQuery(withLabel label: String) -> CFDictionary
     {
         let query: [String: Any] = [kSecClass as String: kSecClassKey,
+                                    kSecAttrApplicationLabel as String: label,
                                     kSecAttrApplicationTag as String: polishServerTag,
                                     kSecMatchLimit as String: kSecMatchLimitOne,
                                     kSecReturnRef as String: true,
@@ -215,31 +229,21 @@ public struct SilverController
     }
     
     /// This is the format needed to send the key to the server.
-    public func generateAndEncryptPaddedKeyData(fromKey key: SecKey, withChunkSize chunkSize: UInt16, usingServerKey serverKey: SecKey) -> Data?
+    public func generateAndEncryptPaddedKeyData(fromPublicKey publicKey: P256.KeyAgreement.PublicKey, chunkSize: UInt16, privateKey: P256.KeyAgreement.PrivateKey, serverPublicKey: P256.KeyAgreement.PublicKey, salt: Data) -> ChaChaPoly.SealedBox?
     {
-        var error: Unmanaged<CFError>?
-        var newKeyData: Data
-
         // Encode key as data
-        guard let keyData = SecKeyCopyExternalRepresentation(key, &error) as Data?
-            else
-        {
-            logQueue.enqueue("\nUnable to generate public key external representation: \(error!.takeRetainedValue() as Error)\n")
-            return nil
-        }
-
-        newKeyData = keyData
+        var newKeyData = publicKey.x963Representation
         keySize = newKeyData.count
         
         // Add padding if needed
         if let padding = getKeyPadding(chunkSize: chunkSize, keySize: keySize)
         {
-            newKeyData = keyData + padding
+            newKeyData += padding
         }
         
         // Encrypt the key
-        guard let encryptedKeyData = encrypt(payload: newKeyData, usingPublicKey: serverKey)
-            else
+        guard let encryptedKeyData = encrypt(payload: newKeyData, usingReceiverPublicKey: serverPublicKey, senderPrivateKey: privateKey, andSalt: salt)
+        else
         {
             return nil
         }
@@ -250,42 +254,58 @@ public struct SilverController
     //MARK: Encryption
     
     /// Encrypt payload
-    public func encrypt(payload: Data, usingPublicKey publicKey: SecKey) -> Data?
+    public func encrypt(payload: Data, usingReceiverPublicKey receiverPublicKey: P256.KeyAgreement.PublicKey, senderPrivateKey:P256.KeyAgreement.PrivateKey, andSalt salt: Data) -> ChaChaPoly.SealedBox?
     {
-        var error: Unmanaged<CFError>?
-        
-        guard let cipherText = SecKeyCreateEncryptedData(publicKey, algorithm, payload as CFData, &error) as Data?
-            else
+        do
         {
-            logQueue.enqueue("\nUnable to encrypt payload: \(error!.takeRetainedValue() as Error)\n")
+            let sharedSecret = try senderPrivateKey.sharedSecretFromKeyAgreement(with: receiverPublicKey)
+            let symmetricKey = sharedSecret.hkdfDerivedSymmetricKey(using: SHA256.self, salt: salt, sharedInfo: Data(), outputByteCount: 32)
+            
+            do
+            {
+                let cipherText = try ChaChaPoly.seal(payload, using: symmetricKey)
+                return cipherText
+            }
+            catch let cipherError
+            {
+                print("Error encrypting payload: \(cipherError)")
+                return nil
+            }
+        }
+        catch let sharedSecretError
+        {
+            print("Unable to encrypt payload. Failed to generate a shared secret: \(sharedSecretError)")
             return nil
         }
-        
-        return cipherText
     }
     
     /// Decrypt payload
     /// - Parameter payload: Data
     /// - Parameter privateKey: SecKey
-    public func decrypt(payload: Data, usingPrivateKey privateKey: SecKey) -> Data?
+    public func decrypt(payload: ChaChaPoly.SealedBox, usingReceiverPrivateKey receiverPrivateKey: P256.KeyAgreement.PrivateKey, senderPublicKey: P256.KeyAgreement.PublicKey, andSalt salt: Data) -> Data?
     {
-        var error: Unmanaged<CFError>?
-        
-        guard SecKeyIsAlgorithmSupported(privateKey, .decrypt, algorithm)
-            else
+        do
         {
-            print("Private key does not support \(algorithm) algorithm for decryption.")
+            let sharedSecret = try receiverPrivateKey.sharedSecretFromKeyAgreement(with: senderPublicKey)
+            let symmetricKey = sharedSecret.hkdfDerivedSymmetricKey(using: SHA256.self, salt: salt, sharedInfo: Data(), outputByteCount: 32)
+            
+            do
+            {
+                let decryptedMessage = try ChaChaPoly.open(payload, using: symmetricKey)
+                return decryptedMessage
+            }
+            catch let decryptionError
+            {
+                print("Error decrypting payload: \(decryptionError)")
+            }
+        }
+        catch let sharedSecretError
+        {
+            print("Unable to decrypt payload. Error generating shared secret: \(sharedSecretError)")
             return nil
         }
         
-        guard let decryptedText = SecKeyCreateDecryptedData(privateKey, algorithm, payload as CFData, &error) as Data?
-            else
-        {
-            logQueue.enqueue("\nUnable to decrypt payload: \(error!.takeRetainedValue() as Error)\n")
-            return nil
-        }
-        
-        return decryptedText
+        return nil
     }
     
     func getKeyPadding(chunkSize: UInt16, keySize: Int) -> Data?
@@ -300,5 +320,20 @@ public struct SilverController
         {
             return nil
         }
+    }
+    
+}
+
+protocol SecKeyConvertible: CustomStringConvertible {
+    /// Creates a key from an X9.63 representation.
+    init<Bytes>(x963Representation: Bytes) throws where Bytes: ContiguousBytes
+    
+    /// An X9.63 representation of the key.
+    var x963Representation: Data { get }
+}
+
+extension P256.KeyAgreement.PrivateKey: SecKeyConvertible {
+    public var description: String {
+        return "P256 Key"
     }
 }
