@@ -12,15 +12,13 @@ import CryptoKit
 public class SilverClientModel
 {
     public let controller: SilverController
-    public let salt: Data
     
     public var serverPublicKey: P256.KeyAgreement.PublicKey
     public var publicKey: P256.KeyAgreement.PublicKey
     public var privateKey: P256.KeyAgreement.PrivateKey
     
-    public init?(salt: Data, logQueue: Queue<String>, serverPublicKeyData: Data)
+    public init?(logQueue: Queue<String>, serverPublicKeyData: Data)
     {
-        self.salt = salt
         self.controller = SilverController(logQueue: logQueue)
         controller.deleteClientKeys()
         

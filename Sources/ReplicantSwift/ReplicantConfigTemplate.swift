@@ -10,12 +10,11 @@ import CryptoKit
 
 public struct ReplicantConfigTemplate: Codable
 {
-    public var salt: Data
     public var chunkSize: UInt16
     public var chunkTimeout: Int
     public var toneBurst: ToneBurstClientConfig?
     
-    public init?(salt: Data, chunkSize: UInt16, chunkTimeout: Int, toneBurst: ToneBurstClientConfig?)
+    public init?(chunkSize: UInt16, chunkTimeout: Int, toneBurst: ToneBurstClientConfig?)
     {
         guard chunkSize >= keySize + aesOverheadSize
             else
@@ -23,7 +22,7 @@ public struct ReplicantConfigTemplate: Codable
             print("\nUnable to initialize ReplicantConfig: chunkSize (\(chunkSize)) cannot be smaller than keySize + aesOverheadSize (\(keySize + aesOverheadSize))\n")
             return nil
         }
-        self.salt = salt
+
         self.chunkSize = chunkSize
         self.chunkTimeout = chunkTimeout
         self.toneBurst = toneBurst
@@ -94,7 +93,7 @@ public struct ReplicantConfigTemplate: Codable
         // Encode key as data
         let keyData = serverPublicKey.x963Representation
 
-        guard let replicantConfig = ReplicantConfig(salt: self.salt, serverPublicKey: keyData, chunkSize: self.chunkSize, chunkTimeout: self.chunkTimeout, toneBurst: self.toneBurst)
+        guard let replicantConfig = ReplicantConfig(serverPublicKey: keyData, chunkSize: self.chunkSize, chunkTimeout: self.chunkTimeout, toneBurst: self.toneBurst)
         else
         {
             return false

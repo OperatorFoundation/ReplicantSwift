@@ -11,7 +11,7 @@ public struct ReplicantClientModel
     
     public init?(withConfig config: ReplicantConfig, logQueue: Queue<String>)
     {
-        guard let polish = SilverClientModel(salt: config.salt, logQueue: logQueue, serverPublicKeyData: config.serverPublicKey)
+        guard let polish = SilverClientModel(logQueue: logQueue, serverPublicKeyData: config.serverPublicKey)
         else
         {
             return nil

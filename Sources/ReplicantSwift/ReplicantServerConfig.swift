@@ -9,12 +9,11 @@ import Foundation
 
 public struct ReplicantServerConfig: Codable
 {
-    public let salt: Data
     public var chunkSize: UInt16
     public var chunkTimeout: Int
     public var toneBurst: ToneBurstServerConfig?
     
-    public init?(salt: Data, chunkSize: UInt16, chunkTimeout: Int, toneBurst: ToneBurstServerConfig?)
+    public init?(chunkSize: UInt16, chunkTimeout: Int, toneBurst: ToneBurstServerConfig?)
     {
         guard chunkSize >= keySize + aesOverheadSize
             else
@@ -22,7 +21,7 @@ public struct ReplicantServerConfig: Codable
             print("\nUnable to initialize ReplicantConfig: chunkSize (\(chunkSize)) cannot be smaller than keySize + aesOverheadSize (\(keySize + aesOverheadSize))\n")
             return nil
         }
-        self.salt = salt
+
         self.chunkSize = chunkSize
         self.chunkTimeout = chunkTimeout
         self.toneBurst = toneBurst

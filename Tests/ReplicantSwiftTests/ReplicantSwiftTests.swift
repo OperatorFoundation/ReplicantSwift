@@ -26,16 +26,14 @@ final class ReplicantSwiftTests: XCTestCase
         
         polishController = SilverController(logQueue: logQueue)
         attributes = polishController.generateClientKeyAttributesDictionary()
-        
-        let salt = "Salt".data(using: .utf8)!
-        
+                
         // Generate private key
         let bobPrivate = P256.KeyAgreement.PrivateKey()
 
         // Encode key as data
         let keyData = bobPrivate.publicKey.x963Representation
         
-        guard let clientModel = SilverClientModel(salt: salt, logQueue: logQueue, serverPublicKeyData: keyData)
+        guard let clientModel = SilverClientModel(logQueue: logQueue, serverPublicKeyData: keyData)
         else
         {
             return
@@ -146,21 +144,18 @@ final class ReplicantSwiftTests: XCTestCase
     
     func testDecryptData()
     {
-        let salt = "Salt".data(using: .utf8)!
         let senderPrivateKey = P256.KeyAgreement.PrivateKey()
         let receiverPrivateKey = P256.KeyAgreement.PrivateKey()
         let plainText = Data(repeating: 0x0A, count: 4096)
-        
-        
 
-        guard let cipherText = polishClientModel.controller.encrypt(payload: plainText, usingReceiverPublicKey: receiverPrivateKey.publicKey, senderPrivateKey: senderPrivateKey, andSalt: salt)
+        guard let cipherText = polishClientModel.controller.encrypt(payload: plainText, usingReceiverPublicKey: receiverPrivateKey.publicKey, senderPrivateKey: senderPrivateKey)
         else
         {
             XCTFail()
             return
         }
         
-        guard let maybeDecrypted = polishClientModel.controller.decrypt(payload: cipherText, usingReceiverPrivateKey: receiverPrivateKey, senderPublicKey: senderPrivateKey.publicKey, andSalt: salt)
+        guard let maybeDecrypted = polishClientModel.controller.decrypt(payload: cipherText, usingReceiverPrivateKey: receiverPrivateKey, senderPublicKey: senderPrivateKey.publicKey)
         else
         {
             XCTFail()

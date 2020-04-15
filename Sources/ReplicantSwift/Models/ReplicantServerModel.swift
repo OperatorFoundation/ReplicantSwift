@@ -16,7 +16,7 @@ public struct ReplicantServerModel
     
     public init?(withConfig config: ReplicantServerConfig, logQueue: Queue<String>)
     {
-        guard let polish = SilverServerModel(salt: config.salt, logQueue: logQueue)
+        guard let polish = SilverServerModel(logQueue: logQueue)
         else
         {
             return nil

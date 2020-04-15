@@ -13,14 +13,12 @@ public class SilverServerModel
 {
     public let controller: SilverController
     
-    public let salt: Data
     public var publicKey: P256.KeyAgreement.PublicKey
     public var privateKey: P256.KeyAgreement.PrivateKey
     public var clientPublicKey: P256.KeyAgreement.PublicKey?
     
-    public init?(salt: Data, logQueue: Queue<String>, clientPublicKeyData: Data? = nil)
+    public init?(logQueue: Queue<String>, clientPublicKeyData: Data? = nil)
     {
-        self.salt = salt
         self.controller = SilverController(logQueue: logQueue)
         
         // The client's key if we get one on init

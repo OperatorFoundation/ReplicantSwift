@@ -12,7 +12,6 @@ public class ReplicantConfig: NSObject, Codable, NSSecureCoding
     let replicantConfigKey = "ReplicantConfig"
     public static var supportsSecureCoding: Bool = true
     
-    public let salt: Data
     public var serverPublicKey: Data
     public var chunkSize: UInt16
     public var chunkTimeout: Int
@@ -33,7 +32,7 @@ public class ReplicantConfig: NSObject, Codable, NSSecureCoding
                 print("\nUnable to initialize ReplicantConfig: chunkSize (\(obj.chunkSize)) cannot be smaller than keySize + aesOverheadSize (\(keySize + aesOverheadSize))\n")
                 return nil
             }
-            self.salt = obj.salt
+
             self.serverPublicKey = obj.serverPublicKey
             self.chunkSize = obj.chunkSize
             self.chunkTimeout = obj.chunkTimeout
@@ -45,7 +44,7 @@ public class ReplicantConfig: NSObject, Codable, NSSecureCoding
         }
     }
     
-    public init?(salt: Data, serverPublicKey: Data, chunkSize: UInt16, chunkTimeout: Int, toneBurst: ToneBurstClientConfig?)
+    public init?(serverPublicKey: Data, chunkSize: UInt16, chunkTimeout: Int, toneBurst: ToneBurstClientConfig?)
     {
         guard chunkSize >= keySize + aesOverheadSize
             else
@@ -53,7 +52,7 @@ public class ReplicantConfig: NSObject, Codable, NSSecureCoding
             print("\nUnable to initialize ReplicantConfig: chunkSize (\(chunkSize)) cannot be smaller than keySize + aesOverheadSize (\(keySize + aesOverheadSize))\n")
             return nil
         }
-        self.salt = salt
+
         self.serverPublicKey = serverPublicKey
         self.chunkSize = chunkSize
         self.chunkTimeout = chunkTimeout
@@ -68,7 +67,7 @@ public class ReplicantConfig: NSObject, Codable, NSSecureCoding
             return nil
         }
         
-        self.init(salt: config.salt, serverPublicKey: config.serverPublicKey,
+        self.init(serverPublicKey: config.serverPublicKey,
                   chunkSize: config.chunkSize,
                   chunkTimeout: config.chunkTimeout,
                   toneBurst: config.toneBurst)

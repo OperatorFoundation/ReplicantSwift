@@ -229,7 +229,7 @@ public struct SilverController
     }
     
     /// This is the format needed to send the key to the server.
-    public func generateAndEncryptPaddedKeyData(fromPublicKey publicKey: P256.KeyAgreement.PublicKey, chunkSize: UInt16, privateKey: P256.KeyAgreement.PrivateKey, serverPublicKey: P256.KeyAgreement.PublicKey, salt: Data) -> ChaChaPoly.SealedBox?
+    public func generateAndEncryptPaddedKeyData(fromPublicKey publicKey: P256.KeyAgreement.PublicKey, chunkSize: UInt16, privateKey: P256.KeyAgreement.PrivateKey, serverPublicKey: P256.KeyAgreement.PublicKey) -> ChaChaPoly.SealedBox?
     {
         // Encode key as data
         var newKeyData = publicKey.x963Representation
@@ -242,7 +242,7 @@ public struct SilverController
         }
         
         // Encrypt the key
-        guard let encryptedKeyData = encrypt(payload: newKeyData, usingReceiverPublicKey: serverPublicKey, senderPrivateKey: privateKey, andSalt: salt)
+        guard let encryptedKeyData = encrypt(payload: newKeyData, usingReceiverPublicKey: serverPublicKey, senderPrivateKey: privateKey)
         else
         {
             return nil
@@ -254,12 +254,12 @@ public struct SilverController
     //MARK: Encryption
     
     /// Encrypt payload
-    public func encrypt(payload: Data, usingReceiverPublicKey receiverPublicKey: P256.KeyAgreement.PublicKey, senderPrivateKey:P256.KeyAgreement.PrivateKey, andSalt salt: Data) -> ChaChaPoly.SealedBox?
+    public func encrypt(payload: Data, usingReceiverPublicKey receiverPublicKey: P256.KeyAgreement.PublicKey, senderPrivateKey:P256.KeyAgreement.PrivateKey) -> ChaChaPoly.SealedBox?
     {
         do
         {
             let sharedSecret = try senderPrivateKey.sharedSecretFromKeyAgreement(with: receiverPublicKey)
-            let symmetricKey = sharedSecret.hkdfDerivedSymmetricKey(using: SHA256.self, salt: salt, sharedInfo: Data(), outputByteCount: 32)
+            let symmetricKey = sharedSecret.x963DerivedSymmetricKey(using: SHA256.self, sharedInfo: Data(), outputByteCount: 32)
             
             do
             {
@@ -282,12 +282,12 @@ public struct SilverController
     /// Decrypt payload
     /// - Parameter payload: Data
     /// - Parameter privateKey: SecKey
-    public func decrypt(payload: ChaChaPoly.SealedBox, usingReceiverPrivateKey receiverPrivateKey: P256.KeyAgreement.PrivateKey, senderPublicKey: P256.KeyAgreement.PublicKey, andSalt salt: Data) -> Data?
+    public func decrypt(payload: ChaChaPoly.SealedBox, usingReceiverPrivateKey receiverPrivateKey: P256.KeyAgreement.PrivateKey, senderPublicKey: P256.KeyAgreement.PublicKey) -> Data?
     {
         do
         {
             let sharedSecret = try receiverPrivateKey.sharedSecretFromKeyAgreement(with: senderPublicKey)
-            let symmetricKey = sharedSecret.hkdfDerivedSymmetricKey(using: SHA256.self, salt: salt, sharedInfo: Data(), outputByteCount: 32)
+            let symmetricKey = sharedSecret.x963DerivedSymmetricKey(using: SHA256.self, sharedInfo: Data(), outputByteCount: 32)
             
             do
             {
