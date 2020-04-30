@@ -5,25 +5,31 @@ import SwiftQueue
 
 public struct ReplicantClientModel
 {
-    public let polish: SilverClientModel
-    public var config: ReplicantConfig
-    public var toneBurst: ToneBurst?
+    public let config: ReplicantConfig
+    public let polish: PolishConnection?
+    public let toneBurst: ToneBurst?
     
-    public init?(withConfig config: ReplicantConfig, logQueue: Queue<String>)
+    public init(withConfig config: ReplicantConfig, logQueue: Queue<String>)
     {
-        guard let polish = SilverClientModel(logQueue: logQueue, serverPublicKeyData: config.serverPublicKey)
+        self.config = config
+        
+        if let polishConfig = config.polish
+        {
+            self.polish = polishConfig.construct(logQueue: logQueue)
+        }
         else
         {
-            return nil
+            self.polish = nil
         }
         
         if let toneBurst = config.toneBurst
         {
             self.toneBurst = toneBurst.getToneBurst()
         }
-        
-        self.config = config
-        self.polish = polish
+        else
+        {
+            self.toneBurst = nil
+        }
     }
 }
 

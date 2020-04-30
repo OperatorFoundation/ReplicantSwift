@@ -9,7 +9,7 @@ import SwiftQueue
 
 final class ReplicantSwiftTests: XCTestCase
 {
-    var polishClientModel: SilverClientModel!
+    var polishClientModel: SilverPolishConnection!
     let logQueue = Queue<String>()
     var polishController: SilverController!
     var attributes: CFDictionary!
@@ -33,13 +33,24 @@ final class ReplicantSwiftTests: XCTestCase
         // Encode key as data
         let keyData = bobPrivate.publicKey.x963Representation
         
-        guard let clientModel = SilverClientModel(logQueue: logQueue, serverPublicKeyData: keyData)
+        guard let clientModel = SilverPolishConnection(logQueue: logQueue, serverPublicKeyData: keyData)
         else
         {
             return
         }
         
         polishClientModel = clientModel
+    }
+    
+    func testConfigFromJson()
+    {
+        let path = ""
+        guard let config = ReplicantConfig(withConfigAtPath: path)
+        else
+        {
+            XCTFail()
+            return
+        }
     }
     
     // MARK: Polish Tests

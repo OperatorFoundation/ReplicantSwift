@@ -229,48 +229,31 @@ public struct SilverController
     }
     
     /// This is the format needed to send the key to the server.
-    public func generateAndEncryptPaddedKeyData(fromPublicKey publicKey: P256.KeyAgreement.PublicKey, chunkSize: UInt16, privateKey: P256.KeyAgreement.PrivateKey, serverPublicKey: P256.KeyAgreement.PublicKey) -> ChaChaPoly.SealedBox?
+    public func generatePaddedKeyData(publicKey: P256.KeyAgreement.PublicKey, chunkSize: UInt16) -> Data
     {
         // Encode key as data
         var newKeyData = publicKey.x963Representation
         keySize = newKeyData.count
-        
+
         // Add padding if needed
         if let padding = getKeyPadding(chunkSize: chunkSize, keySize: keySize)
         {
             newKeyData += padding
         }
-        
-        // Encrypt the key
-        guard let encryptedKeyData = encrypt(payload: newKeyData, usingReceiverPublicKey: serverPublicKey, senderPrivateKey: privateKey)
-        else
-        {
-            return nil
-        }
-        
-        return encryptedKeyData
+
+        return newKeyData
     }
     
     //MARK: Encryption
     
-    /// Encrypt payload
-    public func encrypt(payload: Data, usingReceiverPublicKey receiverPublicKey: P256.KeyAgreement.PublicKey, senderPrivateKey:P256.KeyAgreement.PrivateKey) -> ChaChaPoly.SealedBox?
+    public func deriveSymmetricKey(receiverPublicKey: P256.KeyAgreement.PublicKey, senderPrivateKey:P256.KeyAgreement.PrivateKey) -> SymmetricKey?
     {
         do
         {
             let sharedSecret = try senderPrivateKey.sharedSecretFromKeyAgreement(with: receiverPublicKey)
             let symmetricKey = sharedSecret.x963DerivedSymmetricKey(using: SHA256.self, sharedInfo: Data(), outputByteCount: 32)
             
-            do
-            {
-                let cipherText = try ChaChaPoly.seal(payload, using: symmetricKey)
-                return cipherText
-            }
-            catch let cipherError
-            {
-                print("Error encrypting payload: \(cipherError)")
-                return nil
-            }
+            return symmetricKey
         }
         catch let sharedSecretError
         {
@@ -279,32 +262,36 @@ public struct SilverController
         }
     }
     
-    /// Decrypt payload
-    /// - Parameter payload: Data
-    /// - Parameter privateKey: SecKey
-    public func decrypt(payload: ChaChaPoly.SealedBox, usingReceiverPrivateKey receiverPrivateKey: P256.KeyAgreement.PrivateKey, senderPublicKey: P256.KeyAgreement.PublicKey) -> Data?
+    /// Encrypt payload
+    public func encrypt(payload: Data, symmetricKey: SymmetricKey) -> ChaChaPoly.SealedBox?
     {
         do
         {
-            let sharedSecret = try receiverPrivateKey.sharedSecretFromKeyAgreement(with: senderPublicKey)
-            let symmetricKey = sharedSecret.x963DerivedSymmetricKey(using: SHA256.self, sharedInfo: Data(), outputByteCount: 32)
-            
-            do
-            {
-                let decryptedMessage = try ChaChaPoly.open(payload, using: symmetricKey)
-                return decryptedMessage
-            }
-            catch let decryptionError
-            {
-                print("Error decrypting payload: \(decryptionError)")
-            }
+            let cipherText = try ChaChaPoly.seal(payload, using: symmetricKey)
+            return cipherText
         }
-        catch let sharedSecretError
+        catch let cipherError
         {
-            print("Unable to decrypt payload. Error generating shared secret: \(sharedSecretError)")
+            print("Error encrypting payload: \(cipherError)")
             return nil
         }
-        
+    }
+    
+    /// Decrypt payload
+    /// - Parameter payload: Data
+    /// - Parameter symmetricKey: SymmetricKey
+    public func decrypt(payload: ChaChaPoly.SealedBox, symmetricKey: SymmetricKey) -> Data?
+    {
+        do
+        {
+            let decryptedMessage = try ChaChaPoly.open(payload, using: symmetricKey)
+            return decryptedMessage
+        }
+        catch let decryptionError
+        {
+            print("Error decrypting payload: \(decryptionError)")
+        }
+
         return nil
     }
     

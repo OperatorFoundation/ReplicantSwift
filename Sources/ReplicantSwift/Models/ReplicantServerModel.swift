@@ -10,16 +10,16 @@ import SwiftQueue
 
 public struct ReplicantServerModel
 {
-    public var polish: SilverServerModel
+    public var polish: SilverServer?
     public var config: ReplicantServerConfig
     public var toneBurst: ToneBurst?
     
     public init?(withConfig config: ReplicantServerConfig, logQueue: Queue<String>)
     {
-        guard let polish = SilverServerModel(logQueue: logQueue)
-        else
+        if let polishConfig = config.polish as? SilverServerConfig,
+            let silverServer = polishConfig.construct(logQueue: logQueue) as? SilverServer
         {
-            return nil
+            self.polish = silverServer
         }
         
         if let toneBurst = config.toneBurst
@@ -28,6 +28,5 @@ public struct ReplicantServerModel
         }
         
         self.config = config
-        self.polish = polish
     }
 }
