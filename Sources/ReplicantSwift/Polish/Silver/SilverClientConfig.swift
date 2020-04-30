@@ -8,13 +8,14 @@
 import Foundation
 import SwiftQueue
 
-struct SilverClientConfig: PolishClientConfig, Codable
+public struct SilverClientConfig: PolishClientConfig, Codable
 {
-    let serverKey: Data
-    let chunkSize: UInt16
-    let chunkTimeout: Int
+    public let serverKey: Data
+    public let chunkSize: UInt16
+    public let chunkTimeout: Int
     
-    func construct(logQueue: Queue<String>) -> PolishConnection? {
+    public func construct(logQueue: Queue<String>) -> PolishConnection?
+    {
         return SilverClientConnection(logQueue: logQueue, serverPublicKeyData: serverKey, chunkSize: chunkSize, chunkTimeout: chunkTimeout)
     } 
 }
