@@ -14,23 +14,6 @@ public protocol PolishConnection
 {
     var chunkSize: UInt16 { get }
     var chunkTimeout: Int { get }
-    var publicKey: P256.KeyAgreement.PublicKey { get }
-    var privateKey: P256.KeyAgreement.PrivateKey { get }
-    var serverPublicKey: P256.KeyAgreement.PublicKey { get }
-    var symmetricKey: SymmetricKey  { get }
-    
-    mutating func handshake(connection: Connection, completion: @escaping (Error?) -> Void)
-    func polish(inputData: Data) -> Data?
-    func unpolish(polishedData: Data) -> Data?
-}
-
-public protocol PolishServerConnection
-{
-    var chunkSize: UInt16 { get }
-    var chunkTimeout: Int { get }
-    var publicKey: P256.KeyAgreement.PublicKey { get }
-    var privateKey: P256.KeyAgreement.PrivateKey { get }
-    var symmetricKey: SymmetricKey? { get }
     
     mutating func handshake(connection: Connection, completion: @escaping (Error?) -> Void)
     func polish(inputData: Data) -> Data?
@@ -41,11 +24,8 @@ public protocol PolishServer
 {
     var chunkSize: UInt16 { get }
     var chunkTimeout: Int { get }
-    var publicKey: P256.KeyAgreement.PublicKey { get }
-    var privateKey: P256.KeyAgreement.PrivateKey { get }
-    var clientPublicKey: P256.KeyAgreement.PublicKey? { get }
     
-    func newConnection(connection: Connection) -> PolishServerConnection?
+    func newConnection(connection: Connection) -> PolishConnection?
 }
 
 func generateRandomBytes(count: Int) -> Data? {

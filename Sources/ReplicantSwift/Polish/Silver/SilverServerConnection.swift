@@ -43,7 +43,7 @@ public class SilverServerConnection
     }
 }
 
-extension SilverServerConnection: PolishServerConnection
+extension SilverServerConnection: PolishConnection
 {
     public func handshake(connection: Connection, completion: @escaping (Error?) -> Void)
     {
