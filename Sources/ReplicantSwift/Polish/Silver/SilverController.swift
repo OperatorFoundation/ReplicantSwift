@@ -9,8 +9,6 @@ import Foundation
 import SwiftQueue
 import CryptoKit
 
-public let aesOverheadSize = 113
-
 public struct SilverController
 {
     let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM

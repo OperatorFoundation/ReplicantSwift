@@ -57,10 +57,9 @@ public class SilverServer
 
 extension SilverServer: PolishServer
 {
-    public func newConnection(connection: Connection) -> PolishConnection?
+    public func newConnection(connection: Connection) -> PolishServerConnection?
     {
         return SilverServerConnection(logQueue: logQueue, chunkSize: chunkSize, chunkTimeout: chunkTimeout)
     }
-    
-    
+ 
 }

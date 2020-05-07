@@ -14,7 +14,6 @@ import SwiftQueue
 public class SilverServerConnection
 {
     public let controller: SilverController
-    
     public var publicKey: P256.KeyAgreement.PublicKey
     public var privateKey: P256.KeyAgreement.PrivateKey
     public var chunkSize: UInt16
@@ -43,7 +42,7 @@ public class SilverServerConnection
     }
 }
 
-extension SilverServerConnection: PolishConnection
+extension SilverServerConnection: PolishServerConnection
 {
     public func handshake(connection: Connection, completion: @escaping (Error?) -> Void)
     {
