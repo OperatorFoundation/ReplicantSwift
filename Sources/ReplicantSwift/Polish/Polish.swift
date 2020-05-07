@@ -17,6 +17,7 @@ public protocol PolishConnection
     var publicKey: P256.KeyAgreement.PublicKey { get }
     var privateKey: P256.KeyAgreement.PrivateKey { get }
     var serverPublicKey: P256.KeyAgreement.PublicKey { get }
+    var symmetricKey: SymmetricKey  { get }
     
     mutating func handshake(connection: Connection, completion: @escaping (Error?) -> Void)
     func polish(inputData: Data) -> Data?
@@ -29,6 +30,7 @@ public protocol PolishServerConnection
     var chunkTimeout: Int { get }
     var publicKey: P256.KeyAgreement.PublicKey { get }
     var privateKey: P256.KeyAgreement.PrivateKey { get }
+    var symmetricKey: SymmetricKey? { get }
     
     mutating func handshake(connection: Connection, completion: @escaping (Error?) -> Void)
     func polish(inputData: Data) -> Data?

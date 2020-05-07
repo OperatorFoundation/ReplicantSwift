@@ -14,12 +14,13 @@ import SwiftQueue
 public class SilverServerConnection
 {
     public let controller: SilverController
-    public var publicKey: P256.KeyAgreement.PublicKey
-    public var privateKey: P256.KeyAgreement.PrivateKey
+    public var logQueue: Queue<String>
     public var chunkSize: UInt16
     public var chunkTimeout: Int
-    public var logQueue: Queue<String>
+    public var publicKey: P256.KeyAgreement.PublicKey
+    public var privateKey: P256.KeyAgreement.PrivateKey
     public var symmetricKey: SymmetricKey?
+
     
     public init?(logQueue: Queue<String>, chunkSize: UInt16, chunkTimeout: Int)
     {
