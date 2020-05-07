@@ -10,6 +10,9 @@ import Transport
 
 public protocol PolishConnection
 {
+    var chunkSize: UInt16 { get }
+    var chunkTimeout: Int { get }
+    
     mutating func handshake(connection: Connection, completion: @escaping (Error?) -> Void)
     func polish(inputData: Data) -> Data?
     func unpolish(polishedData: Data) -> Data?
@@ -17,6 +20,9 @@ public protocol PolishConnection
 
 public protocol PolishServer
 {
+    var chunkSize: UInt16 { get }
+    var chunkTimeout: Int { get }
+    
     func newConnection(connection: Connection) -> PolishConnection?
 }
 

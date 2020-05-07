@@ -61,19 +61,8 @@ extension SilverClientConnection: PolishConnection
     {
         logQueue.enqueue("\n🤝  Client handshake initiation.")
         logQueue.enqueue("\n🤝  Sending Public Key Data")
-        
-        guard let publicKeyCompact = publicKey.compactRepresentation
-        else
-        {
-            print("Failed to get the compact representation of our client public key.")
-            return
-        }
-        
-        let publicKeyData = Data(publicKeyCompact)
-        logQueue.enqueue("key size: \(publicKeyData.count)")
-        logQueue.enqueue("key data: \(publicKeyData.bytes)")
-        
-        connection.send(content: publicKeyCompact, contentContext: .defaultMessage, isComplete: false, completion: NWConnection.SendCompletion.contentProcessed(
+        let paddedKeyData = controller.generatePaddedKeyData(publicKey: publicKey, chunkSize: chunkSize)
+        connection.send(content: paddedKeyData, contentContext: .defaultMessage, isComplete: false, completion: NWConnection.SendCompletion.contentProcessed(
         {
             (maybeError) in
             
@@ -95,7 +84,7 @@ extension SilverClientConnection: PolishConnection
                 guard maybeResponse1Error == nil
                     else
                 {
-                    self.logQueue.enqueue("\n🤝  Received an error while waiting for response from server acfter sending key: \(maybeResponse1Error!)")
+                    self.logQueue.enqueue("\n🤝  Received an error while waiting for response from server after sending key: \(maybeResponse1Error!)")
                     completion(maybeResponse1Error!)
                     return
                 }

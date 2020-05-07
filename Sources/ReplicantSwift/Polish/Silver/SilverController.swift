@@ -10,7 +10,6 @@ import SwiftQueue
 import CryptoKit
 
 public let aesOverheadSize = 113
-public var keySize = 65
 
 public struct SilverController
 {
@@ -18,6 +17,9 @@ public struct SilverController
     let polishTag = "org.operatorfoundation.replicant.polish".data(using: .utf8)!
     let polishServerTag = "org.operatorfoundation.replicant.polishServer".data(using: .utf8)!
     let serverKeyLabel = "ServerKey"
+    
+    let compactKeySize = 32
+    
     
     var logQueue: Queue<String>
     
@@ -29,7 +31,7 @@ public struct SilverController
     /// Decode data to get public key. This only decodes key data that is NOT padded.
     public func decodeKey(fromData publicKeyData: Data) -> P256.KeyAgreement.PublicKey?
     {
-        return try? P256.KeyAgreement.PublicKey(x963Representation: publicKeyData)
+        return try? P256.KeyAgreement.PublicKey(compactRepresentation: publicKeyData)
     }
     
     func fetchOrCreateServerKeyPair() ->(privateKey: P256.KeyAgreement.PrivateKey, publicKey: P256.KeyAgreement.PublicKey)?
@@ -229,11 +231,17 @@ public struct SilverController
     }
     
     /// This is the format needed to send the key to the server.
-    public func generatePaddedKeyData(publicKey: P256.KeyAgreement.PublicKey, chunkSize: UInt16) -> Data
+    public func generatePaddedKeyData(publicKey: P256.KeyAgreement.PublicKey, chunkSize: UInt16) -> Data?
     {
         // Encode key as data
-        var newKeyData = publicKey.x963Representation
-        keySize = newKeyData.count
+        guard var newKeyData = publicKey.compactRepresentation
+        else
+        {
+            print("Failed to create compact representation of key for padded key data request.")
+            return nil
+        }
+        
+        let keySize = newKeyData.count
 
         // Add padding if needed
         if let padding = getKeyPadding(chunkSize: chunkSize, keySize: keySize)
@@ -297,11 +305,16 @@ public struct SilverController
     
     func getKeyPadding(chunkSize: UInt16, keySize: Int) -> Data?
     {
-        let paddingSize = Int(chunkSize) - (keySize + aesOverheadSize)
+        // FIXME: Removed aesOverheadsize
+        // let paddingSize = Int(chunkSize) - (keySize + aesOverheadSize)
+        let paddingSize = Int(chunkSize) - keySize
         if paddingSize > 0
         {
-            let bytes = [UInt8](repeating: 0, count: paddingSize)
-            return Data(array: bytes)
+            // FIXME: Should we generate random data here?
+            // Replaced:
+            // let bytes = [UInt8](repeating: 0, count: paddingSize)
+            let randomData = generateRandomBytes(count: paddingSize)
+            return randomData
         }
         else
         {

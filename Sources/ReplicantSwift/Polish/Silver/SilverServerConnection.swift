@@ -49,8 +49,6 @@ extension SilverServerConnection: PolishConnection
     {
         print("\n🤝  Replicant Server handshake called.")
         let replicantChunkSize = chunkSize
-        let keySize = 64
-        let keyDataSize = keySize + 1
         
         //Call receive first
         connection.receive(minimumIncompleteLength: Int(replicantChunkSize), maximumLength: Int(replicantChunkSize))
@@ -79,7 +77,7 @@ extension SilverServerConnection: PolishConnection
             }
             
             // Key data is the first chunk of keyDataSize
-            let clientKeyData = clientPaddedData[..<keyDataSize]
+            let clientKeyData = clientPaddedData[..<self.controller.compactKeySize]
 
                 
             // Convert data to SecKey
