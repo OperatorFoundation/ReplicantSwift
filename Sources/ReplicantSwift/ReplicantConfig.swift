@@ -6,34 +6,31 @@
 //
 
 import Foundation
+import Song
 
-public class ReplicantConfig
+public struct ReplicantConfig<PolishClientConfigType>: Codable where PolishClientConfigType: PolishClientConfig
 {
-    let replicantConfigKey = "ReplicantConfig"
-    public static var supportsSecureCoding: Bool = true
+    //public static var supportsSecureCoding: Bool = true
     
-    public var polish: PolishClientConfig?
+    public var polish: PolishClientConfigType?
     public var toneBurst: ToneBurstClientConfig?
     
-//    public func encode(with aCoder: NSCoder)
-//    {
-//        aCoder.encode(self, forKey: replicantConfigKey)
-//    }
-//    
-//    public required init?(coder aDecoder: NSCoder)
-//    {
-//        if let obj = aDecoder.decodeObject(of:ReplicantConfig.self, forKey: replicantConfigKey)
-//        {
-//            self.polish = obj.polish as PolishClientConfig
-//            self.toneBurst = obj.toneBurst as ToneBurstClientConfig
-//        }
-//        else
-//        {
-//            return nil
-//        }
-//    }
+    public init?(from data: Data)
+    {
+        let songDecoder = SongDecoder()
+        do
+        {
+            let decoded = try songDecoder.decode(ReplicantConfig.self, from: data)
+            self.init(polish: decoded.polish, toneBurst: decoded.toneBurst)
+        }
+        catch let decodeError
+        {
+            print("Error decoding ReplicantConfig data: \(decodeError)")
+            return nil
+        }
+    }
     
-    public init?(polish: PolishClientConfig?, toneBurst: ToneBurstClientConfig?)
+    public init?(polish: PolishClientConfigType?, toneBurst: ToneBurstClientConfig?)
     {
         self.polish = polish
         self.toneBurst = toneBurst
@@ -105,6 +102,7 @@ public class ReplicantConfig
 //        }
 //    }
 }
+
 
 //extension ReplicantConfig: Equatable
 //{

@@ -8,7 +8,7 @@
 import Foundation
 import SwiftQueue
 
-public struct SilverClientConfig: PolishClientConfig, Codable
+public struct SilverClientConfig: PolishClientConfig
 {
     public let serverKey: Data
     public let chunkSize: UInt16
@@ -19,3 +19,5 @@ public struct SilverClientConfig: PolishClientConfig, Codable
         return SilverClientConnection(logQueue: logQueue, serverPublicKeyData: serverKey, chunkSize: chunkSize, chunkTimeout: chunkTimeout)
     } 
 }
+
+extension SilverClientConfig: Codable {}
