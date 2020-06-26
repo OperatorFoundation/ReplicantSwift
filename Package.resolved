@@ -6,8 +6,8 @@
         "repositoryURL": "https://github.com/OperatorFoundation/Datable.git",
         "state": {
           "branch": null,
-          "revision": "eccbedd3c89007691034b951a1fc0780e54701ea",
-          "version": "1.1.1"
+          "revision": "1c23f2b72d0d0cf4386fad05f8a5db4b91e8d304",
+          "version": "3.0.2"
         }
       },
       {
@@ -17,6 +17,24 @@
           "branch": null,
           "revision": "b2724b4814a9ce89935ac7d8aebd92c88c3c0f8c",
           "version": "1.0.0"
+        }
+      },
+      {
+        "package": "Song",
+        "repositoryURL": "https://github.com/OperatorFoundation/Song.git",
+        "state": {
+          "branch": null,
+          "revision": "27e767505d2ea7bba836b3ca086fe0c62f3774ee",
+          "version": "0.0.13"
+        }
+      },
+      {
+        "package": "swift-ast",
+        "repositoryURL": "https://github.com/yanagiba/swift-ast",
+        "state": {
+          "branch": null,
+          "revision": "e8507d78b32dbd33ea5ea975bbbc82b7613870a1",
+          "version": "0.19.9"
         }
       },
       {
@@ -33,8 +51,8 @@
         "repositoryURL": "https://github.com/OperatorFoundation/Transport.git",
         "state": {
           "branch": null,
-          "revision": "280eaf03622e1fa25e113f58479ae7187e03a14c",
-          "version": "0.1.2"
+          "revision": "80ae032ec38d3869c54aa6a5aef112ac6d088ee8",
+          "version": "2.1.0"
         }
       }
     ]

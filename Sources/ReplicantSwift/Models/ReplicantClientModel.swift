@@ -5,11 +5,11 @@ import SwiftQueue
 
 public struct ReplicantClientModel
 {
-    public let config: ReplicantConfig
+    public let config: ReplicantConfig<SilverClientConfig>
     public let polish: PolishConnection?
     public let toneBurst: ToneBurst?
     
-    public init(withConfig config: ReplicantConfig, logQueue: Queue<String>)
+    public init(withConfig config: ReplicantConfig<SilverClientConfig>, logQueue: Queue<String>)
     {
         self.config = config
         

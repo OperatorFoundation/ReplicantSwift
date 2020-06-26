@@ -9,8 +9,8 @@ import SwiftQueue
 
 final class ReplicantSwiftTests: XCTestCase
 {
-    var polishClientModel: SilverPolishConnection!
     let logQueue = Queue<String>()
+    var polishClientModel: SilverClientConnection!
     var polishController: SilverController!
     var attributes: CFDictionary!
 //    let attributes: [String: Any] =
@@ -33,7 +33,7 @@ final class ReplicantSwiftTests: XCTestCase
         // Encode key as data
         let keyData = bobPrivate.publicKey.x963Representation
         
-        guard let clientModel = SilverPolishConnection(logQueue: logQueue, serverPublicKeyData: keyData)
+        guard let clientModel = SilverClientConnection(logQueue: logQueue, serverPublicKeyData: keyData, chunkSize: 1440, chunkTimeout: 1000)
         else
         {
             return
@@ -41,18 +41,7 @@ final class ReplicantSwiftTests: XCTestCase
         
         polishClientModel = clientModel
     }
-    
-    func testConfigFromJson()
-    {
-        let path = ""
-        guard let config = ReplicantConfig(withConfigAtPath: path)
-        else
-        {
-            XCTFail()
-            return
-        }
-    }
-    
+        
     // MARK: Polish Tests
     
     func testFetchOrCreateServerKey()
@@ -155,18 +144,18 @@ final class ReplicantSwiftTests: XCTestCase
     
     func testDecryptData()
     {
-        let senderPrivateKey = P256.KeyAgreement.PrivateKey()
-        let receiverPrivateKey = P256.KeyAgreement.PrivateKey()
         let plainText = Data(repeating: 0x0A, count: 4096)
 
-        guard let cipherText = polishClientModel.controller.encrypt(payload: plainText, usingReceiverPublicKey: receiverPrivateKey.publicKey, senderPrivateKey: senderPrivateKey)
+        let key = SymmetricKey(size: SymmetricKeySize(bitCount: 256))
+        
+        guard let cipherText = polishClientModel.controller.encrypt(payload: plainText, symmetricKey: key)
         else
         {
             XCTFail()
             return
         }
         
-        guard let maybeDecrypted = polishClientModel.controller.decrypt(payload: cipherText, usingReceiverPrivateKey: receiverPrivateKey, senderPublicKey: senderPrivateKey.publicKey)
+        guard let maybeDecrypted = polishClientModel.controller.decrypt(payload: cipherText, symmetricKey: key)
         else
         {
             XCTFail()

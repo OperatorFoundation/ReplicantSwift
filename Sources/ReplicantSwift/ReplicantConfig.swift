@@ -36,18 +36,12 @@ public struct ReplicantConfig<PolishClientConfigType>: Codable where PolishClien
         self.toneBurst = toneBurst
     }
     
-//    public convenience init?(withConfigAtPath path: String)
-//    {
-//        guard let config = ReplicantConfig.parseJSON(atPath:path)
-//            else
-//        {
-//            return nil
-//        }
-//
-//        self.polish = config.polish
-//        self.toneBurst = config.toneBurst
-//        //self.init
-//    }
+    public init?(withConfigAtPath path: String)
+    {
+        let url = URL(fileURLWithPath: path)
+        guard let data = try? Data(contentsOf: url) else {return nil}
+        self.init(from: data)
+    }
 //
 //    /// Creates and returns a JSON representation of the ReplicantConfig struct.
 //    public func createJSON() -> Data?
