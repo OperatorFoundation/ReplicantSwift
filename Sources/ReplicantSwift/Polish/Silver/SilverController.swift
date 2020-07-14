@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftQueue
+import Logging
 import CryptoKit
 
 public struct SilverController
@@ -17,13 +17,11 @@ public struct SilverController
     let serverKeyLabel = "ServerKey"
     
     let compactKeySize = 32
+    let log: Logger
     
-    
-    var logQueue: Queue<String>
-    
-    public init(logQueue: Queue<String>)
+    public init(logger: Logger)
     {
-        self.logQueue = logQueue
+        self.log = logger
     }
     
     /// Decode data to get public key. This only decodes key data that is NOT padded.
@@ -143,7 +141,7 @@ public struct SilverController
     
     func deleteClientKeys()
     {
-        logQueue.enqueue("\nAttempted to delete key from secure enclave.")
+        log.debug("\nAttempted to delete key from secure enclave.")
         //Remove client keys from secure enclave
         let query: [String: Any] = [kSecClass as String: kSecClassKey,
                                     kSecAttrApplicationTag as String: polishTag]
@@ -152,11 +150,11 @@ public struct SilverController
         switch deleteStatus
         {
         case errSecItemNotFound:
-            logQueue.enqueue("Could not find a client key to delete.\n")
+            log.error("Could not find a client key to delete.\n")
         case noErr:
-            logQueue.enqueue("Deleted client keys.\n")
+            log.debug("Deleted client keys.\n")
         default:
-            logQueue.enqueue("Unexpected status: \(deleteStatus.description)\n")
+            log.debug("Unexpected status: \(deleteStatus.description)\n")
         }
     }
     

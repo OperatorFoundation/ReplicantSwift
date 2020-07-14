@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftQueue
+import Logging
 
 public struct SilverClientConfig: PolishClientConfig
 {
@@ -14,9 +14,9 @@ public struct SilverClientConfig: PolishClientConfig
     public let chunkSize: UInt16
     public let chunkTimeout: Int
     
-    public func construct(logQueue: Queue<String>) -> PolishConnection?
+    public func construct(logger: Logger) -> PolishConnection?
     {
-        return SilverClientConnection(logQueue: logQueue, serverPublicKeyData: serverKey, chunkSize: chunkSize, chunkTimeout: chunkTimeout)
+        return SilverClientConnection(logger: logger, serverPublicKeyData: serverKey, chunkSize: chunkSize, chunkTimeout: chunkTimeout)
     } 
 }
 

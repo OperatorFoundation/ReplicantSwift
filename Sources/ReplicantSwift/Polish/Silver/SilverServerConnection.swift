@@ -6,26 +6,26 @@
 //
 
 import Foundation
+import Logging
 import Network
 import CryptoKit
 import Transport
-import SwiftQueue
 
 public class SilverServerConnection
 {
     public let controller: SilverController
-    public var logQueue: Queue<String>
     public var chunkSize: UInt16
     public var chunkTimeout: Int
     public var publicKey: P256.KeyAgreement.PublicKey
     public var privateKey: P256.KeyAgreement.PrivateKey
     public var symmetricKey: SymmetricKey?
 
+    let log: Logger
     
-    public init?(logQueue: Queue<String>, chunkSize: UInt16, chunkTimeout: Int)
+    public init?(logger: Logger, chunkSize: UInt16, chunkTimeout: Int)
     {
-        self.logQueue = logQueue
-        self.controller = SilverController(logQueue: logQueue)
+        self.log = logger
+        self.controller = SilverController(logger: logger)
         controller.deleteClientKeys()
 
         let clientPrivateKey = P256.KeyAgreement.PrivateKey()
