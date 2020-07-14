@@ -7,7 +7,7 @@
 
 import Foundation
 import Transport
-import SwiftQueue
+import Logging
 import CryptoKit
 
 public class SilverServer
@@ -16,17 +16,18 @@ public class SilverServer
     
     public var chunkSize: UInt16
     public var chunkTimeout: Int
-    public var logQueue: Queue<String>
     public var publicKey: P256.KeyAgreement.PublicKey
     public var privateKey: P256.KeyAgreement.PrivateKey
     public var clientPublicKey: P256.KeyAgreement.PublicKey?
     
-    public init?(logQueue: Queue<String>, chunkSize: UInt16, chunkTimeout: Int, clientPublicKeyData: Data? = nil)
+    let log: Logger
+    
+    public init?(logger: Logger, chunkSize: UInt16, chunkTimeout: Int, clientPublicKeyData: Data? = nil)
     {
         self.chunkSize = chunkSize
         self.chunkTimeout = chunkTimeout
-        self.logQueue = logQueue
-        self.controller = SilverController(logQueue: logQueue)
+        self.log = logger
+        self.controller = SilverController(logger: logger)
         
         // The client's key if we get one on init
         if let publicKeyData = clientPublicKeyData
@@ -59,7 +60,7 @@ extension SilverServer: PolishServer
 {
     public func newConnection(connection: Connection) -> PolishConnection?
     {
-        return SilverServerConnection(logQueue: logQueue, chunkSize: chunkSize, chunkTimeout: chunkTimeout)
+        return SilverServerConnection(logger: log, chunkSize: chunkSize, chunkTimeout: chunkTimeout)
     }
  
 }

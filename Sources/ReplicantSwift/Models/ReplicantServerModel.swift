@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftQueue
+import Logging
 
 public struct ReplicantServerModel
 {
@@ -14,10 +14,10 @@ public struct ReplicantServerModel
     public var config: ReplicantServerConfig
     public var toneBurst: ToneBurst?
     
-    public init?(withConfig config: ReplicantServerConfig, logQueue: Queue<String>)
+    public init?(withConfig config: ReplicantServerConfig, logger: Logger)
     {
         if let polishConfig = config.polish,
-            let polishServer = polishConfig.construct(logQueue: logQueue)
+            let polishServer = polishConfig.construct(logger: logger)
         {
             self.polish = polishServer
         }

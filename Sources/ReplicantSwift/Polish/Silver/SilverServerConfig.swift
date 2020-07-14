@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import SwiftQueue
+import Logging
 
 public struct SilverServerConfig: PolishServerConfig, Codable
 { 
@@ -16,9 +16,9 @@ public struct SilverServerConfig: PolishServerConfig, Codable
     public let chunkTimeout: Int
     
     
-    public func construct(logQueue: Queue<String>) -> PolishServer?
+    public func construct(logger: Logger) -> PolishServer?
     {
-        let silverServer = SilverServer(logQueue: logQueue, chunkSize: chunkSize, chunkTimeout: chunkTimeout)
+        let silverServer = SilverServer(logger: logger, chunkSize: chunkSize, chunkTimeout: chunkTimeout)
         
         return silverServer
     }

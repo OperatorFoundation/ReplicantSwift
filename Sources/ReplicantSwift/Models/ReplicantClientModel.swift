@@ -1,21 +1,24 @@
 import Foundation
+import Logging
 import Security
 import CommonCrypto
-import SwiftQueue
 
 public struct ReplicantClientModel
 {
-    public let config: ReplicantConfig
+    public let config: ReplicantConfig<SilverClientConfig>
     public let polish: PolishConnection?
     public let toneBurst: ToneBurst?
     
-    public init(withConfig config: ReplicantConfig, logQueue: Queue<String>)
+    let log: Logger
+    
+    public init(withConfig config: ReplicantConfig<SilverClientConfig>, logger: Logger)
     {
         self.config = config
+        self.log = logger
         
         if let polishConfig = config.polish
         {
-            self.polish = polishConfig.construct(logQueue: logQueue)
+            self.polish = polishConfig.construct(logger: logger)
         }
         else
         {

@@ -6,10 +6,10 @@
 //
 
 import Foundation
+import Logging
 import Network
 import CryptoKit
 import Transport
-import SwiftQueue
 
 public class SilverClientConnection
 {
@@ -20,12 +20,13 @@ public class SilverClientConnection
     public var symmetricKey: SymmetricKey
     public var chunkSize: UInt16
     public var chunkTimeout: Int
-    public var logQueue: Queue<String>
+
+    let log: Logger
     
-    public init?(logQueue: Queue<String>, serverPublicKeyData: Data, chunkSize: UInt16, chunkTimeout: Int)
+    public init?(logger: Logger, serverPublicKeyData: Data, chunkSize: UInt16, chunkTimeout: Int)
     {
-        self.logQueue = logQueue
-        self.controller = SilverController(logQueue: logQueue)
+        self.log = logger
+        self.controller = SilverController(logger: logger)
         controller.deleteClientKeys()
         
         guard let sPublicKey = controller.decodeKey(fromData: serverPublicKeyData)
@@ -59,18 +60,18 @@ extension SilverClientConnection: PolishConnection
 {
     public func handshake(connection: Connection, completion: @escaping (Error?) -> Void)
     {
-        logQueue.enqueue("\n🤝  Client handshake initiation.")
-        logQueue.enqueue("\n🤝  Sending Public Key Data")
+        log.debug("\n🤝  Client handshake initiation.")
+        log.debug("\n🤝  Sending Public Key Data")
         let paddedKeyData = controller.generatePaddedKeyData(publicKey: publicKey, chunkSize: chunkSize)
         connection.send(content: paddedKeyData, contentContext: .defaultMessage, isComplete: false, completion: NWConnection.SendCompletion.contentProcessed(
         {
             (maybeError) in
             
-            self.logQueue.enqueue("\n🤝  Handshake: Returned from sending our public key to the server.\n")
+            self.log.error("\n🤝  Handshake: Returned from sending our public key to the server.\n")
             guard maybeError == nil
                 else
             {
-                self.logQueue.enqueue("\n🤝  Received error from server when sending our key: \(maybeError!)")
+                self.log.error("\n🤝  Received error from server when sending our key: \(maybeError!)")
                 completion(maybeError!)
                 return
             }
@@ -80,11 +81,11 @@ extension SilverClientConnection: PolishConnection
             {
                 (maybeResponse1Data, maybeResponse1Context, _, maybeResponse1Error) in
                 
-                self.logQueue.enqueue("\n🤝  Callback from handshake network.receive called.")
+                self.log.debug("\n🤝  Callback from handshake network.receive called.")
                 guard maybeResponse1Error == nil
                     else
                 {
-                    self.logQueue.enqueue("\n🤝  Received an error while waiting for response from server after sending key: \(maybeResponse1Error!)")
+                    self.log.error("\n🤝  Received an error while waiting for response from server after sending key: \(maybeResponse1Error!)")
                     completion(maybeResponse1Error!)
                     return
                 }
@@ -93,12 +94,12 @@ extension SilverClientConnection: PolishConnection
                 guard let reponseData = maybeResponse1Data
                     else
                 {
-                    self.logQueue.enqueue("\n🤝  Server key response did not contain data.")
+                    self.log.error("\n🤝  Server key response did not contain data.")
                     completion(nil)
                     return
                 }
                 
-                self.logQueue.enqueue("\n🤝  Received response data from the server during handshake: \(reponseData)\n")
+                self.log.debug("\n🤝  Received response data from the server during handshake: \(reponseData)\n")
                 completion(nil)
             })
         }))

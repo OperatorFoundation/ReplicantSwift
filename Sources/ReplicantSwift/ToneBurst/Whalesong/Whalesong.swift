@@ -59,7 +59,7 @@ public class Whalesong: Codable
             let status = SecRandomCopyBytes(kSecRandomDefault, length, &randomBytes)
             if status == errSecSuccess
             {
-                result.append(Data(bytes: randomBytes))
+                result.append(Data(randomBytes))
             }
             else
             {

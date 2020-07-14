@@ -6,8 +6,7 @@
 //
 
 import Foundation
-import SwiftQueue
-
+import Logging
 
 struct testCodable<T>: Codable where T: TestProtocol
 {
@@ -20,15 +19,13 @@ protocol TestProtocol: Codable
     func testFunction()
 }
 
-
-
 public protocol PolishClientConfig: Codable
 {
-    func construct(logQueue: Queue<String>) -> PolishConnection?
+    func construct(logger: Logger) -> PolishConnection?
 }
 
 public protocol PolishServerConfig: Codable
 {
-    func construct(logQueue: Queue<String>) -> PolishServer?
+    func construct(logger: Logger) -> PolishServer?
 }
 
