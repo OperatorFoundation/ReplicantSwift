@@ -6,7 +6,11 @@
 //
 
 import Foundation
+#if os(Linux)
+import CryptoKitLinux
+#else
 import CryptoKit
+#endif
 
 public struct ReplicantConfigTemplate
 {

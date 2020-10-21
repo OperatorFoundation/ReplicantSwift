@@ -5,7 +5,13 @@
 //  Created by Mafalda on 4/28/20.
 //
 
+#if os(Linux)
+import CryptoKitLinux
+#else
 import CryptoKit
+#endif
+
+
 import Foundation
 
 import Transport

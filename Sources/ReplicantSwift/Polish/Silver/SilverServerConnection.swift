@@ -7,9 +7,14 @@
 
 import Foundation
 import Logging
+import Transport
+#if os(Linux)
+import NetworkLinux
+import CryptoKitLinux
+#else
 import Network
 import CryptoKit
-import Transport
+#endif
 
 public class SilverServerConnection
 {

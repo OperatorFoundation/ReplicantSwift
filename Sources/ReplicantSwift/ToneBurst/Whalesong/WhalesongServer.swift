@@ -8,7 +8,11 @@
 import Foundation
 import Datable
 import Transport
+#if os(Linux)
+import NetworkLinux
+#else
 import Network
+#endif
 
 /// Injects byte sequences into a stream of bytes
 public class WhalesongServer: Whalesong

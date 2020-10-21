@@ -7,7 +7,11 @@
 
 import Foundation
 import Transport
+#if os(Linux)
+import NetworkLinux
+#else
 import Network
+#endif
 
 public class Whalesong: Codable
 {

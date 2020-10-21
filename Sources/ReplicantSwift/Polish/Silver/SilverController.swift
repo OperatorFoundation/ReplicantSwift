@@ -7,7 +7,11 @@
 
 import Foundation
 import Logging
+#if os(Linux)
+import CryptoKitLinux
+#else
 import CryptoKit
+#endif
 
 public struct SilverController
 {

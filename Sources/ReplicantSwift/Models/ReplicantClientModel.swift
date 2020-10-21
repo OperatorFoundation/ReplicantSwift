@@ -1,7 +1,5 @@
 import Foundation
 import Logging
-import Security
-import CommonCrypto
 
 public struct ReplicantClientModel
 {
