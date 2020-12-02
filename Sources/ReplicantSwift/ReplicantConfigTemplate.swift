@@ -7,12 +7,11 @@
 
 import Foundation
 
+#if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
+import CryptoKit
+#else
 import Crypto
-//#if os(Linux)
-//import CryptoKitLinux
-//#else
-//import CryptoKit
-//#endif
+#endif
 
 public struct ReplicantConfigTemplate
 {

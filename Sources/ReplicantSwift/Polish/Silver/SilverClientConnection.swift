@@ -8,7 +8,12 @@
 import Foundation
 import Logging
 import Transport
+
+#if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
+import CryptoKit
+#else
 import Crypto
+#endif
 
 #if os(Linux)
 import NetworkLinux

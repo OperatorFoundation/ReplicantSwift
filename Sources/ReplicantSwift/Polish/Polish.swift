@@ -5,17 +5,13 @@
 //  Created by Mafalda on 4/28/20.
 //
 
+#if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
+import CryptoKit
+#else
 import Crypto
-
-//#if os(Linux)
-//import CryptoKitLinux
-//#else
-//import CryptoKit
-//#endif
-
+#endif
 
 import Foundation
-
 import Transport
 
 public protocol PolishConnection

@@ -8,13 +8,12 @@
 import Foundation
 import Transport
 import Logging
-import Crypto
 
-//#if os(Linux)
-//import CryptoKitLinux
-//#else
-//import CryptoKit
-//#endif
+#if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
+import CryptoKit
+#else
+import Crypto
+#endif
 
 public class SilverServer
 {
