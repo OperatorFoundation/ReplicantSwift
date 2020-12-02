@@ -7,15 +7,17 @@
 
 import Foundation
 import Logging
-#if os(Linux)
-import CryptoKitLinux
-#else
-import CryptoKit
-#endif
+import Crypto
+
+//#if os(Linux)
+//import CryptoKitLinux
+//#else
+//import CryptoKit
+//#endif
 
 public struct SilverController
 {
-    let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
+    //let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
     let polishTag = "org.operatorfoundation.replicant.polish".data(using: .utf8)!
     let polishServerTag = "org.operatorfoundation.replicant.polishServer".data(using: .utf8)!
     let serverKeyLabel = "ServerKey"
@@ -59,13 +61,6 @@ public struct SilverController
     
     func retreiveKey(query: CFDictionary) -> P256.KeyAgreement.PrivateKey?
     {
-//        // Seek an elliptic-curve key with a given label.
-//        let query = [kSecClass: kSecClassKey,
-//                     kSecAttrApplicationLabel: label,
-//                     kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom,
-//                     kSecUseDataProtectionKeychain: true,
-//                     kSecReturnRef: true] as [String: Any]
-
         // Find and cast the result as a SecKey instance.
         var item: CFTypeRef?
         var secKey: SecKey
