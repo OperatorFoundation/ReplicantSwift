@@ -26,7 +26,7 @@ public class SilverServerConnection
     public let controller: SilverController
     public var chunkSize: UInt16
     public var chunkTimeout: Int
-    public var publicKey: P256.KeyAgreement.PublicKey
+    //public var publicKey: P256.KeyAgreement.PublicKey
     public var privateKey: P256.KeyAgreement.PrivateKey
     public var symmetricKey: SymmetricKey?
 
@@ -36,20 +36,19 @@ public class SilverServerConnection
     {
         self.log = logger
         self.controller = SilverController(logger: logger)
-        controller.deleteClientKeys()
-
-        let clientPrivateKey = P256.KeyAgreement.PrivateKey()
-        let clientPublicKey = clientPrivateKey.publicKey
         
-        self.privateKey = clientPrivateKey
-        self.publicKey = clientPublicKey
+        // Check to see if the server already has a keypair first
+        // If not, create one and save it.
+        guard let serverPrivateKey = controller.fetchOrCreateServerKey()
+            else
+        {
+            return nil
+        }
+        
+        self.privateKey = serverPrivateKey
+        //self.publicKey = clientPublicKey
         self.chunkSize = chunkSize
         self.chunkTimeout = chunkTimeout
-    }
-    
-    deinit
-    {
-        controller.deleteClientKeys()
     }
 }
 
@@ -90,7 +89,7 @@ extension SilverServerConnection: PolishConnection
             let clientKeyData = clientPaddedData[..<self.controller.compactKeySize]
 
                 
-            // Convert data to SecKey
+            // Convert data to Key
             //FIXME: Will decode key method account for leading 04?
             guard let clientKey = self.controller.decodeKey(fromData: clientKeyData)
             else

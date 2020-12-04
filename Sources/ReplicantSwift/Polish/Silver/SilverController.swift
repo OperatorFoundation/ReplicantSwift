@@ -10,23 +10,32 @@ import Logging
 
 #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
 import CryptoKit
+import Keychain
 #else
 import Crypto
+import KeychainLinux
 #endif
 
 public struct SilverController
 {
     //let algorithm: SecKeyAlgorithm = .eciesEncryptionCofactorVariableIVX963SHA256AESGCM
-    let polishTag = "org.operatorfoundation.replicant.polish".data(using: .utf8)!
-    let polishServerTag = "org.operatorfoundation.replicant.polishServer".data(using: .utf8)!
+    //let polishTag = "org.operatorfoundation.replicant.polish".data(using: .utf8)!
+    //let polishServerTag = "org.operatorfoundation.replicant.polishServer".data(using: .utf8)!
     let serverKeyLabel = "ServerKey"
     
     let compactKeySize = 32
     let log: Logger
-    
+    var keychain: Keychain
+        
     public init(logger: Logger)
     {
         self.log = logger
+        
+        #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
+        keychain = Keychain()
+        #else
+        keychain = Keychain(baseDirectory: FileManager.default.homeDirectoryForCurrentUser)
+        #endif
     }
     
     /// Decode data to get public key. This only decodes key data that is NOT padded.
@@ -35,194 +44,214 @@ public struct SilverController
         return try? P256.KeyAgreement.PublicKey(compactRepresentation: publicKeyData)
     }
     
-    func fetchOrCreateServerKeyPair() ->(privateKey: P256.KeyAgreement.PrivateKey, publicKey: P256.KeyAgreement.PublicKey)?
+    public func deriveSymmetricKey(receiverPublicKey: P256.KeyAgreement.PublicKey, senderPrivateKey:P256.KeyAgreement.PrivateKey) -> SymmetricKey?
     {
-        // Do we already have a key?
-        let searchQuery = generateServerKeySearchQuery(withLabel: serverKeyLabel)
-        if let key = retreiveKey(query: searchQuery)
+        do
         {
-            return (key, key.publicKey)
-        }
-        
-        // We don't?
-        // Let's create some and return those
-        let privateKey = P256.KeyAgreement.PrivateKey()
-        
-        // Save the key we stored
-        let stored = storeKey(privateKey, label: serverKeyLabel)
-        if !stored
-        {
-            print("😱 Failed to store our new server key.")
-            return nil
-        }
-        return (privateKey, privateKey.publicKey)
-    }
-    
-    func retreiveKey(query: CFDictionary) -> P256.KeyAgreement.PrivateKey?
-    {
-        // Find and cast the result as a SecKey instance.
-        var item: CFTypeRef?
-        var secKey: SecKey
-        switch SecItemCopyMatching(query as CFDictionary, &item) {
-        case errSecSuccess: secKey = item as! SecKey
-        case errSecItemNotFound: return nil
-        case let status:
-            print("Keychain read failed: \(status.string)")
-            return nil
-        }
-        
-        // Convert the SecKey into a CryptoKit key.
-        var error: Unmanaged<CFError>?
-        guard let data = SecKeyCopyExternalRepresentation(secKey, &error) as Data?
-        else
-        {
-            print(error.debugDescription)
-            return nil
-        }
-        
-        do {
-            let key = try P256.KeyAgreement.PrivateKey(x963Representation: data)
-            return key
-        }
-        catch let keyError
-        {
-            print("Error decoding key: \(keyError)")
-            return nil
-        }
-    }
-    
-    func storeKey(_ key: P256.KeyAgreement.PrivateKey, label: String) -> Bool
-    {
-        
-        let attributes = [kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom,
-                          kSecAttrKeyClass: kSecAttrKeyClassPrivate] as [String: Any]
-
-        // Get a SecKey representation.
-        var error: Unmanaged<CFError>?
-        let keyData = key.x963Representation as CFData
-        guard let secKey = SecKeyCreateWithData(keyData,
-                                                attributes as CFDictionary,
-                                                &error)
-            else
-        {
-            print("Unable to create SecKey representation.")
-            if let secKeyError = error
-            {
-                print(secKeyError)
-            }
-            return false
-        }
-        
-        // Describe the add operation.
-        let query = [kSecClass: kSecClassKey,
-                     kSecAttrApplicationLabel: label,
-                     kSecAttrAccessible: kSecAttrAccessibleWhenUnlocked,
-                     kSecUseDataProtectionKeychain: true,
-                     kSecValueRef: secKey] as [String: Any]
-
-        // Add the key to the keychain.
-        let status = SecItemAdd(query as CFDictionary, nil)
-        
-        switch status {
-        case errSecSuccess:
-            return true
-        default:
-            if let statusString = SecCopyErrorMessageString(status, nil)
-            {
-                print("Unable to store item: \(statusString)")
-            }
+            let sharedSecret = try senderPrivateKey.sharedSecretFromKeyAgreement(with: receiverPublicKey)
+            let symmetricKey = sharedSecret.x963DerivedSymmetricKey(using: SHA256.self, sharedInfo: Data(), outputByteCount: 32)
             
-            return false
+            return symmetricKey
         }
-
-    }
-    
-    func deleteClientKeys()
-    {
-        log.debug("\nAttempted to delete key from secure enclave.")
-        //Remove client keys from secure enclave
-        let query: [String: Any] = [kSecClass as String: kSecClassKey,
-                                    kSecAttrApplicationTag as String: polishTag]
-        let deleteStatus = SecItemDelete(query as CFDictionary)
-        
-        switch deleteStatus
+        catch let sharedSecretError
         {
-        case errSecItemNotFound:
-            log.error("Could not find a client key to delete.\n")
-        case noErr:
-            log.debug("Deleted client keys.\n")
-        default:
-            log.debug("Unexpected status: \(deleteStatus.description)\n")
+            print("Unable to encrypt payload. Failed to generate a shared secret: \(sharedSecretError)")
+            return nil
         }
     }
     
-    func generateClientKeyAttributesDictionary() -> CFDictionary
+    func fetchOrCreateServerKey() -> P256.KeyAgreement.PrivateKey?
     {
-        //FIXME: Secure Enclave
-        //let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleAlwaysThisDeviceOnly, .privateKeyUsage, nil)!
-        
-        let privateKeyAttributes: [String: Any] = [
-            kSecAttrIsPermanent as String: true,
-            kSecAttrApplicationTag as String: polishTag
-            //kSecAttrAccessControl as String: access
-        ]
-        
-        let publicKeyAttributes: [String: Any] = [
-            kSecAttrIsPermanent as String: true,
-            kSecAttrApplicationTag as String: polishTag
-        ]
-        
-        let attributes: [String: Any] = [
-            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
-            kSecAttrKeySizeInBits as String: 256,
-            //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
-            kSecPrivateKeyAttrs as String: privateKeyAttributes,
-            kSecPublicKeyAttrs as String: publicKeyAttributes
-        ]
-        
-        return attributes as CFDictionary
+        return keychain.retrieveOrGeneratePrivateKey(label: serverKeyLabel)
     }
     
-    func generateServerKeyAttributesDictionary() -> CFDictionary
-    {
-        //FIXME: Secure Enclave
-        // let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleAlwaysThisDeviceOnly, .privateKeyUsage, nil)!
-        
-        let privateKeyAttributes: [String: Any] = [
-            kSecAttrIsPermanent as String: true,
-            kSecAttrApplicationTag as String: polishServerTag
-            //kSecAttrAccessControl as String: access
-        ]
-        
-        let publicKeyAttributes: [String: Any] = [
-            kSecAttrIsPermanent as String: true,
-            kSecAttrApplicationTag as String: polishServerTag
-        ]
-        
-        let attributes: [String: Any] = [
-            kSecClass as String: kSecClassKey,
-            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
-            kSecAttrKeySizeInBits as String: 256,
-            //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
-            kSecPrivateKeyAttrs as String: privateKeyAttributes,
-            kSecPublicKeyAttrs as String: publicKeyAttributes
-        ]
-        
-        return attributes as CFDictionary
-    }
+//    func fetchOrCreateServerKeyPair() ->(privateKey: P256.KeyAgreement.PrivateKey, publicKey: P256.KeyAgreement.PublicKey)?
+//    {
+//        // Do we already have a key?
+//        let searchQuery = generateServerKeySearchQuery(withLabel: serverKeyLabel)
+//        if let key = retreiveKey(query: searchQuery)
+//        {
+//            return (key, key.publicKey)
+//        }
+//        
+//        // We don't?
+//        // Let's create some and return those
+//        let privateKey = P256.KeyAgreement.PrivateKey()
+//        
+//        // Save the key we stored
+//        let stored = storeKey(privateKey, label: serverKeyLabel)
+//        if !stored
+//        {
+//            print("😱 Failed to store our new server key.")
+//            return nil
+//        }
+//        return (privateKey, privateKey.publicKey)
+//    }
     
-    func generateServerKeySearchQuery(withLabel label: String) -> CFDictionary
-    {
-        let query: [String: Any] = [kSecClass as String: kSecClassKey,
-                                    kSecAttrApplicationLabel as String: label,
-                                    kSecAttrApplicationTag as String: polishServerTag,
-                                    kSecMatchLimit as String: kSecMatchLimitOne,
-                                    kSecReturnRef as String: true,
-                                    kSecReturnAttributes as String: false,
-                                    kSecReturnData as String: false]
-        
-        return query as CFDictionary
-    }
+//    func retreiveKey(query: CFDictionary) -> P256.KeyAgreement.PrivateKey?
+//    {
+//        // Find and cast the result as a SecKey instance.
+//        var item: CFTypeRef?
+//        var secKey: SecKey
+//        switch SecItemCopyMatching(query as CFDictionary, &item) {
+//        case errSecSuccess: secKey = item as! SecKey
+//        case errSecItemNotFound: return nil
+//        case let status:
+//            print("Keychain read failed: \(status.string)")
+//            return nil
+//        }
+//
+//        // Convert the SecKey into a CryptoKit key.
+//        var error: Unmanaged<CFError>?
+//        guard let data = SecKeyCopyExternalRepresentation(secKey, &error) as Data?
+//        else
+//        {
+//            print(error.debugDescription)
+//            return nil
+//        }
+//
+//        do {
+//            let key = try P256.KeyAgreement.PrivateKey(x963Representation: data)
+//            return key
+//        }
+//        catch let keyError
+//        {
+//            print("Error decoding key: \(keyError)")
+//            return nil
+//        }
+//    }
+    
+//    func storeKey(_ key: P256.KeyAgreement.PrivateKey, label: String) -> Bool
+//    {
+//
+//        let attributes = [kSecAttrKeyType: kSecAttrKeyTypeECSECPrimeRandom,
+//                          kSecAttrKeyClass: kSecAttrKeyClassPrivate] as [String: Any]
+//
+//        // Get a SecKey representation.
+//        var error: Unmanaged<CFError>?
+//        let keyData = key.x963Representation as CFData
+//        guard let secKey = SecKeyCreateWithData(keyData,
+//                                                attributes as CFDictionary,
+//                                                &error)
+//            else
+//        {
+//            print("Unable to create SecKey representation.")
+//            if let secKeyError = error
+//            {
+//                print(secKeyError)
+//            }
+//            return false
+//        }
+//
+//        // Describe the add operation.
+//        let query = [kSecClass: kSecClassKey,
+//                     kSecAttrApplicationLabel: label,
+//                     kSecAttrAccessible: kSecAttrAccessibleWhenUnlocked,
+//                     kSecUseDataProtectionKeychain: true,
+//                     kSecValueRef: secKey] as [String: Any]
+//
+//        // Add the key to the keychain.
+//        let status = SecItemAdd(query as CFDictionary, nil)
+//
+//        switch status {
+//        case errSecSuccess:
+//            return true
+//        default:
+//            if let statusString = SecCopyErrorMessageString(status, nil)
+//            {
+//                print("Unable to store item: \(statusString)")
+//            }
+//
+//            return false
+//        }
+//    }
+    
+//    func deleteClientKeys()
+//    {
+//        log.debug("\nAttempted to delete key from secure enclave.")
+//        //Remove client keys from secure enclave
+//        let query: [String: Any] = [kSecClass as String: kSecClassKey,
+//                                    kSecAttrApplicationTag as String: polishTag]
+//        let deleteStatus = SecItemDelete(query as CFDictionary)
+//
+//        switch deleteStatus
+//        {
+//        case errSecItemNotFound:
+//            log.error("Could not find a client key to delete.\n")
+//        case noErr:
+//            log.debug("Deleted client keys.\n")
+//        default:
+//            log.debug("Unexpected status: \(deleteStatus.description)\n")
+//        }
+//    }
+    
+//    func generateClientKeyAttributesDictionary() -> CFDictionary
+//    {
+//        //FIXME: Secure Enclave
+//        //let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleAlwaysThisDeviceOnly, .privateKeyUsage, nil)!
+//
+//        let privateKeyAttributes: [String: Any] = [
+//            kSecAttrIsPermanent as String: true,
+//            kSecAttrApplicationTag as String: polishTag
+//            //kSecAttrAccessControl as String: access
+//        ]
+//
+//        let publicKeyAttributes: [String: Any] = [
+//            kSecAttrIsPermanent as String: true,
+//            kSecAttrApplicationTag as String: polishTag
+//        ]
+//
+//        let attributes: [String: Any] = [
+//            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+//            kSecAttrKeySizeInBits as String: 256,
+//            //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
+//            kSecPrivateKeyAttrs as String: privateKeyAttributes,
+//            kSecPublicKeyAttrs as String: publicKeyAttributes
+//        ]
+//
+//        return attributes as CFDictionary
+//    }
+//
+//    func generateServerKeyAttributesDictionary() -> CFDictionary
+//    {
+//        //FIXME: Secure Enclave
+//        // let access = SecAccessControlCreateWithFlags(kCFAllocatorDefault, kSecAttrAccessibleAlwaysThisDeviceOnly, .privateKeyUsage, nil)!
+//
+//        let privateKeyAttributes: [String: Any] = [
+//            kSecAttrIsPermanent as String: true,
+//            kSecAttrApplicationTag as String: polishServerTag
+//            //kSecAttrAccessControl as String: access
+//        ]
+//
+//        let publicKeyAttributes: [String: Any] = [
+//            kSecAttrIsPermanent as String: true,
+//            kSecAttrApplicationTag as String: polishServerTag
+//        ]
+//
+//        let attributes: [String: Any] = [
+//            kSecClass as String: kSecClassKey,
+//            kSecAttrKeyType as String: kSecAttrKeyTypeECSECPrimeRandom,
+//            kSecAttrKeySizeInBits as String: 256,
+//            //kSecAttrTokenID as String: kSecAttrTokenIDSecureEnclave,
+//            kSecPrivateKeyAttrs as String: privateKeyAttributes,
+//            kSecPublicKeyAttrs as String: publicKeyAttributes
+//        ]
+//
+//        return attributes as CFDictionary
+//    }
+    
+//    func generateServerKeySearchQuery(withLabel label: String) -> CFDictionary
+//    {
+//        let query: [String: Any] = [kSecClass as String: kSecClassKey,
+//                                    kSecAttrApplicationLabel as String: label,
+//                                    kSecAttrApplicationTag as String: polishServerTag,
+//                                    kSecMatchLimit as String: kSecMatchLimitOne,
+//                                    kSecReturnRef as String: true,
+//                                    kSecReturnAttributes as String: false,
+//                                    kSecReturnData as String: false]
+//
+//        return query as CFDictionary
+//    }
     
     /// This is the format needed to send the key to the server.
     public func generatePaddedKeyData(publicKey: P256.KeyAgreement.PublicKey, chunkSize: UInt16) -> Data?
@@ -248,21 +277,21 @@ public struct SilverController
     
     //MARK: Encryption
     
-    public func deriveSymmetricKey(receiverPublicKey: P256.KeyAgreement.PublicKey, senderPrivateKey:P256.KeyAgreement.PrivateKey) -> SymmetricKey?
-    {
-        do
-        {
-            let sharedSecret = try senderPrivateKey.sharedSecretFromKeyAgreement(with: receiverPublicKey)
-            let symmetricKey = sharedSecret.x963DerivedSymmetricKey(using: SHA256.self, sharedInfo: Data(), outputByteCount: 32)
-            
-            return symmetricKey
-        }
-        catch let sharedSecretError
-        {
-            print("Unable to encrypt payload. Failed to generate a shared secret: \(sharedSecretError)")
-            return nil
-        }
-    }
+//    public func deriveSymmetricKey(receiverPublicKey: P256.KeyAgreement.PublicKey, senderPrivateKey:P256.KeyAgreement.PrivateKey) -> SymmetricKey?
+//    {
+//        do
+//        {
+//            let sharedSecret = try senderPrivateKey.sharedSecretFromKeyAgreement(with: receiverPublicKey)
+//            let symmetricKey = sharedSecret.x963DerivedSymmetricKey(using: SHA256.self, sharedInfo: Data(), outputByteCount: 32)
+//
+//            return symmetricKey
+//        }
+//        catch let sharedSecretError
+//        {
+//            print("Unable to encrypt payload. Failed to generate a shared secret: \(sharedSecretError)")
+//            return nil
+//        }
+//    }
     
     /// Encrypt payload
     public func encrypt(payload: Data, symmetricKey: SymmetricKey) -> ChaChaPoly.SealedBox?
@@ -318,16 +347,16 @@ public struct SilverController
     
 }
 
-protocol SecKeyConvertible: CustomStringConvertible {
-    /// Creates a key from an X9.63 representation.
-    init<Bytes>(x963Representation: Bytes) throws where Bytes: ContiguousBytes
-    
-    /// An X9.63 representation of the key.
-    var x963Representation: Data { get }
-}
-
-extension P256.KeyAgreement.PrivateKey: SecKeyConvertible {
-    public var description: String {
-        return "P256 Key"
-    }
-}
+//protocol SecKeyConvertible: CustomStringConvertible {
+//    /// Creates a key from an X9.63 representation.
+//    init<Bytes>(x963Representation: Bytes) throws where Bytes: ContiguousBytes
+//    
+//    /// An X9.63 representation of the key.
+//    var x963Representation: Data { get }
+//}
+//
+//extension P256.KeyAgreement.PrivateKey: SecKeyConvertible {
+//    public var description: String {
+//        return "P256 Key"
+//    }
+//}

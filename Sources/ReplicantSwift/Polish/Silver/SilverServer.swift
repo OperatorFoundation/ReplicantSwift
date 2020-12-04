@@ -21,8 +21,6 @@ public class SilverServer
     
     public var chunkSize: UInt16
     public var chunkTimeout: Int
-    public var publicKey: P256.KeyAgreement.PublicKey
-    public var privateKey: P256.KeyAgreement.PrivateKey
     public var clientPublicKey: P256.KeyAgreement.PublicKey?
     
     let log: Logger
@@ -42,22 +40,6 @@ public class SilverServer
                 self.clientPublicKey = cPublicKey
            }
         }
-        
-        // Check to see if the server already has a keypair first
-        // If not, create one.
-        guard let newKeyPair = controller.fetchOrCreateServerKeyPair()
-            else
-        {
-            return nil
-        }
-        
-        self.privateKey = newKeyPair.privateKey
-        self.publicKey = newKeyPair.publicKey
-    }
-    
-    deinit
-    {
-        controller.deleteClientKeys()
     }
 }
 

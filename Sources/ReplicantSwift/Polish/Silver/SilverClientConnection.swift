@@ -11,8 +11,10 @@ import Transport
 
 #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
 import CryptoKit
+import Keychain
 #else
 import Crypto
+import KeychainLinux
 #endif
 
 #if os(Linux)
@@ -37,9 +39,9 @@ public class SilverClientConnection
     
     public init?(logger: Logger, serverPublicKeyData: Data, chunkSize: UInt16, chunkTimeout: Int)
     {
-        self.log = logger
-        self.controller = SilverController(logger: logger)
-        controller.deleteClientKeys()
+        log = logger
+        controller = SilverController(logger: logger)
+        //TODO: controller.deleteClientKeys()
         
         guard let sPublicKey = controller.decodeKey(fromData: serverPublicKeyData)
         else
@@ -62,10 +64,10 @@ public class SilverClientConnection
         self.symmetricKey = ourSymmetricKey
     }
     
-    deinit
-    {
-        controller.deleteClientKeys()
-    }
+//    deinit
+//    {
+//        controller.deleteClientKeys()
+//    }
 }
 
 extension SilverClientConnection: PolishConnection

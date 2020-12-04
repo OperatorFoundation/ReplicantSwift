@@ -20,6 +20,24 @@
         }
       },
       {
+        "package": "Keychain",
+        "repositoryURL": "https://github.com/OperatorFoundation/Keychain.git",
+        "state": {
+          "branch": null,
+          "revision": "64c2e570f0cdb15beb879bdf1b3a9e01916f85d0",
+          "version": "0.1.2"
+        }
+      },
+      {
+        "package": "KeychainLinux",
+        "repositoryURL": "https://github.com/OperatorFoundation/KeychainLinux.git",
+        "state": {
+          "branch": null,
+          "revision": "9be9dbf0a3492444a770ef22da18d0ff544713f7",
+          "version": "0.1.1"
+        }
+      },
+      {
         "package": "Monolith",
         "repositoryURL": "https://github.com/OperatorFoundation/Monolith.git",
         "state": {

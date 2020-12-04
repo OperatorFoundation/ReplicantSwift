@@ -17,6 +17,8 @@ let package = Package(
     dependencies: [
         // Dependencies declare other packages that this package depends on.
         .package(url: "https://github.com/apple/swift-crypto.git", from: "1.1.2"),
+        .package(url: "https://github.com/OperatorFoundation/Keychain.git", from: "0.1.2"),
+        .package(url: "https://github.com/OperatorFoundation/KeychainLinux.git", from: "0.1.1"),
         .package(url: "https://github.com/OperatorFoundation/Song.git", from: "0.1.1"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.4.0"),
         .package(url: "https://github.com/OperatorFoundation/Monolith.git", from: "1.0.0"),
@@ -32,6 +34,8 @@ let package = Package(
             dependencies: [
                 "Monolith", "Datable", "Transport", "Song", "SwiftQueue",
                 .product(name: "Logging", package: "swift-log"),
+                .product(name: "Keychain", package: "Keychain", condition: .when(platforms: [.iOS, .macOS, .watchOS, .tvOS])),
+                .product(name: "KeychainLinux", package: "KeychainLinux", condition: .when(platforms: [.linux])),
                 .product(name: "Crypto", package: "swift-crypto", condition: .when(platforms: [.linux]))
             ]
         ),
