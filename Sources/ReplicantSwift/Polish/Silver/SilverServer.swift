@@ -30,7 +30,10 @@ public class SilverServer
         self.chunkSize = chunkSize
         self.chunkTimeout = chunkTimeout
         self.log = logger
-        self.controller = SilverController(logger: logger)
+        
+        guard let maybeController = SilverController(logger: logger)
+        else { return nil }
+        self.controller = maybeController
         
         // The client's key if we get one on init
         if let publicKeyData = clientPublicKeyData

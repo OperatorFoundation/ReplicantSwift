@@ -27,14 +27,16 @@ public struct SilverController
     let log: Logger
     var keychain: Keychain
         
-    public init(logger: Logger)
+    public init?(logger: Logger)
     {
         self.log = logger
         
         #if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
         keychain = Keychain()
         #else
-        keychain = Keychain(baseDirectory: FileManager.default.homeDirectoryForCurrentUser)
+        guard let linuxKeychain = Keychain(baseDirectory: FileManager.default.homeDirectoryForCurrentUser)
+        else { return nil }
+        keychain = linuxKeychain
         #endif
     }
     

@@ -40,7 +40,11 @@ public class SilverClientConnection
     public init?(logger: Logger, serverPublicKeyData: Data, chunkSize: UInt16, chunkTimeout: Int)
     {
         log = logger
-        controller = SilverController(logger: logger)
+        
+        guard let maybeController = SilverController(logger: logger)
+        else { return nil }
+        controller = maybeController
+        
         //TODO: controller.deleteClientKeys()
         
         guard let sPublicKey = controller.decodeKey(fromData: serverPublicKeyData)

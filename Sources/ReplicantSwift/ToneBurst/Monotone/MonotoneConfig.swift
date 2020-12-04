@@ -58,17 +58,8 @@ public class MonotoneConfig: Codable
         if result.count < model.length
         {
             let length = Int(model.length) - result.count
-            
-            var randomBytes = [UInt8](repeating: 0, count: length)
-            let status = SecRandomCopyBytes(kSecRandomDefault, length, &randomBytes)
-            if status == errSecSuccess
-            {
-                result.append(Data(randomBytes))
-            }
-            else
-            {
-                return nil
-            }
+            let randomBytes = generateRandomBytes(count: length)
+            result.append(randomBytes)
         }
         
         return result

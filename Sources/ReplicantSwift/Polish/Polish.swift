@@ -32,14 +32,13 @@ public protocol PolishServer
     func newConnection(connection: Connection) -> PolishConnection?
 }
 
-func generateRandomBytes(count: Int) -> Data? {
-    var bytes = [UInt8](repeating: 0, count: count)
-    let result = SecRandomCopyBytes(kSecRandomDefault, bytes.count, &bytes)
-
-    guard result == errSecSuccess else {
-        print("Problem generating random bytes")
-        return nil
+func generateRandomBytes(count: Int) -> Data
+{
+    var bytes = [UInt8]()
+    for _ in 1...count
+    {
+        bytes.append(UInt8.random(in: 0...255))
     }
-
+    
     return Data(bytes)
 }

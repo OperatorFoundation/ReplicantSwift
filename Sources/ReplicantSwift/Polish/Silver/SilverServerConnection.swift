@@ -35,7 +35,9 @@ public class SilverServerConnection
     public init?(logger: Logger, chunkSize: UInt16, chunkTimeout: Int)
     {
         self.log = logger
-        self.controller = SilverController(logger: logger)
+        guard let maybeController = SilverController(logger: logger)
+        else { return nil }
+        self.controller = maybeController
         
         // Check to see if the server already has a keypair first
         // If not, create one and save it.
@@ -105,12 +107,7 @@ extension SilverServerConnection: PolishConnection
             let configChunkSize = Int(self.chunkSize)
             
             //Generate random data of chunk size
-            guard let randomData = generateRandomBytes(count: configChunkSize)
-            else
-            {
-                completion(HandshakeError.dataCreationError)
-                return
-            }
+            let randomData = generateRandomBytes(count: configChunkSize)
             
             //Send random data to client
             connection.send(content: randomData, contentContext: .defaultMessage, isComplete: false, completion: NWConnection.SendCompletion.contentProcessed(
