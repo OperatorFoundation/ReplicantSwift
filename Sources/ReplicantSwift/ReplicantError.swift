@@ -27,7 +27,7 @@
 
 import Foundation
 
-enum ReplicantError: Error
+public enum ReplicantError: Error
 {
     case initializationError
     case noClientPublicKey
