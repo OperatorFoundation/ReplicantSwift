@@ -21,10 +21,10 @@ let package = Package(
         .package(url: "https://github.com/OperatorFoundation/KeychainLinux.git", from: "0.1.1"),
         .package(url: "https://github.com/OperatorFoundation/Song.git", from: "0.1.1"),
         .package(url: "https://github.com/apple/swift-log.git", from: "1.4.0"),
-        .package(url: "https://github.com/OperatorFoundation/Monolith.git", from: "1.0.1"),
-        .package(url: "https://github.com/OperatorFoundation/Datable.git", from: "3.0.3"),
+        .package(url: "https://github.com/OperatorFoundation/Monolith.git", from: "1.0.2"),
+        .package(url: "https://github.com/OperatorFoundation/Datable.git", from: "3.0.4"),
         .package(url: "https://github.com/OperatorFoundation/Transport.git", from: "2.3.5"),
-        .package(url: "https://github.com/OperatorFoundation/SwiftQueue.git", from: "0.0.3")
+        .package(url: "https://github.com/OperatorFoundation/SwiftQueue.git", from: "0.1.0")
 ],
     targets: [
         // Targets are the basic building blocks of a package. A target can define a module or a test suite.
