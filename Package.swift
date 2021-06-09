@@ -6,15 +6,8 @@ import PackageDescription
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS)
 let package = Package(
     name: "ReplicantSwift",
-    platforms: [
-       .macOS(.v11)
-    ],
-    products: [
-        // Products define the executables and libraries produced by a package, and make them visible to other packages.
-        .library(
-            name: "ReplicantSwift",
-            targets: ["ReplicantSwift"]),
-    ],
+    platforms: [.macOS(.v11)],
+    products: [.library(name: "ReplicantSwift", targets: ["ReplicantSwift"])],
     dependencies: [
         .package(url: "https://github.com/OperatorFoundation/Keychain.git",
                  from: "0.1.2"),
@@ -30,7 +23,7 @@ let package = Package(
                  from: "2.3.5"),
         .package(url: "https://github.com/OperatorFoundation/SwiftQueue.git",
                  from: "0.1.0")
-],
+    ],
     targets: [
         .target(
             name: "ReplicantSwift",
@@ -46,14 +39,10 @@ let package = Package(
     ],
     swiftLanguageVersions: [.v5]
 )
-#else
+#elseif os(Linux)
 let package = Package(
     name: "ReplicantSwift",
-    products: [
-        .library(
-            name: "ReplicantSwift",
-            targets: ["ReplicantSwift"]),
-    ],
+    products: [.library(name: "ReplicantSwift", targets: ["ReplicantSwift"])],
     dependencies: [
         .package(url: "https://github.com/apple/swift-crypto.git",
                  from: "1.1.2"),
@@ -70,8 +59,7 @@ let package = Package(
         .package(url: "https://github.com/OperatorFoundation/Transport.git",
                  from: "2.3.5"),
         .package(url: "https://github.com/OperatorFoundation/SwiftQueue.git",
-                 from: "0.1.0")
-],
+                 from: "0.1.0")],
     targets: [
         .target(
             name: "ReplicantSwift",
@@ -80,12 +68,10 @@ let package = Package(
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "KeychainLinux", package: "KeychainLinux"),
                 .product(name: "Crypto", package: "swift-crypto")
-            ]
-        ),
+            ]),
         .testTarget(
             name: "ReplicantSwiftTests",
             dependencies: ["ReplicantSwift"]),
     ],
-    swiftLanguageVersions: [.v5]
-)
+    swiftLanguageVersions: [.v5])
 #endif
