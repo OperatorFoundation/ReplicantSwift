@@ -19,6 +19,7 @@ let package = Package(
                  from: "1.0.2"),
         .package(url: "https://github.com/OperatorFoundation/Datable.git",
                  from: "3.0.4"),
+        .package(url: "https://github.com/OperatorFoundation/Transmission.git", from: "0.2.3"),
         .package(url: "https://github.com/OperatorFoundation/Transport.git",
                  from: "2.3.5"),
         .package(url: "https://github.com/OperatorFoundation/SwiftQueue.git",
@@ -28,7 +29,12 @@ let package = Package(
         .target(
             name: "ReplicantSwift",
             dependencies: [
-                "Monolith", "Datable", "Transport", "Song", "SwiftQueue",
+                "Datable",
+                "Monolith",
+                "Song",
+                "SwiftQueue",
+                "Transmission",
+                "Transport",
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "Keychain", package: "Keychain"),
             ]
@@ -56,6 +62,7 @@ let package = Package(
                  from: "1.0.2"),
         .package(url: "https://github.com/OperatorFoundation/Datable.git",
                  from: "3.0.4"),
+        .package(url: "https://github.com/OperatorFoundation/TransmissionLinux.git", from: "0.2.2"),
         .package(url: "https://github.com/OperatorFoundation/Transport.git",
                  from: "2.3.5"),
         .package(url: "https://github.com/OperatorFoundation/SwiftQueue.git",
@@ -64,7 +71,12 @@ let package = Package(
         .target(
             name: "ReplicantSwift",
             dependencies: [
-                "Monolith", "Datable", "Transport", "Song", "SwiftQueue",
+                "Datable",
+                "Monolith",
+                "Song",
+                "SwiftQueue",
+                "TransmissionLinux",
+                "Transport",
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "KeychainLinux", package: "KeychainLinux"),
                 .product(name: "Crypto", package: "swift-crypto")
