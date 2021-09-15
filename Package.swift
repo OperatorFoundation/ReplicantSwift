@@ -23,7 +23,7 @@ let package = Package(
         .package(url: "https://github.com/OperatorFoundation/Transport.git",
                  from: "2.3.6"),
         .package(url: "https://github.com/OperatorFoundation/SwiftQueue.git",
-                 from: "0.1.1")
+                 from: "0.1.0")
     ],
     targets: [
         .target(
