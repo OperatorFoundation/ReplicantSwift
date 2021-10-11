@@ -6,7 +6,7 @@ import PackageDescription
 #if os(iOS) || os(macOS) || os(watchOS) || os(tvOS)
 let package = Package(
     name: "ReplicantSwift",
-    platforms: [.macOS(.v11)],
+    platforms: [.macOS(.v10_15)],
     products: [.library(name: "ReplicantSwift", targets: ["ReplicantSwift"])],
     dependencies: [
         .package(url: "https://github.com/OperatorFoundation/Keychain.git",
@@ -16,14 +16,14 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git",
                  from: "1.4.2"),
         .package(url: "https://github.com/OperatorFoundation/Monolith.git",
-                 from: "1.0.2"),
+                 from: "1.0.3"),
         .package(url: "https://github.com/OperatorFoundation/Datable.git",
-                 from: "3.0.6"),
-        .package(url: "https://github.com/OperatorFoundation/Transmission.git", from: "0.2.4"),
+                 from: "3.1.1"),
+        .package(url: "https://github.com/OperatorFoundation/Transmission.git", from: "0.4.1"),
         .package(url: "https://github.com/OperatorFoundation/Transport.git",
-                 from: "2.3.6"),
+                 from: "2.3.8"),
         .package(url: "https://github.com/OperatorFoundation/SwiftQueue.git",
-                 from: "0.1.0")
+                 from: "0.1.1")
     ],
     targets: [
         .target(
