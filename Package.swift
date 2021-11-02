@@ -19,9 +19,7 @@ let package = Package(
                  from: "1.0.3"),
         .package(url: "https://github.com/OperatorFoundation/Datable.git",
                  from: "3.1.1"),
-        .package(url: "https://github.com/OperatorFoundation/Transmission.git", from: "0.4.1"),
-        .package(url: "https://github.com/OperatorFoundation/Transport.git",
-                 from: "2.3.8"),
+        .package(url: "https://github.com/OperatorFoundation/Transmission.git", from: "0.6.0"),
         .package(url: "https://github.com/OperatorFoundation/SwiftQueue.git",
                  from: "0.1.1")
     ],
@@ -34,7 +32,6 @@ let package = Package(
                 "Song",
                 "SwiftQueue",
                 "Transmission",
-                "Transport",
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "Keychain", package: "Keychain"),
             ]
@@ -62,11 +59,10 @@ let package = Package(
                  from: "1.0.2"),
         .package(url: "https://github.com/OperatorFoundation/Datable.git",
                  from: "3.0.6"),
-        .package(url: "https://github.com/OperatorFoundation/TransmissionLinux.git", from: "0.3.4"),
-        .package(url: "https://github.com/OperatorFoundation/Transport.git",
-                 from: "2.3.6"),
+        .package(url: "https://github.com/OperatorFoundation/Transmission.git", from: "0.6.0"),
         .package(url: "https://github.com/OperatorFoundation/SwiftQueue.git",
-                 from: "0.1.0")],
+                 from: "0.1.0")
+    ],
     targets: [
         .target(
             name: "ReplicantSwift",
@@ -76,7 +72,6 @@ let package = Package(
                 "Song",
                 "SwiftQueue",
                 "TransmissionLinux",
-                "Transport",
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "KeychainLinux", package: "KeychainLinux"),
                 .product(name: "Crypto", package: "swift-crypto")

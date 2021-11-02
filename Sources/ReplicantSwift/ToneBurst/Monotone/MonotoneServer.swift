@@ -7,21 +7,16 @@
 
 import Foundation
 import Datable
-import Transport
-#if os(Linux)
-import NetworkLinux
-#else
-import Network
-#endif
+import Transmission
 
 /// Injects byte sequences into a stream of bytes
-public class MonotoneServer: Whalesong
+public class MonotoneServer
 {
 }
 
 extension MonotoneServer: ToneBurst
 {
-    public func play(connection: Connection, completion: @escaping (Error?) -> Void)
+    public func play(connection: Transmission.Connection, completion: @escaping (Error?) -> Void)
     {
         self.toneBurstReceive(connection: connection, finalToneSent: false, completion: completion)
     }

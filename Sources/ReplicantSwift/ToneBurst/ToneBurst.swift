@@ -7,10 +7,10 @@
 
 import Foundation
 import Datable
-import Transport
+import Transmission
 
 /// Injects byte sequences into a stream of bytes
 public protocol ToneBurst: Codable
 {
-    mutating func play(connection: Connection, completion: @escaping (Error?) -> Void)
+    mutating func play(connection: Transmission.Connection, completion: @escaping (Error?) -> Void)
 }

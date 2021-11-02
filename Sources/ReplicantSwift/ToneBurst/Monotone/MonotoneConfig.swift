@@ -6,12 +6,7 @@
 //
 
 import Foundation
-import Transport
-#if os(Linux)
-import NetworkLinux
-#else
-import Network
-#endif
+import Transmission
 
 public class MonotoneConfig: Codable
 {
@@ -146,7 +141,7 @@ public class MonotoneConfig: Codable
         }
     }
     
-    func toneBurstSend(connection: Connection, completion: @escaping (Error?) -> Void)
+    func toneBurstSend(connection: Transmission.Connection, completion: @escaping (Error?) -> Void)
     {
         let sendState = generate()
         
@@ -154,20 +149,15 @@ public class MonotoneConfig: Codable
         {
         case .generating(let nextTone):
             print("\nGenerating tone bursts.\n")
-            connection.send(content: nextTone, contentContext: .defaultMessage, isComplete: false, completion: NWConnection.SendCompletion.contentProcessed(
-                {
-                    (maybeToneSendError) in
-                    
-                    guard maybeToneSendError == nil
-                        else
-                    {
-                        print("Received error while sending tone burst: \(maybeToneSendError!)")
-                        return
-                    }
-                    
-                    self.toneBurstReceive(connection: connection, finalToneSent: false, completion: completion)
-            }))
-            
+            guard connection.write(data: nextTone) else
+            {
+                print("Received error while sending tone burst")
+                completion(MonotoneError.removeFailure)
+                return
+            }
+
+            self.toneBurstReceive(connection: connection, finalToneSent: false, completion: completion)
+
         case .completion:
             print("\nGenerated final toneburst\n")
             toneBurstReceive(connection: connection, finalToneSent: true, completion: completion)
@@ -186,46 +176,34 @@ public class MonotoneConfig: Codable
             // Tone burst is finished
             return
         }
-        
-        connection.receive(minimumIncompleteLength: Int(toneLength), maximumLength: Int(toneLength) , completion:
-            {
-                (maybeToneResponseData, maybeToneResponseContext, connectionComplete, maybeToneResponseError) in
+
+        guard let data = connection.read(size: Int(toneLength)) else
+        {
+            print("\nReceived an error in the server tone response\n")
+            completion(MonotoneError.removeFailure)
+            return
+        }
+
+        let receiveState = self.remove(newData: data)
                 
-                guard maybeToneResponseError == nil
-                    else
+        switch receiveState
+        {
+            case .completion:
+                if finalToneSent
                 {
-                    print("\nReceived an error in the server tone response: \(maybeToneResponseError!)\n")
-                    return
+                    completion(nil)
                 }
-                
-                guard let toneResponseData = maybeToneResponseData
-                    else
+                else
                 {
-                    print("\nTone response was empty.\n")
-                    return
-                }
-                
-                let receiveState = self.remove(newData: toneResponseData)
-                
-                switch receiveState
-                {
-                case .completion:
-                    if !finalToneSent
-                    {
-                        self.toneBurstSend(connection: connection, completion: completion)
-                    }
-                    else
-                    {
-                        completion(nil)
-                    }
-                    
-                case .receiving:
                     self.toneBurstSend(connection: connection, completion: completion)
-                    
-                case .failure:
-                    print("\nTone burst remove failure.\n")
-                    completion(WhalesongError.removeFailure)
                 }
-        })
+
+            case .receiving:
+                self.toneBurstSend(connection: connection, completion: completion)
+
+            case .failure:
+                print("\nTone burst remove failure.\n")
+                completion(WhalesongError.removeFailure)
+        }
     }
 }
