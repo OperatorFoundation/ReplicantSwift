@@ -14,3 +14,4 @@ public protocol ToneBurst: Codable
 {
     mutating func play(connection: Transmission.Connection, completion: @escaping (Error?) -> Void)
 }
+

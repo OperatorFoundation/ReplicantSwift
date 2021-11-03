@@ -10,7 +10,7 @@ import Datable
 import Transmission
 
 /// Injects byte sequences into a stream of bytes
-public class MonotoneServer
+public class MonotoneServer: Whalesong
 {
 }
 
