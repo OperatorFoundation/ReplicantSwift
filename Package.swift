@@ -71,7 +71,6 @@ let package = Package(
                 "Monolith",
                 "Song",
                 "SwiftQueue",
-                "TransmissionLinux",
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "KeychainLinux", package: "KeychainLinux"),
                 .product(name: "Crypto", package: "swift-crypto")
