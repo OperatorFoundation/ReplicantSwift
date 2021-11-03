@@ -70,6 +70,7 @@ let package = Package(
                 "Datable",
                 "Monolith",
                 "Song",
+                "Transmission",
                 "SwiftQueue",
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "KeychainLinux", package: "KeychainLinux"),
