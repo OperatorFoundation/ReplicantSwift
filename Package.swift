@@ -52,7 +52,7 @@ let package = Package(
         .package(url: "https://github.com/OperatorFoundation/KeychainLinux.git",
                  from: "0.1.1"),
         .package(url: "https://github.com/OperatorFoundation/Song.git",
-                 from: "0.1.7"),
+                 from: "0.2.1"),
         .package(url: "https://github.com/apple/swift-log.git",
                  from: "1.4.2"),
         .package(url: "https://github.com/OperatorFoundation/Monolith.git",
