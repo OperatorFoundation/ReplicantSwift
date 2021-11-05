@@ -5,11 +5,7 @@
 //  Created by Mafalda on 4/28/20.
 //
 
-#if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
-import CryptoKit
-#else
 import Crypto
-#endif
 
 import Foundation
 import Transport

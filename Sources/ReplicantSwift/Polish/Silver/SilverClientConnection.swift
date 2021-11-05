@@ -8,22 +8,10 @@
 import Foundation
 import Logging
 import Transport
-
-#if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
-import CryptoKit
-import Keychain
-#else
-import Crypto
-import KeychainLinux
-#endif
-
-#if os(Linux)
-import NetworkLinux
-//import CryptoKitLinux
-#else
 import Network
-//import CryptoKit
-#endif
+
+import Crypto
+import Keychain
 
 public class SilverClientConnection
 {

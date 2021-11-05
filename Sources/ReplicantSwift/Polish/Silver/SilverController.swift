@@ -8,13 +8,8 @@
 import Foundation
 import Logging
 
-#if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
-import CryptoKit
-import Keychain
-#else
 import Crypto
-import KeychainLinux
-#endif
+import Keychain
 
 public struct SilverController
 {

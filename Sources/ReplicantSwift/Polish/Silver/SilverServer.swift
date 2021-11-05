@@ -9,11 +9,7 @@ import Foundation
 import Transport
 import Logging
 
-#if (os(macOS) || os(iOS) || os(watchOS) || os(tvOS))
-import CryptoKit
-#else
 import Crypto
-#endif
 
 public class SilverServer
 {
