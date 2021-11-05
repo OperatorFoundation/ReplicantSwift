@@ -16,4 +16,5 @@ enum HandshakeError: Error
     case clientKeyDataIncorrectSize
     case unableToDecryptData
     case dataCreationError
+    case writeError
 }

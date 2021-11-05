@@ -6,7 +6,7 @@
 //
 
 import Foundation
-import Transport
+import Transmission
 import Logging
 
 import Crypto

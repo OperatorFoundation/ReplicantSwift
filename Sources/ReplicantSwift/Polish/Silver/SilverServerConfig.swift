@@ -15,7 +15,6 @@ public struct SilverServerConfig: PolishServerConfig, Codable
     public let chunkSize: UInt16
     public let chunkTimeout: Int
     
-    
     public func construct(logger: Logger) -> PolishServer?
     {
         let silverServer = SilverServer(logger: logger, chunkSize: chunkSize, chunkTimeout: chunkTimeout)

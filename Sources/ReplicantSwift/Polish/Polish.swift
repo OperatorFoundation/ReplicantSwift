@@ -8,7 +8,7 @@
 import Crypto
 
 import Foundation
-import Transport
+import Transmission
 
 public protocol PolishConnection
 {

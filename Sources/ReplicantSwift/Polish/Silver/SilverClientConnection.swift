@@ -7,7 +7,7 @@
 
 import Foundation
 import Logging
-import Transport
+import Transmission
 import Network
 
 import Crypto
@@ -62,53 +62,43 @@ public class SilverClientConnection
 //    }
 }
 
+public enum PolishError: Error
+{
+    case noData
+    case failedDecrypt
+    case writeError
+    case readError
+}
+
 extension SilverClientConnection: PolishConnection
 {
     public func handshake(connection: Connection, completion: @escaping (Error?) -> Void)
     {
         log.debug("\n🤝  Client handshake initiation.")
         log.debug("\n🤝  Sending Public Key Data")
-        let paddedKeyData = controller.generatePaddedKeyData(publicKey: publicKey, chunkSize: chunkSize)
-        connection.send(content: paddedKeyData, contentContext: .defaultMessage, isComplete: false, completion: NWConnection.SendCompletion.contentProcessed(
+        guard let paddedKeyData = controller.generatePaddedKeyData(publicKey: publicKey, chunkSize: chunkSize) else
         {
-            (maybeError) in
-            
+            completion(PolishError.noData)
+            return
+        }
+
+        guard connection.write(data: paddedKeyData) else
+        {
             self.log.error("\n🤝  Handshake: Returned from sending our public key to the server.\n")
-            guard maybeError == nil
-                else
-            {
-                self.log.error("\n🤝  Received error from server when sending our key: \(maybeError!)")
-                completion(maybeError!)
-                return
-            }
-            
-            let replicantChunkSize = Int(self.chunkSize)
-            connection.receive(minimumIncompleteLength: replicantChunkSize, maximumLength: replicantChunkSize, completion:
-            {
-                (maybeResponse1Data, maybeResponse1Context, _, maybeResponse1Error) in
-                
-                self.log.debug("\n🤝  Callback from handshake network.receive called.")
-                guard maybeResponse1Error == nil
-                    else
-                {
-                    self.log.error("\n🤝  Received an error while waiting for response from server after sending key: \(maybeResponse1Error!)")
-                    completion(maybeResponse1Error!)
-                    return
-                }
-                
-                // This data is meaningless it can be discarded
-                guard let reponseData = maybeResponse1Data
-                    else
-                {
-                    self.log.error("\n🤝  Server key response did not contain data.")
-                    completion(nil)
-                    return
-                }
-                
-                self.log.debug("\n🤝  Received response data from the server during handshake: \(reponseData)\n")
-                completion(nil)
-            })
-        }))
+            completion(HandshakeError.writeError)
+            return
+        }
+
+        let replicantChunkSize = Int(self.chunkSize)
+        guard let responseData = connection.read(size: replicantChunkSize) else
+        {
+            self.log.debug("\n🤝  Callback from handshake network.receive called.")
+            completion(HandshakeError.writeError)
+            return
+        }
+
+        self.log.debug("\n🤝  Received response data from the server during handshake: \(responseData)\n")
+        completion(nil)
     }
     
     public func polish(inputData: Data) -> Data?

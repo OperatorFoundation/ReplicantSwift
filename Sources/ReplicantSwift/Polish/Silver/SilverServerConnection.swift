@@ -7,7 +7,7 @@
 
 import Foundation
 import Logging
-import Transport
+import Transmission
 import Network
 
 import Crypto
@@ -52,69 +52,45 @@ extension SilverServerConnection: PolishConnection
         print("\n🤝  Replicant Server handshake called.")
         let replicantChunkSize = chunkSize
         
-        //Call receive first
-        connection.receive(minimumIncompleteLength: Int(replicantChunkSize), maximumLength: Int(replicantChunkSize))
+        //Call read first
+        guard let clientPaddedData = connection.read(size: Int(replicantChunkSize)) else
         {
-            (maybeResponse1Data, maybeResponse1Context, _, maybeResponse1Error) in
-            
-            print("\n🤝  network.receive callback from handshake.")
-            print("\n🤝  Data received: \(String(describing: maybeResponse1Data?.bytes))")
-            
-            // Parse received public key and store it
-            guard maybeResponse1Error == nil
-            else
-            {
-                print("\n\n🤝  Received an error while waiting for response from server acfter sending key: \(maybeResponse1Error!)\n")
-                completion(maybeResponse1Error!)
-                return
-            }
-            
-            // Make sure we have data
-            guard let clientPaddedData = maybeResponse1Data
-            else
-            {
-                print("\nClient introduction did not contain data.\n")
-                completion(HandshakeError.noClientKeyData)
-                return
-            }
-            
-            // Key data is the first chunk of keyDataSize
-            let clientKeyData = clientPaddedData[..<self.controller.compactKeySize]
-
-                
-            // Convert data to Key
-            //FIXME: Will decode key method account for leading 04?
-            guard let clientKey = self.controller.decodeKey(fromData: clientKeyData)
-            else
-            {
-                print("\nUnable to decode client key.\n")
-                completion(HandshakeError.invalidClientKeyData)
-                return
-            }
-            
-            let derivedKey = self.controller.deriveSymmetricKey(receiverPublicKey: clientKey, senderPrivateKey: self.privateKey)
-            self.symmetricKey = derivedKey
-            
-            let configChunkSize = Int(self.chunkSize)
-            
-            //Generate random data of chunk size
-            let randomData = generateRandomBytes(count: configChunkSize)
-            
-            //Send random data to client
-            connection.send(content: randomData, contentContext: .defaultMessage, isComplete: false, completion: NWConnection.SendCompletion.contentProcessed(
-            {
-                (maybeError) in
-                
-                guard maybeError == nil
-                    else
-                {
-                    print("\nReceived error from client when sending random data in handshake: \(maybeError!)")
-                    completion(maybeError!)
-                    return
-                }
-            }))
+            print("\n\n🤝  Received an error while waiting for response from server acfter sending key\n")
+            completion(HandshakeError.noClientKeyData)
+            return
         }
 
+        print("\n🤝  Data received: \(String(describing: clientPaddedData.bytes))")
+
+        // Key data is the first chunk of keyDataSize
+        let clientKeyData = clientPaddedData[..<self.controller.compactKeySize]
+
+        // Convert data to Key
+        //FIXME: Will decode key method account for leading 04?
+        guard let clientKey = self.controller.decodeKey(fromData: clientKeyData)
+        else
+        {
+            print("\nUnable to decode client key.\n")
+            completion(HandshakeError.invalidClientKeyData)
+            return
+        }
+
+        let derivedKey = self.controller.deriveSymmetricKey(receiverPublicKey: clientKey, senderPrivateKey: self.privateKey)
+        self.symmetricKey = derivedKey
+
+        let configChunkSize = Int(self.chunkSize)
+
+        //Generate random data of chunk size
+        let randomData = generateRandomBytes(count: configChunkSize)
+
+        guard connection.write(data: randomData) else
+        {
+            completion(HandshakeError.writeError)
+            return
+        }
+
+        completion(nil)
+        return
     }
     
     public func polish(inputData: Data) -> Data?
