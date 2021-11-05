@@ -20,7 +20,7 @@ let package = Package(
                  from: "1.0.3"),
         .package(url: "https://github.com/OperatorFoundation/Datable.git",
                  from: "3.1.1"),
-        .package(url: "https://github.com/OperatorFoundation/Transmission.git", from: "1.0.0"),
+        .package(url: "https://github.com/OperatorFoundation/Transmission.git", from: "1.0.1"),
         .package(url: "https://github.com/OperatorFoundation/SwiftQueue.git",
                  from: "0.1.1")
     ],
