@@ -11,7 +11,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-crypto.git",
                  from: "2.0.0"),
         .package(url: "https://github.com/OperatorFoundation/Keychain.git",
-                 from: "0.1.2"),
+                 from: "0.1.3"),
         .package(url: "https://github.com/OperatorFoundation/Song.git",
                  from: "0.1.7"),
         .package(url: "https://github.com/apple/swift-log.git",
