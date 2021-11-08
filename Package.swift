@@ -8,6 +8,7 @@ let package = Package(
     platforms: [.macOS(.v10_15)],
     products: [.library(name: "ReplicantSwift", targets: ["ReplicantSwift"])],
     dependencies: [
+        .package(url: "https://github.com/OperatorFoundation/Net.git", from: "0.0.1"),
         .package(url: "https://github.com/apple/swift-crypto.git",
                  from: "2.0.0"),
         .package(url: "https://github.com/OperatorFoundation/Keychain.git",
@@ -33,6 +34,7 @@ let package = Package(
                 "Song",
                 "SwiftQueue",
                 "Transmission",
+                "Net",
                 .product(name: "Crypto", package: "swift-crypto"),
                 .product(name: "Logging", package: "swift-log"),
                 .product(name: "Keychain", package: "Keychain"),

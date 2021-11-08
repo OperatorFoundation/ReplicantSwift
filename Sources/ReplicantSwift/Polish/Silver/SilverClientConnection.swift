@@ -8,7 +8,7 @@
 import Foundation
 import Logging
 import Transmission
-import Network
+import Net
 
 import Crypto
 import Keychain
