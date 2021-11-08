@@ -18,7 +18,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log.git",
                  from: "1.4.2"),
         .package(url: "https://github.com/OperatorFoundation/Monolith.git",
-                 from: "1.0.3"),
+                 from: "1.0.4"),
         .package(url: "https://github.com/OperatorFoundation/Datable.git",
                  from: "3.1.1"),
         .package(url: "https://github.com/OperatorFoundation/Transmission.git", from: "1.0.1"),
