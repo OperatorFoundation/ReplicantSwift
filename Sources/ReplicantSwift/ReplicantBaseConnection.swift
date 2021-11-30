@@ -28,7 +28,7 @@ import Foundation
 import Logging
 
 import Crypto
-import Network
+import Net
 import Transmission
 
 open class ReplicantBaseConnection: Transmission.Connection
