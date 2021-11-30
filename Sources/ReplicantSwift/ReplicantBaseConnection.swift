@@ -31,7 +31,7 @@ import Crypto
 import Network
 import Transmission
 
-class ReplicantBaseConnection: Transmission.Connection
+public class ReplicantBaseConnection: Transmission.Connection
 {
     public let aesOverheadSize = 113
     public let payloadLengthOverhead = 2
