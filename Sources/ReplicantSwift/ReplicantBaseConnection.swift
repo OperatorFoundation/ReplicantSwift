@@ -37,17 +37,17 @@ open class ReplicantBaseConnection: Transmission.Connection
     public let payloadLengthOverhead = 2
     public var log: Logger
 
-    var unencryptedChunkSize: UInt16 = 400 // FIXME: unencrypted chunk size for non-polish
-    var sendTimer: Timer?
-    var networkQueue = DispatchQueue(label: "Replicant Queue")
-    var sendBufferQueue = DispatchQueue(label: "SendBuffer Queue")
-    var bufferLock = DispatchGroup()
-    var decryptedReceiveBuffer: Data = Data()
-    var sendBuffer: Data = Data()
-    var polishConnection: PolishConnection? = nil
-    var toneBurst: ToneBurst? = nil
+    open var unencryptedChunkSize: UInt16 = 400 // FIXME: unencrypted chunk size for non-polish
+    open var sendTimer: Timer?
+    open var networkQueue = DispatchQueue(label: "Replicant Queue")
+    open var sendBufferQueue = DispatchQueue(label: "SendBuffer Queue")
+    open var bufferLock = DispatchGroup()
+    open var decryptedReceiveBuffer: Data = Data()
+    open var sendBuffer: Data = Data()
+    open var polishConnection: PolishConnection? = nil
+    open var toneBurst: ToneBurst? = nil
 
-    var network: Transmission.Connection
+    open var network: Transmission.Connection
 
     public init(log: Logger, network: Transmission.Connection) {
         self.log = log
