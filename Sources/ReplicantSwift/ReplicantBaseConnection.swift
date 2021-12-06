@@ -272,7 +272,7 @@ open class ReplicantBaseConnection: Transmission.Connection
         }
     }
 
-    func introductions(completion: @escaping (Error?) -> Void)
+    open func introductions(completion: @escaping (Error?) -> Void)
     {
         voightKampffTest
         {
