@@ -8,22 +8,22 @@ let package = Package(
     platforms: [.macOS(.v10_15)],
     products: [.library(name: "ReplicantSwift", targets: ["ReplicantSwift"])],
     dependencies: [
-        .package(url: "https://github.com/OperatorFoundation/Net.git", from: "0.0.1"),
+        .package(url: "https://github.com/OperatorFoundation/Net.git", branch: "main"),
         .package(url: "https://github.com/apple/swift-crypto.git",
                  from: "2.0.0"),
         .package(url: "https://github.com/OperatorFoundation/Keychain.git",
-                 from: "1.0.0"),
+                 branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/Song.git",
-                 from: "0.2.5"),
+                 branch: "main"),
         .package(url: "https://github.com/apple/swift-log.git",
                  from: "1.4.2"),
         .package(url: "https://github.com/OperatorFoundation/Monolith.git",
-                 from: "1.0.4"),
+                 branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/Datable.git",
-                 from: "3.1.2"),
-        .package(url: "https://github.com/OperatorFoundation/Transmission.git", from: "1.2.2"),
+                 branch: "main"),
+        .package(url: "https://github.com/OperatorFoundation/Transmission.git", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/SwiftQueue.git",
-                 from: "0.1.2")
+                 branch: "main")
     ],
     targets: [
         .target(
@@ -35,9 +35,9 @@ let package = Package(
                 "SwiftQueue",
                 "Transmission",
                 "Net",
+                "Keychain",
                 .product(name: "Crypto", package: "swift-crypto"),
                 .product(name: "Logging", package: "swift-log"),
-                .product(name: "Keychain", package: "Keychain"),
             ]
         ),
         .testTarget(
