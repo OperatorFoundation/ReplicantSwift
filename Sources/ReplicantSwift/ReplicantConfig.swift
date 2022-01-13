@@ -11,7 +11,8 @@ import Song
 public struct ReplicantConfig<PolishClientConfigType>: Codable where PolishClientConfigType: PolishClientConfig
 {
     //public static var supportsSecureCoding: Bool = true
-    
+    public let serverIP: String
+    public let port: UInt16
     public var polish: PolishClientConfigType?
     public var toneBurst: ToneBurstClientConfig?
     
@@ -21,7 +22,7 @@ public struct ReplicantConfig<PolishClientConfigType>: Codable where PolishClien
         do
         {
             let decoded = try songDecoder.decode(ReplicantConfig.self, from: data)
-            self.init(polish: decoded.polish, toneBurst: decoded.toneBurst)
+            self.init(serverIP: decoded.serverIP, port: decoded.port, polish: decoded.polish, toneBurst: decoded.toneBurst)
         }
         catch let decodeError
         {
@@ -30,8 +31,10 @@ public struct ReplicantConfig<PolishClientConfigType>: Codable where PolishClien
         }
     }
     
-    public init?(polish: PolishClientConfigType?, toneBurst: ToneBurstClientConfig?)
+    public init?(serverIP: String, port: UInt16, polish: PolishClientConfigType?, toneBurst: ToneBurstClientConfig?)
     {
+        self.serverIP = serverIP
+        self.port = port
         self.polish = polish
         self.toneBurst = toneBurst
     }
