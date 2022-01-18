@@ -72,7 +72,7 @@ public struct ReplicantConfig<PolishClientConfigType>: Codable where PolishClien
         self.port = port
         self.chunkSize = silverPolish.chunkSize
         self.chunkTimeout = silverPolish.chunkTimeout
-        self.serverPublicKey = String(data: silverPolish.serverKey)
+        self.serverPublicKey = silverPolish.serverKey.base64EncodedString()
         self.polish = polish
         self.toneBurst = toneBurst
     }
