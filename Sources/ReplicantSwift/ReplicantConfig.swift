@@ -13,28 +13,66 @@ public struct ReplicantConfig<PolishClientConfigType>: Codable where PolishClien
     //public static var supportsSecureCoding: Bool = true
     public let serverIP: String
     public let port: UInt16
+    public let chunkSize: UInt16?
+    public let chunkTimeout: Int?
+    public let serverPublicKey: String?
     public var polish: PolishClientConfigType?
     public var toneBurst: ToneBurstClientConfig?
     
     public init?(from data: Data)
     {
-        let songDecoder = SongDecoder()
+        let decoder = JSONDecoder()
         do
         {
-            let decoded = try songDecoder.decode(ReplicantConfig.self, from: data)
-            self.init(serverIP: decoded.serverIP, port: decoded.port, polish: decoded.polish, toneBurst: decoded.toneBurst)
+            let decoded = try decoder.decode(ReplicantConfig.self, from: data)
+            
+            if let actualChunkSize = decoded.chunkSize, let actualChunkTimeout = decoded.chunkTimeout, let actualServerKey = decoded.serverPublicKey
+            {
+                guard let actualPolishConfig = SilverClientConfig(serverKey: actualServerKey, chunkSize: actualChunkSize, chunkTimeout: actualChunkTimeout) as? PolishClientConfigType
+                else
+                {
+                    print("Failed to create a polish config using the provided parameters:\nchunkSize - \(actualChunkSize)\nchunkTimeout - \(actualChunkTimeout)\nserverKey - \(actualServerKey)")
+                    return nil
+                }
+                
+                // TODO: This does not currently handle toneburst
+                var maybeToneburstConfig: ToneBurstClientConfig?
+                
+                self.init(serverIP: decoded.serverIP, port: decoded.port, polish: actualPolishConfig, toneBurst: maybeToneburstConfig)
+                
+            }
+            else
+            {
+                // TODO: This does not currently handle toneburst
+                var maybeToneburstConfig: ToneBurstClientConfig?
+                
+                self.init(serverIP: decoded.serverIP, port: decoded.port, polish: nil, toneBurst: maybeToneburstConfig)
+            }
         }
         catch let decodeError
         {
             print("Error decoding ReplicantConfig data: \(decodeError)")
             return nil
         }
+                
+        
     }
     
     public init?(serverIP: String, port: UInt16, polish: PolishClientConfigType?, toneBurst: ToneBurstClientConfig?)
     {
+        // TODO: This will only work with silver polish types
+        guard let silverPolish = polish as? SilverClientConfig
+        else
+        {
+            print("Failed to cast polish config to SilverClientConfig")
+            return nil
+        }
+        
         self.serverIP = serverIP
         self.port = port
+        self.chunkSize = silverPolish.chunkSize
+        self.chunkTimeout = silverPolish.chunkTimeout
+        self.serverPublicKey = String(data: silverPolish.serverKey)
         self.polish = polish
         self.toneBurst = toneBurst
     }
@@ -44,6 +82,15 @@ public struct ReplicantConfig<PolishClientConfigType>: Codable where PolishClien
         let url = URL(fileURLWithPath: path)
         guard let data = try? Data(contentsOf: url) else {return nil}
         self.init(from: data)
+    }
+    
+    public func createSong(filePath: String) throws
+    {
+        let songEncoder = SongEncoder()
+        let songData = try songEncoder.encode(self)
+        let dirURL = URL(fileURLWithPath: filePath)
+        
+        try songData.write(to: dirURL)
     }
 
     /// Creates and returns a JSON representation of the ReplicantConfig struct.
