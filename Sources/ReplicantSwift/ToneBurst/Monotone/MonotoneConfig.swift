@@ -12,9 +12,11 @@ public class MonotoneConfig: Codable
 {
     /// Sequences that should be added to the outgoing packet stream.
     var addSequences: [SequenceModel]
+    // MonolithInstance
     
     /// Sequences that should be removed from the incoming packet stream.
     var removeSequences: [SequenceModel]
+    // MonolithDescription
     
     var addIndex = 0
     var removeIndex = 0
@@ -203,7 +205,7 @@ public class MonotoneConfig: Codable
 
             case .failure:
                 print("\nTone burst remove failure.\n")
-                completion(WhalesongError.removeFailure)
+                completion(MonotoneError.removeFailure)
         }
     }
 }

@@ -11,7 +11,7 @@ import Logging
 
 import Crypto
 
-public class SilverServer
+public class SilverServer: Polish
 {
     public let controller: SilverController
     
@@ -19,8 +19,8 @@ public class SilverServer
     public var chunkTimeout: Int
     public var clientPublicKey: P256.KeyAgreement.PublicKey?
     
-    let log: Logger
-    
+    var log: Logger
+        
     public init?(logger: Logger, chunkSize: UInt16, chunkTimeout: Int, clientPublicKeyData: Data? = nil)
     {
         self.chunkSize = chunkSize

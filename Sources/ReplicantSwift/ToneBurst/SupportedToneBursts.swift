@@ -35,7 +35,8 @@ extension ToneBurstClientConfig: Codable
         case whalesong
     }
     
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws
+    {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         do
         {
@@ -81,8 +82,10 @@ extension ToneBurstServerConfig: Codable
         case whalesong
     }
     
-    public init(from decoder: Decoder) throws {
+    public init(from decoder: Decoder) throws
+    {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        
         do
         {
             let whalesongValue =  try container.decode(WhalesongServer.self, forKey: .whalesong)
@@ -97,7 +100,9 @@ extension ToneBurstServerConfig: Codable
     public func encode(to encoder: Encoder) throws
     {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
+        
+        switch self
+        {
         case .whalesong(let server):
             try container.encode(server, forKey: .whalesong)
         }

@@ -48,29 +48,29 @@ public struct ReplicantConfigTemplate
 //        }
 //    }
 //    
-//    public static func parseJSON(atPath path: String) -> ReplicantConfigTemplate?
-//    {
-//        let fileManager = FileManager()
-//        let decoder = JSONDecoder()
-//        
-//        guard let jsonData = fileManager.contents(atPath: path)
-//        else
-//        {
-//            print("\nUnable to get JSON data at path: \(path)\n")
-//            return nil
-//        }
-//        
-//        do
-//        {
-//            let config = try decoder.decode(ReplicantConfigTemplate.self, from: jsonData)
-//            return config
-//        }
-//        catch (let error)
-//        {
-//            print("\nUnable to decode JSON into ReplicantConfigTemplate: \(error)\n")
-//            return nil
-//        }
-//    }
+    public static func parseJSON(atPath path: String) -> ReplicantConfigTemplate?
+    {
+        let fileManager = FileManager()
+        let decoder = JSONDecoder()
+        
+        guard let jsonData = fileManager.contents(atPath: path)
+        else
+        {
+            print("\nUnable to get JSON data at path: \(path)\n")
+            return nil
+        }
+        
+        do
+        {
+            let config = try decoder.decode(ReplicantConfigTemplate.self, from: jsonData)
+            return config
+        }
+        catch (let error)
+        {
+            print("\nUnable to decode JSON into ReplicantConfigTemplate: \(error)\n")
+            return nil
+        }
+    }
     
      /// Creates a Replicant client configuration file at the specified path.
     ///
@@ -102,3 +102,5 @@ public struct ReplicantConfigTemplate
 //        return configCreated
 //    }
 }
+
+extension ReplicantConfigTemplate: Codable {}

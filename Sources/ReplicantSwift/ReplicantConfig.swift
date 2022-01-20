@@ -8,15 +8,16 @@
 import Foundation
 import Song
 
-public struct ReplicantConfig<PolishClientConfigType>: Codable where PolishClientConfigType: PolishClientConfig
+//public struct ReplicantConfig<PolishClientConfig>: Codable where PolishClientConfigType: PolishClientConfig
+public struct ReplicantConfig: Codable
 {
     //public static var supportsSecureCoding: Bool = true
     public let serverIP: String
     public let port: UInt16
     public let chunkSize: UInt16?
     public let chunkTimeout: Int?
-    public let serverPublicKey: String?
-    public var polish: PolishClientConfigType?
+    public let serverPublicKey: Data?
+    public var polish: PolishClientConfig?
     public var toneBurst: ToneBurstClientConfig?
     
     public init?(from data: Data)
@@ -25,56 +26,41 @@ public struct ReplicantConfig<PolishClientConfigType>: Codable where PolishClien
         do
         {
             let decoded = try decoder.decode(ReplicantConfig.self, from: data)
+            let maybePolishConfig = decoded.polish
+            let maybeToneburstConfig = decoded.toneBurst
             
-            if let actualChunkSize = decoded.chunkSize, let actualChunkTimeout = decoded.chunkTimeout, let actualServerKey = decoded.serverPublicKey
-            {
-                guard let actualPolishConfig = SilverClientConfig(serverKey: actualServerKey, chunkSize: actualChunkSize, chunkTimeout: actualChunkTimeout) as? PolishClientConfigType
-                else
-                {
-                    print("Failed to create a polish config using the provided parameters:\nchunkSize - \(actualChunkSize)\nchunkTimeout - \(actualChunkTimeout)\nserverKey - \(actualServerKey)")
-                    return nil
-                }
-                
-                // TODO: This does not currently handle toneburst
-                var maybeToneburstConfig: ToneBurstClientConfig?
-                
-                self.init(serverIP: decoded.serverIP, port: decoded.port, polish: actualPolishConfig, toneBurst: maybeToneburstConfig)
-                
-            }
-            else
-            {
-                // TODO: This does not currently handle toneburst
-                var maybeToneburstConfig: ToneBurstClientConfig?
-                
-                self.init(serverIP: decoded.serverIP, port: decoded.port, polish: nil, toneBurst: maybeToneburstConfig)
-            }
+            self.init(serverIP: decoded.serverIP, port: decoded.port, polish: maybePolishConfig, toneBurst: maybeToneburstConfig)
         }
         catch let decodeError
         {
             print("Error decoding ReplicantConfig data: \(decodeError)")
             return nil
         }
-                
-        
     }
     
-    public init?(serverIP: String, port: UInt16, polish: PolishClientConfigType?, toneBurst: ToneBurstClientConfig?)
+    public init?(serverIP: String, port: UInt16, polish maybePolish: PolishClientConfig?, toneBurst maybeToneBurst: ToneBurstClientConfig?)
     {
-        // TODO: This will only work with silver polish types
-        guard let silverPolish = polish as? SilverClientConfig
-        else
-        {
-            print("Failed to cast polish config to SilverClientConfig")
-            return nil
-        }
-        
         self.serverIP = serverIP
         self.port = port
-        self.chunkSize = silverPolish.chunkSize
-        self.chunkTimeout = silverPolish.chunkTimeout
-        self.serverPublicKey = silverPolish.serverKey.base64EncodedString()
-        self.polish = polish
-        self.toneBurst = toneBurst
+        self.polish = maybePolish
+        self.toneBurst = maybeToneBurst
+        
+        if let polishConfig = maybePolish
+        {
+            switch polishConfig {
+                case .silver(let serverPublicKeyData, let chunkSize, let chunkTimeout):
+                    self.chunkSize = chunkSize
+                    self.chunkTimeout = chunkTimeout
+                    self.serverPublicKey = serverPublicKeyData
+            }
+        }
+        else
+        {
+            self.chunkSize = nil
+            self.chunkTimeout = nil
+            self.serverPublicKey = nil
+        }
+        
     }
     
     public init?(withConfigAtPath path: String)
@@ -111,40 +97,40 @@ public struct ReplicantConfig<PolishClientConfigType>: Codable where PolishClien
         }
     }
 
-    /// Checks for a valid JSON at the provided path and attempts to decode it into a Replicant client configuration file. Returns a ReplicantConfig struct if it is successful
-    /// - Parameters:
-    ///     - path: The complete path where the config file is located.
-    /// - Returns: The ReplicantConfig struct that was decoded from the JSON file located at the provided path, or nil if the file was invalid or missing.
-    public static func parseJSON(atPath path: String) -> ReplicantConfig?
-    {
-        let fileManager = FileManager()
-
-
-        guard let jsonData = fileManager.contents(atPath: path)
-            else
-        {
-            print("\nUnable to get JSON data at path: \(path)\n")
-            return nil
-        }
-
-        return parse(jsonData: jsonData)
-    }
-
-    public static func parse(jsonData: Data) -> ReplicantConfig?
-    {
-        let decoder = JSONDecoder()
-
-        do
-        {
-            let config = try decoder.decode(ReplicantConfig.self, from: jsonData)
-            return config
-        }
-        catch (let error)
-        {
-            print("\nUnable to decode JSON into ReplicantConfig: \(error)\n")
-            return nil
-        }
-    }
+//    /// Checks for a valid JSON at the provided path and attempts to decode it into a Replicant client configuration file. Returns a ReplicantConfig struct if it is successful
+//    /// - Parameters:
+//    ///     - path: The complete path where the config file is located.
+//    /// - Returns: The ReplicantConfig struct that was decoded from the JSON file located at the provided path, or nil if the file was invalid or missing.
+//    public static func parseJSON(atPath path: String) -> ReplicantConfig?
+//    {
+//        let fileManager = FileManager()
+//
+//
+//        guard let jsonData = fileManager.contents(atPath: path)
+//            else
+//        {
+//            print("\nUnable to get JSON data at path: \(path)\n")
+//            return nil
+//        }
+//
+//        return parse(jsonData: jsonData)
+//    }
+//
+//    public static func parse(jsonData: Data) -> ReplicantConfig?
+//    {
+//        let decoder = JSONDecoder()
+//
+//        do
+//        {
+//            let config = try decoder.decode(ReplicantConfig.self, from: jsonData)
+//            return config
+//        }
+//        catch (let error)
+//        {
+//            print("\nUnable to decode JSON into ReplicantConfig: \(error)\n")
+//            return nil
+//        }
+//    }
 }
 
 

@@ -21,7 +21,7 @@ public class SilverServerConnection
     public var privateKey: P256.KeyAgreement.PrivateKey
     public var symmetricKey: SymmetricKey?
 
-    let log: Logger
+    public let log: Logger
     
     public init?(logger: Logger, chunkSize: UInt16, chunkTimeout: Int)
     {
@@ -55,7 +55,7 @@ extension SilverServerConnection: PolishConnection
         //Call read first
         guard let clientPaddedData = connection.read(size: Int(replicantChunkSize)) else
         {
-            print("\n\n🤝  Received an error while waiting for response from server acfter sending key\n")
+            print("\n\n🤝  Received an error while waiting for response from server after sending key\n")
             completion(HandshakeError.noClientKeyData)
             return
         }

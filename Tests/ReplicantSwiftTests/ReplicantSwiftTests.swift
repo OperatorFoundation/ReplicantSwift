@@ -165,17 +165,24 @@ final class ReplicantSwiftTests: XCTestCase
 //        XCTAssertEqual(maybeDecrypted.bytes, plainText.bytes)
 //    }
 //
-//    // MARK: ToneBurst
-//    let sequence1 = Data(string: "OH HELLO")
-//    let sequence2 = Data(string: "You say hello, and I say goodbye.")
-//    let sequence3 = Data(string: "I don't know why you say 'Goodbye', I say 'Hello'.")
-//
-//    func testToneBurstInit()
-//    {
-//        let sequence = SequenceModel(sequence: sequence1, length: 256)!
-//        let toneBurst = Whalesong(addSequences: [sequence], removeSequences: [sequence])
-//        XCTAssertNotNil(toneBurst)
-//    }
+    // MARK: ToneBurst
+    let sequence1 = Data(string: "OH HELLO")
+    let sequence2 = Data(string: "You say hello, and I say goodbye.")
+    let sequence3 = Data(string: "I don't know why you say 'Goodbye', I say 'Hello'.")
+
+    func testToneBurstInit()
+    {
+        let sequence = SequenceModel(sequence: sequence1, length: 256)!
+        let toneBurst = Whalesong(addSequences: [sequence], removeSequences: [sequence])
+        XCTAssertNotNil(toneBurst)
+    }
+    
+    func testMonolith()
+    {
+        let sequence = SequenceModel(sequence: sequence1, length: 256)!
+        let monotoneConfig = MonotoneConfig(addSequences: [sequence], removeSequences: [sequence])
+        XCTAssertNotNil(monotoneConfig)
+    }
 //
 //    func testFindMatchingPacket()
 //    {

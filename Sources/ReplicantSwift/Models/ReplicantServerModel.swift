@@ -10,16 +10,15 @@ import Logging
 
 public struct ReplicantServerModel
 {
-    public var polish: PolishServer?
+    public var polish: Polish?
     public var config: ReplicantServerConfig
     public var toneBurst: ToneBurst?
     
     public init?(withConfig config: ReplicantServerConfig, logger: Logger)
     {
-        if let polishConfig = config.polish,
-            let polishServer = polishConfig.construct(logger: logger)
+        if let polishConfig = config.polish
         {
-            self.polish = polishServer
+            self.polish = polishConfig.getPolish(logger: logger)
         }
         
         if let toneBurst = config.toneBurst

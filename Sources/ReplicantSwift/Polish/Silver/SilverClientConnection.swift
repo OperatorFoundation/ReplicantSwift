@@ -13,7 +13,7 @@ import Net
 import Crypto
 import Keychain
 
-public class SilverClientConnection
+public class SilverClientConnection: Polish
 {
     public let controller: SilverController
     public var serverPublicKey: P256.KeyAgreement.PublicKey
@@ -23,7 +23,7 @@ public class SilverClientConnection
     public var chunkSize: UInt16
     public var chunkTimeout: Int
 
-    let log: Logger
+    public let log: Logger
     
     public init?(logger: Logger, serverPublicKeyData: Data, chunkSize: UInt16, chunkTimeout: Int)
     {
@@ -129,3 +129,5 @@ extension SilverClientConnection: PolishConnection
     }
     
 }
+
+

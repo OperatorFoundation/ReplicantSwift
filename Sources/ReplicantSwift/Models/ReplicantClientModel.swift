@@ -3,20 +3,20 @@ import Logging
 
 public struct ReplicantClientModel
 {
-    public let config: ReplicantConfig<SilverClientConfig>
-    public let polish: PolishConnection?
+    public let config: ReplicantConfig
+    public let polish: Polish?
     public let toneBurst: ToneBurst?
 
     let log: Logger
     
-    public init(withConfig config: ReplicantConfig<SilverClientConfig>, logger: Logger)
+    public init(withConfig config: ReplicantConfig, logger: Logger)
     {
         self.config = config
         self.log = logger
         
         if let polishConfig = config.polish
         {
-            self.polish = polishConfig.construct(logger: logger)
+            self.polish = polishConfig.getPolish(logger: logger)
         }
         else
         {
@@ -41,3 +41,5 @@ extension Data
         return Array(self)
     }
 }
+
+

@@ -19,13 +19,13 @@ protocol TestProtocol: Codable
     func testFunction()
 }
 
-public protocol PolishClientConfig: Codable
-{
-    func construct(logger: Logger) -> PolishConnection?
-}
-
-public protocol PolishServerConfig: Codable
-{
-    func construct(logger: Logger) -> PolishServer?
-}
+//public protocol PolishClientConfig: Codable
+//{
+//    func construct(logger: Logger) -> PolishConnection?
+//}
+//
+//public protocol PolishServerConfig: Codable
+//{
+//    func construct(logger: Logger) -> PolishServer?
+//}
 

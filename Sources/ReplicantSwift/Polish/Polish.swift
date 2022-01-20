@@ -6,9 +6,16 @@
 //
 
 import Crypto
-
 import Foundation
+import Logging
+
 import Transmission
+
+public protocol Polish
+{
+    var chunkSize: UInt16 { get }
+    var chunkTimeout: Int { get }
+}
 
 public protocol PolishConnection
 {
