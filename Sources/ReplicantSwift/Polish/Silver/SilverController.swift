@@ -62,6 +62,20 @@ public struct SilverController
         return keychain.retrieveOrGeneratePrivateKey(label: serverKeyLabel)
     }
     
+    func fetchServerPublicKey() -> P256.KeyAgreement.PublicKey?
+    {
+        guard let privateKey = keychain.retrievePrivateKey(label: serverKeyLabel)
+        else
+        {
+            print("Failed to retrieve server key.")
+            return nil
+        }
+        
+        return privateKey.publicKey
+    }
+    
+    
+    
 //    func fetchOrCreateServerKeyPair() ->(privateKey: P256.KeyAgreement.PrivateKey, publicKey: P256.KeyAgreement.PublicKey)?
 //    {
 //        // Do we already have a key?
