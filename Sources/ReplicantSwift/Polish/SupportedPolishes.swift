@@ -13,8 +13,12 @@ public protocol PolishConfig
     func getPolish(logger: Logger) -> Polish?
 }
 
+public enum PolishType: String, Codable
+{
+    case silver = "silver"
+}
 
-public enum PolishClientConfig
+public enum PolishClientConfig: Codable
 {
     case silver(serverPublicKeyData: Data, chunkSize: UInt16, chunkTimeout: Int)
     //func construct(logger: Logger) -> PolishConnection?
@@ -32,15 +36,13 @@ extension PolishClientConfig: PolishConfig
     }
 }
 
-extension PolishClientConfig: Codable {}
-
 public enum PolishServerConfig
 {
     case silver(chunkSize: UInt16, chunkTimeout: Int, clientPublicKeyData: Data? = nil)
     //func construct(logger: Logger) -> PolishServer?
 }
 
-extension PolishServerConfig: PolishConfig
+extension PolishServerConfig: PolishConfig, Codable
 {
     public func getPolish(logger: Logger) -> Polish?
     {
@@ -52,4 +54,3 @@ extension PolishServerConfig: PolishConfig
     }
 }
 
-extension PolishServerConfig: Codable {}
