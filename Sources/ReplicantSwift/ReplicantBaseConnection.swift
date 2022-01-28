@@ -193,7 +193,7 @@ open class ReplicantBaseConnection: Transmission.Connection
         }
         else
         {
-            self.log.debug("ReplicantSwiftClient receive called with no polish. minimumincompleteLength: \(size)")
+            self.log.debug("ReplicantSwift ReplicantBaseConnection read called with no polish. minimumincompleteLength: \(size)")
             // Check to see if we got data
             guard let someData = network.read(size: size)
             else
