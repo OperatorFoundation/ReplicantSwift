@@ -177,7 +177,7 @@ final class ReplicantSwiftTests: XCTestCase
         XCTAssertNotNil(toneBurst)
     }
     
-    func testMonolith()
+    func testMonotone()
     {
         let sequence = SequenceModel(sequence: sequence1, length: 256)!
         let monotoneConfig = MonotoneConfig(addSequences: [sequence], removeSequences: [sequence])

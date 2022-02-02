@@ -8,7 +8,7 @@
 import Foundation
 import Datable
 import Transmission
-import Monolith
+//import Monolith
 
 /// Injects byte sequences into a stream of bytes
 public class MonotoneClient: Whalesong

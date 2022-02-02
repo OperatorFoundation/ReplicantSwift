@@ -12,6 +12,11 @@ public protocol ToneBurstConfig
     func getToneBurst() -> ToneBurst
 }
 
+public enum ToneBurstType: String, Codable
+{
+    case whalesong = "whalesong"
+}
+
 public enum ToneBurstClientConfig
 {
     case whalesong(client: WhalesongClient)

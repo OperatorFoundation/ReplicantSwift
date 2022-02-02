@@ -8,15 +8,11 @@
 import Foundation
 import Song
 
-//public struct ReplicantConfig<PolishClientConfig>: Codable where PolishClientConfigType: PolishClientConfig
 public struct ReplicantConfig: Codable
 {
     //public static var supportsSecureCoding: Bool = true
     public let serverIP: String
     public let port: UInt16
-    public let chunkSize: UInt16?
-    public let chunkTimeout: Int?
-    public let serverPublicKey: Data?
     public var polish: PolishClientConfig?
     public var toneBurst: ToneBurstClientConfig?
     
@@ -44,23 +40,6 @@ public struct ReplicantConfig: Codable
         self.port = port
         self.polish = maybePolish
         self.toneBurst = maybeToneBurst
-        
-        if let polishConfig = maybePolish
-        {
-            switch polishConfig {
-                case .silver(let serverPublicKeyData, let chunkSize, let chunkTimeout):
-                    self.chunkSize = chunkSize
-                    self.chunkTimeout = chunkTimeout
-                    self.serverPublicKey = serverPublicKeyData
-            }
-        }
-        else
-        {
-            self.chunkSize = nil
-            self.chunkTimeout = nil
-            self.serverPublicKey = nil
-        }
-        
     }
     
     public init?(withConfigAtPath path: String)

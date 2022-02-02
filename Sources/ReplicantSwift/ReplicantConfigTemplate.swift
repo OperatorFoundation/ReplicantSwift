@@ -12,17 +12,22 @@ import Crypto
 public struct ReplicantConfigTemplate: Codable
 {
     // TODO: Toneburst Properties
+    var toneBurstType: ToneBurstType?
+    var addSequences: [SequenceModel]?
+    var removeSequences: [SequenceModel]?
     
     // Polish Properties
     var chunkSize: UInt16?
     var chunkTimeout: Int?
-    var polishType: PolishType
+    var polishType: PolishType?
     
-    public init(chunkSize: UInt16?, chunkTimeout: Int?, polishType: PolishType)
+    
+    public init(chunkSize: UInt16?, chunkTimeout: Int?, polishType: PolishType?, toneBurstType: ToneBurstType?)
     {
         self.chunkSize = chunkSize
         self.chunkTimeout = chunkTimeout
         self.polishType = polishType
+        self.toneBurstType = toneBurstType
     }
     
     public init?(withConfigAtPath path: String)
@@ -83,27 +88,37 @@ public struct ReplicantConfigTemplate: Codable
     ///      - path: The filepath where the new config file should be saved, this should included the desired file name.
     ///      - serverPublicKey: The public key for the Replicant server. This is required in order for the client to be able to communicate with the server.
     /// - Returns: A boolean indicating whether or not the config was created successfully
-    public func createConfig(atPath path: String, serverIP: String, port: UInt16, serverPublicKey: P256.KeyAgreement.PublicKey) -> Bool
+    public func createClientConfig(atPath path: String, serverIP: String, port: UInt16, serverPublicKey: P256.KeyAgreement.PublicKey) -> Bool
     {
         let fileManager = FileManager()
 
        // Encode key as data
        let keyData = serverPublicKey.x963Representation
         
+        
+        // Polish Config
         var maybePolishConfig: PolishClientConfig?
         
-        if chunkSize != nil && chunkTimeout != nil
+        if self.chunkSize != nil && self.chunkTimeout != nil
         {
             switch polishType
             {
                 case .silver:
-                    maybePolishConfig = PolishClientConfig.silver(serverPublicKeyData: keyData, chunkSize: chunkSize!, chunkTimeout: chunkTimeout!)
-                default:
-                    print("Invalid polish type provided in the config template")
+                    maybePolishConfig = PolishClientConfig.silver(serverPublicKeyData: keyData, chunkSize: self.chunkSize!, chunkTimeout: self.chunkTimeout!)
+                case .none:
+                    break
             }
         }
 
-        // TODO: ToneBurst
+        // TODO: ToneBurst Config
+        var maybeToneBurstConfig: ToneBurstClientConfig?
+        
+//        switch toneBurstType
+//        {
+//            case .whalesong:
+//                maybeToneBurstConfig = ToneBurstClientConfig.whalesong(client: WhalesongClient(addSequences: <#T##[SequenceModel]#>, removeSequences: <#T##[SequenceModel]#>))
+//        }
+        
         guard let replicantConfig = ReplicantConfig(serverIP: serverIP, port: port, polish: maybePolishConfig, toneBurst: nil)
         else
         {
