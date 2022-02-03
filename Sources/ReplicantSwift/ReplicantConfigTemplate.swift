@@ -82,18 +82,23 @@ public struct ReplicantConfigTemplate: Codable
         }
     }
     
-    
     /// Creates a Replicant client configuration file at the specified path.
     ///  - Parameters:
-    ///      - path: The filepath where the new config file should be saved, this should included the desired file name.
+    ///      - path: The filepath as a String, where the new config file should be saved, this should included the desired file name.
+    ///      - serverIP: The IP address of the Replicant Server as a String.
+    ///      - port: The port the provided server will be listening on for Replicant traffic as a UInt16
     ///      - serverPublicKey: The public key for the Replicant server. This is required in order for the client to be able to communicate with the server.
     /// - Returns: A boolean indicating whether or not the config was created successfully
-    public func createClientConfig(atPath path: String, serverIP: String, port: UInt16, serverPublicKey: P256.KeyAgreement.PublicKey) -> Bool
+    public func createClientConfig(atPath path: String, serverIP: String, port: UInt16, serverPublicKey: String) -> Bool
     {
-        let fileManager = FileManager()
+        let fileManager = FileManager.default
 
        // Encode key as data
-       let keyData = serverPublicKey.x963Representation
+        guard let keyData = serverPublicKey.data(using: .utf8) else
+        {
+            print("Failed to load the provided key String as Data.")
+            return false
+        }
         
         
         // Polish Config
@@ -110,16 +115,25 @@ public struct ReplicantConfigTemplate: Codable
             }
         }
 
-        // TODO: ToneBurst Config
+        // ToneBurst Config
         var maybeToneBurstConfig: ToneBurstClientConfig?
         
-//        switch toneBurstType
-//        {
-//            case .whalesong:
-//                maybeToneBurstConfig = ToneBurstClientConfig.whalesong(client: WhalesongClient(addSequences: <#T##[SequenceModel]#>, removeSequences: <#T##[SequenceModel]#>))
-//        }
+        if self.addSequences != nil && self.removeSequences != nil
+        {
+            switch toneBurstType
+            {
+                case .whalesong:
+                    if let whalesongClient = WhalesongClient(addSequences: self.addSequences!, removeSequences: self.removeSequences!)
+                    {
+                        maybeToneBurstConfig = ToneBurstClientConfig.whalesong(client: whalesongClient)
+                    }
+                    
+                case .none:
+                    break
+            }
+        }
         
-        guard let replicantConfig = ReplicantConfig(serverIP: serverIP, port: port, polish: maybePolishConfig, toneBurst: nil)
+        guard let replicantConfig = ReplicantConfig(serverIP: serverIP, port: port, polish: maybePolishConfig, toneBurst: maybeToneBurstConfig)
         else
         {
             return false
@@ -140,37 +154,7 @@ public struct ReplicantConfigTemplate: Codable
 
        return configCreated
     }
-    
-    
-//     /// Creates a Replicant client configuration file at the specified path.
-//    ///
-//    ///  - Parameters:
-//    ///      - path: The filepath where the new config file should be saved, this should included the desired file name.
-//    ///      - serverPublicKey: The public key for the Replicant server. This is required in order for the client to be able to communicate with the server.
-//    /// - Returns: A boolean indicating whether or not the config was created successfully
-//    public func createConfig(atPath path: String, serverPublicKey: P256.KeyAgreement.PublicKey) -> Bool
-//    {
-//        let fileManager = FileManager()
-//
-//        // Encode key as data
-//        let keyData = serverPublicKey.x963Representation
-//
-//        guard let replicantConfig = ReplicantConfig(polish: polish, toneBurst: self.toneBurst)
-//        else
-//        {
-//            return false
-//        }
-//
-//        guard let jsonData = replicantConfig.createJSON()
-//        else
-//        {
-//            return false
-//        }
-//
-//        let configCreated = fileManager.createFile(atPath: path, contents: jsonData)
-//
-//        return configCreated
-//    }
+
     
     public func printTemplateJSON()
     {

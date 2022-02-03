@@ -40,6 +40,40 @@ final class ReplicantSwiftTests: XCTestCase
 //
 //        polishClientModel = clientModel
 //    }
+    
+    func testCreateClientConfigs()
+    {
+        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
+        
+        do
+        {
+            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
+        }
+        catch
+        {
+            print("Failed to create the config directory: \(error)")
+            XCTFail()
+        }
+        
+        let emptyTemplate = ReplicantConfigTemplate(chunkSize: nil, chunkTimeout: nil, polishType: nil, toneBurstType: nil)
+        let emptyConfigPath = configDirectory.appendingPathComponent("emptyReplicantConfig.json", isDirectory: false).path
+        
+        if FileManager.default.fileExists(atPath: emptyConfigPath)
+        {
+            do
+            {
+                try FileManager.default.removeItem(atPath: emptyConfigPath)
+            }
+            catch
+            {
+                XCTFail()
+            }
+        }
+        
+        let savedEmptyConfig = emptyTemplate.createClientConfig(atPath: emptyConfigPath, serverIP: "127.0.0.1", port: 2277, serverPublicKey: "NotARealKey")
+        
+        XCTAssert(savedEmptyConfig)
+    }
 //
 //    // MARK: Polish Tests
 //
