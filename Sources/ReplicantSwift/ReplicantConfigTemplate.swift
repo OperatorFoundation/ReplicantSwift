@@ -11,23 +11,18 @@ import Crypto
 
 public struct ReplicantConfigTemplate: Codable
 {
-    // TODO: Toneburst Properties
-    var toneBurstType: ToneBurstType?
-    var addSequences: [SequenceModel]?
-    var removeSequences: [SequenceModel]?
-    
-    // Polish Properties
-    var chunkSize: UInt16?
-    var chunkTimeout: Int?
-    var polishType: PolishType?
+    var maybePolishClientConfig: PolishClientConfig?
+    var maybeToneBurstClientConfig: ToneBurstClientConfig?
+//    // Polish Properties
+//    var chunkSize: UInt16?
+//    var chunkTimeout: Int?
+//    var polishType: PolishType?
     
     
-    public init(chunkSize: UInt16?, chunkTimeout: Int?, polishType: PolishType?, toneBurstType: ToneBurstType?)
+    public init(polishClientConfig: PolishClientConfig?, toneBurstConfig: ToneBurstClientConfig?)
     {
-        self.chunkSize = chunkSize
-        self.chunkTimeout = chunkTimeout
-        self.polishType = polishType
-        self.toneBurstType = toneBurstType
+        self.maybePolishClientConfig = polishClientConfig
+        self.maybeToneBurstClientConfig = toneBurstConfig
     }
     
     public init?(withConfigAtPath path: String)
@@ -89,51 +84,11 @@ public struct ReplicantConfigTemplate: Codable
     ///      - port: The port the provided server will be listening on for Replicant traffic as a UInt16
     ///      - serverPublicKey: The public key for the Replicant server. This is required in order for the client to be able to communicate with the server.
     /// - Returns: A boolean indicating whether or not the config was created successfully
-    public func createClientConfig(atPath path: String, serverIP: String, port: UInt16, serverPublicKey: String) -> Bool
+    public func createClientConfig(atPath path: String, serverIP: String, port: UInt16) -> Bool
     {
         let fileManager = FileManager.default
-
-       // Encode key as data
-        guard let keyData = serverPublicKey.data(using: .utf8) else
-        {
-            print("Failed to load the provided key String as Data.")
-            return false
-        }
         
-        
-        // Polish Config
-        var maybePolishConfig: PolishClientConfig?
-        
-        if self.chunkSize != nil && self.chunkTimeout != nil
-        {
-            switch polishType
-            {
-                case .silver:
-                    maybePolishConfig = PolishClientConfig.silver(serverPublicKeyData: keyData, chunkSize: self.chunkSize!, chunkTimeout: self.chunkTimeout!)
-                case .none:
-                    break
-            }
-        }
-
-        // ToneBurst Config
-        var maybeToneBurstConfig: ToneBurstClientConfig?
-        
-        if self.addSequences != nil && self.removeSequences != nil
-        {
-            switch toneBurstType
-            {
-                case .whalesong:
-                    if let whalesongClient = WhalesongClient(addSequences: self.addSequences!, removeSequences: self.removeSequences!)
-                    {
-                        maybeToneBurstConfig = ToneBurstClientConfig.whalesong(client: whalesongClient)
-                    }
-                    
-                case .none:
-                    break
-            }
-        }
-        
-        guard let replicantConfig = ReplicantConfig(serverIP: serverIP, port: port, polish: maybePolishConfig, toneBurst: maybeToneBurstConfig)
+        guard let replicantConfig = ReplicantConfig(serverIP: serverIP, port: port, polish: self.maybePolishClientConfig, toneBurst: self.maybeToneBurstClientConfig)
         else
         {
             return false

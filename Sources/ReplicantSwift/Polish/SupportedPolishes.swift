@@ -33,7 +33,7 @@ extension PolishClientConfig: PolishConfig
             case .silver(let serverPublicKeyData, let chunkSize, let chunkTimeout):
                 return SilverClientConnection(logger: logger, serverPublicKeyData: serverPublicKeyData, chunkSize: chunkSize, chunkTimeout: chunkTimeout)
         }
-    }
+    }    
 }
 
 public enum PolishServerConfig

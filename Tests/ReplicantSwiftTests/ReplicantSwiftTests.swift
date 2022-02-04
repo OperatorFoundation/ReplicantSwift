@@ -41,7 +41,43 @@ final class ReplicantSwiftTests: XCTestCase
 //        polishClientModel = clientModel
 //    }
     
-    func testCreateClientConfigs()
+    // MARK: ToneBurst
+    let sequence1 = Data(string: "OH HELLO")
+    let sequence2 = Data(string: "You say hello, and I say goodbye.")
+    let sequence3 = Data(string: "I don't know why you say 'Goodbye', I say 'Hello'.")
+
+    func testToneBurstInit()
+    {
+        let sequence = SequenceModel(sequence: sequence1, length: 256)!
+        let toneBurst = Whalesong(addSequences: [sequence], removeSequences: [sequence])
+        XCTAssertNotNil(toneBurst)
+    }
+    
+    func testMonotone()
+    {
+        let sequence = SequenceModel(sequence: sequence1, length: 256)!
+        let monotoneConfig = MonotoneConfig(addSequences: [sequence], removeSequences: [sequence])
+        XCTAssertNotNil(monotoneConfig)
+    }
+    
+    func createExampleToneBurstClientConfig() -> ToneBurstClientConfig?
+    {
+        // ToneBurst Config
+        let sequence = SequenceModel(sequence: sequence1, length: 256)!
+        let addSequences = [sequence]
+        let removeSequences = [sequence]
+        
+        guard let whalesongClient = WhalesongClient(addSequences: addSequences, removeSequences: removeSequences)
+        else
+        {
+            return nil
+        }
+        
+        let toneBurstClientConfig = ToneBurstClientConfig.whalesong(client: whalesongClient)
+        return toneBurstClientConfig
+    }
+    
+    func testCreateEmptyReplicantClientConfigs()
     {
         let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
         
@@ -55,14 +91,15 @@ final class ReplicantSwiftTests: XCTestCase
             XCTFail()
         }
         
-        let emptyTemplate = ReplicantConfigTemplate(chunkSize: nil, chunkTimeout: nil, polishType: nil, toneBurstType: nil)
-        let emptyConfigPath = configDirectory.appendingPathComponent("emptyReplicantConfig.json", isDirectory: false).path
+        // Config with no ToneBurst or Polish
+        let emptyTemplate = ReplicantConfigTemplate(polishClientConfig: nil, toneBurstConfig: nil)
+        let configPath = configDirectory.appendingPathComponent("emptyReplicantConfig.json", isDirectory: false).path
         
-        if FileManager.default.fileExists(atPath: emptyConfigPath)
+        if FileManager.default.fileExists(atPath: configPath)
         {
             do
             {
-                try FileManager.default.removeItem(atPath: emptyConfigPath)
+                try FileManager.default.removeItem(atPath: configPath)
             }
             catch
             {
@@ -70,10 +107,142 @@ final class ReplicantSwiftTests: XCTestCase
             }
         }
         
-        let savedEmptyConfig = emptyTemplate.createClientConfig(atPath: emptyConfigPath, serverIP: "127.0.0.1", port: 2277, serverPublicKey: "NotARealKey")
-        
-        XCTAssert(savedEmptyConfig)
+        let savedClientConfig = emptyTemplate.createClientConfig(atPath: configPath, serverIP: "127.0.0.1", port: 2277)
+        XCTAssert(savedClientConfig)
     }
+    
+    func testCreateToneBurstOnlyReplicantClientConfig()
+    {
+        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
+        
+        do
+        {
+            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
+        }
+        catch
+        {
+            print("Failed to create the config directory: \(error)")
+            XCTFail()
+        }
+        
+        // Config with ToneBurst only
+        guard let toneBurstClientConfig = createExampleToneBurstClientConfig() else
+        {
+            XCTFail()
+            return
+        }
+        
+        let toneBurstOnlyReplicantTemplate = ReplicantConfigTemplate(polishClientConfig: nil, toneBurstConfig: toneBurstClientConfig)
+        let configPath = configDirectory.appendingPathComponent("toneburstOnlyReplicantConfig.json", isDirectory: false).path
+        
+        if FileManager.default.fileExists(atPath: configPath)
+        {
+            do
+            {
+                try FileManager.default.removeItem(atPath: configPath)
+            }
+            catch
+            {
+                XCTFail()
+            }
+        }
+        
+        let savedClientConfig = toneBurstOnlyReplicantTemplate.createClientConfig(atPath: configPath, serverIP: "127.0.0.1", port: 2277)
+        XCTAssert(savedClientConfig)
+    }
+    
+    func testCreatePolishOnlyClientConfig()
+    {
+        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
+        
+        do
+        {
+            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
+        }
+        catch
+        {
+            print("Failed to create the config directory: \(error)")
+            XCTFail()
+        }
+        
+        // Encode key as data
+         guard let keyData = "NotARealKey".data(using: .utf8) else
+         {
+             print("Failed to load the provided key String as Data.")
+             XCTFail()
+             return
+         }
+        
+        let polishClientConfig: PolishClientConfig = PolishClientConfig.silver(serverPublicKeyData: keyData, chunkSize: 1000, chunkTimeout: 1000)
+        let polishOnlyReplicantTemplate = ReplicantConfigTemplate(polishClientConfig: polishClientConfig, toneBurstConfig: nil)
+        let configPath = configDirectory.appendingPathComponent("polishOnlyReplicantConfig.json", isDirectory: false).path
+        
+        if FileManager.default.fileExists(atPath: configPath)
+        {
+            do
+            {
+                try FileManager.default.removeItem(atPath: configPath)
+            }
+            catch
+            {
+                XCTFail()
+            }
+        }
+        
+        let savedClientConfig = polishOnlyReplicantTemplate.createClientConfig(atPath: configPath, serverIP: "127.0.0.1", port: 2277)
+        XCTAssert(savedClientConfig)
+    }
+    
+    func testCreateSilverWhalesongClientConfig()
+    {
+        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
+        
+        do
+        {
+            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
+        }
+        catch
+        {
+            print("Failed to create the config directory: \(error)")
+            XCTFail()
+        }
+        
+        // Encode key as data
+         guard let keyData = "NotARealKey".data(using: .utf8) else
+         {
+             print("Failed to load the provided key String as Data.")
+             XCTFail()
+             return
+         }
+        
+        let polishClientConfig: PolishClientConfig = PolishClientConfig.silver(serverPublicKeyData: keyData, chunkSize: 1000, chunkTimeout: 1000)
+
+        guard let toneBurstClientConfig = createExampleToneBurstClientConfig() else
+        {
+            XCTFail()
+            return
+        }
+        
+        let silverWhalesongClientConfigTemplate = ReplicantConfigTemplate(polishClientConfig: polishClientConfig, toneBurstConfig: toneBurstClientConfig)
+        let clientConfigPath = configDirectory.appendingPathComponent("silverWhalesongReplicantClient.json", isDirectory: false).path
+        
+        if FileManager.default.fileExists(atPath: clientConfigPath)
+        {
+            do
+            {
+                try FileManager.default.removeItem(atPath: clientConfigPath)
+            }
+            catch
+            {
+                XCTFail()
+            }
+        }
+        
+        let savedClientConfig = silverWhalesongClientConfigTemplate.createClientConfig(atPath:  clientConfigPath, serverIP: "127.0.0.1", port: 2277)
+        XCTAssert(savedClientConfig)
+    }
+    
+    
 //
 //    // MARK: Polish Tests
 //
@@ -199,24 +368,7 @@ final class ReplicantSwiftTests: XCTestCase
 //        XCTAssertEqual(maybeDecrypted.bytes, plainText.bytes)
 //    }
 //
-    // MARK: ToneBurst
-    let sequence1 = Data(string: "OH HELLO")
-    let sequence2 = Data(string: "You say hello, and I say goodbye.")
-    let sequence3 = Data(string: "I don't know why you say 'Goodbye', I say 'Hello'.")
 
-    func testToneBurstInit()
-    {
-        let sequence = SequenceModel(sequence: sequence1, length: 256)!
-        let toneBurst = Whalesong(addSequences: [sequence], removeSequences: [sequence])
-        XCTAssertNotNil(toneBurst)
-    }
-    
-    func testMonotone()
-    {
-        let sequence = SequenceModel(sequence: sequence1, length: 256)!
-        let monotoneConfig = MonotoneConfig(addSequences: [sequence], removeSequences: [sequence])
-        XCTAssertNotNil(monotoneConfig)
-    }
 //
 //    func testFindMatchingPacket()
 //    {
