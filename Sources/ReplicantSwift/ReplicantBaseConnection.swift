@@ -259,7 +259,7 @@ open class ReplicantBaseConnection: Transmission.Connection
         // Tone Burst
         if var toneBurst = self.toneBurst
         {
-            toneBurst.play(connection: self)
+            toneBurst.perform(connection: self)
             {
                 maybeError in
 

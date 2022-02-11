@@ -1,6 +1,8 @@
 import XCTest
 import Foundation
+
 import Datable
+import Monolith
 import SwiftQueue
 
 @testable import ReplicantSwift
@@ -53,14 +55,98 @@ final class ReplicantSwiftTests: XCTestCase
         XCTAssertNotNil(toneBurst)
     }
     
-    func testMonotone()
+    func testMonotoneFixedItems()
     {
-        let sequence = SequenceModel(sequence: sequence1, length: 256)!
-        let monotoneConfig = MonotoneConfig(addSequences: [sequence], removeSequences: [sequence])
-        XCTAssertNotNil(monotoneConfig)
+        var parts: [MonolithConfig] = []
+        let part1: MonolithConfig = .bytes(BytesPart(items: [
+            .fixed(FixedByteType(byte: 0x0A)),
+            .fixed(FixedByteType(byte: 0x11))
+        ]))
+        parts.append(part1)
+        
+        let part2: MonolithConfig = .bytes(BytesPart(items: [
+            .fixed(FixedByteType(byte: 0xB0)),
+            .fixed(FixedByteType(byte: 0xB1))
+        ]))
+        parts.append(part2)
+        
+        let description = Description(parts: parts)
+        let instance = Instance(description: description, args: Args())
+        
+        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: description, speakFirst: true)
+        _ = monotoneConfig.construct()
     }
     
-    func createExampleToneBurstClientConfig() -> ToneBurstClientConfig?
+    func testMonotoneEnumeratedItems()
+    {
+        let set: [uint8] = [0x11, 0x12, 0x13, 0x14]
+        var parts: [MonolithConfig] = []
+        let part1: MonolithConfig = .bytes(BytesPart(items: [
+            .enumerated(EnumeratedByteType(options: set)),
+            .enumerated(EnumeratedByteType(options: set))
+        ]))
+        parts.append(part1)
+        
+        let part2: MonolithConfig = .bytes(BytesPart(items: [
+            .enumerated(EnumeratedByteType(options: set)),
+            .enumerated(EnumeratedByteType(options: set))
+        ]))
+        parts.append(part2)
+        
+        let desc = Description(parts: parts)
+        let args = Args(byteValues: [0x11, 0x12, 0x14, 0x13])
+        let instance = Instance(description: desc, args: args)
+        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: desc, speakFirst: true)
+        _ = monotoneConfig.construct()
+    }
+    
+    func testMonotoneRandomEnumeratedItems()
+    {
+        let set: [uint8] = [0x11, 0x12, 0x13, 0x14]
+        
+        var parts: [MonolithConfig] = []
+        let part1: MonolithConfig = .bytes(BytesPart(items: [
+            .randomEnumerated(RandomEnumeratedByteType(randomOptions: set)),
+            .randomEnumerated(RandomEnumeratedByteType(randomOptions: set))
+        ]))
+        parts.append(part1)
+        
+        let part2: MonolithConfig = .bytes(BytesPart(items: [
+            .randomEnumerated(RandomEnumeratedByteType(randomOptions: set)),
+            .randomEnumerated(RandomEnumeratedByteType(randomOptions: set))
+        ]))
+        parts.append(part2)
+        
+        let desc = Description(parts: parts)
+        let args = Args(byteValues: [0x11, 0x12, 0x14, 0x13])
+        let instance = Instance(description: desc, args: args)
+        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: desc, speakFirst: true)
+        _ = monotoneConfig.construct()
+    }
+    
+    func testMonotoneRandomItems()
+    {
+        var parts: [MonolithConfig] = []
+        let part1: MonolithConfig = .bytes(BytesPart(items: [
+            .random(RandomByteType()),
+            .random(RandomByteType())
+        ]))
+        parts.append(part1)
+        
+        let part2: MonolithConfig = .bytes(BytesPart(items: [
+            .random(RandomByteType()),
+            .random(RandomByteType())
+        ]))
+        parts.append(part2)
+        
+        let desc = Description(parts: parts)
+        let args = Args(byteValues: [0x11, 0x12, 0x14, 0x13])
+        let instance = Instance(description: desc, args: args)
+        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: desc, speakFirst: true)
+        _ = monotoneConfig.construct()
+    }
+    
+    func createExampleWhalesongClientConfig() -> ToneBurstClientConfig?
     {
         // ToneBurst Config
         let sequence = SequenceModel(sequence: sequence1, length: 256)!
@@ -126,7 +212,7 @@ final class ReplicantSwiftTests: XCTestCase
         }
         
         // Config with ToneBurst only
-        guard let toneBurstClientConfig = createExampleToneBurstClientConfig() else
+        guard let toneBurstClientConfig = createExampleWhalesongClientConfig() else
         {
             XCTFail()
             return
@@ -217,7 +303,7 @@ final class ReplicantSwiftTests: XCTestCase
         
         let polishClientConfig: PolishClientConfig = PolishClientConfig.silver(serverPublicKeyData: keyData, chunkSize: 1000, chunkTimeout: 1000)
 
-        guard let toneBurstClientConfig = createExampleToneBurstClientConfig() else
+        guard let toneBurstClientConfig = createExampleWhalesongClientConfig() else
         {
             XCTFail()
             return

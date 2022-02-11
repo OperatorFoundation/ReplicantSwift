@@ -152,7 +152,7 @@ public class Whalesong: Codable
                 guard connection.write(data: nextTone) else
                 {
                     print("Received error while sending tone burst")
-                    completion(MonotoneError.generateFailure)
+                    completion(WhalesongError.generateFailure)
                     return
                 }
 

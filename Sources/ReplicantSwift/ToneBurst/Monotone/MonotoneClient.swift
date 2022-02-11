@@ -17,7 +17,7 @@ public class MonotoneClient: Whalesong
 
 extension MonotoneClient: ToneBurst
 {
-    public func play(connection: Transmission.Connection, completion: @escaping (Error?) -> Void)
+    public func perform(connection: Transmission.Connection, completion: @escaping (Error?) -> Void)
     {
         
         let sendState = generate()

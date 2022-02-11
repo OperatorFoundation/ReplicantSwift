@@ -16,7 +16,7 @@ public class WhalesongServer: Whalesong
 
 extension WhalesongServer: ToneBurst
 {
-    public func play(connection: Transmission.Connection, completion: @escaping (Error?) -> Void)
+    public func perform(connection: Transmission.Connection, completion: @escaping (Error?) -> Void)
     {
         self.toneBurstReceive(connection: connection, finalToneSent: false, completion: completion)
     }

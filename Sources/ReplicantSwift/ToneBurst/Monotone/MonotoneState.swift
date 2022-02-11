@@ -32,4 +32,12 @@ enum MonotoneError: Error
 {
     case generateFailure
     case removeFailure
+    
+    case speakFirstNoAddSequence
+    
+    case writeError
+    case readError
+    
+    case receiveDataInvalid
+    case receiveDataIncomplete
 }

@@ -16,7 +16,7 @@ public class WhalesongClient: Whalesong
 
 extension WhalesongClient: ToneBurst
 {
-    public func play(connection: Transmission.Connection, completion: @escaping (Error?) -> Void)
+    public func perform(connection: Transmission.Connection, completion: @escaping (Error?) -> Void)
     {
         let sendState = generate()
         
