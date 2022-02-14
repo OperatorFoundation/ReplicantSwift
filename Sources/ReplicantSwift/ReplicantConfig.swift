@@ -34,7 +34,7 @@ public struct ReplicantConfig: Codable
         }
     }
     
-    public init?(serverIP: String, port: UInt16, polish maybePolish: PolishClientConfig?, toneBurst maybeToneBurst: ToneBurstClientConfig?)
+    public init(serverIP: String, port: UInt16, polish maybePolish: PolishClientConfig?, toneBurst maybeToneBurst: ToneBurstClientConfig?)
     {
         self.serverIP = serverIP
         self.port = port
