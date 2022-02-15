@@ -391,64 +391,117 @@ open class ReplicantBaseConnection: Transmission.Connection
 
     public func readWithLengthPrefix(prefixSizeInBits: Int) -> Data?
     {
-        self.bufferLock.enter()
-
-        let prefixSizeInBytes = prefixSizeInBits / 8
-        guard self.decryptedReceiveBuffer.count > prefixSizeInBytes else
+        if let _ = self.polishConnection
         {
-            self.bufferLock.leave()
-            return nil
-        }
+            self.bufferLock.enter()
 
-        let lengthData = self.decryptedReceiveBuffer[..<prefixSizeInBytes]
-        self.decryptedReceiveBuffer = self.decryptedReceiveBuffer[prefixSizeInBytes...]
-
-        var maybeLength: Int?
-        switch prefixSizeInBits
-        {
-            case 8:
-                guard let length8 = lengthData.maybeNetworkUint8 else
-                {
-                    self.bufferLock.leave()
-                    return nil
-                }
-
-                maybeLength = Int(length8)
-            case 16:
-                guard let length16 = lengthData.maybeNetworkUint16 else
-                {
-                    self.bufferLock.leave()
-                    return nil
-                }
-
-                maybeLength = Int(length16)
-            case 32:
-                guard let length32 = lengthData.maybeNetworkUint32 else
-                {
-                    self.bufferLock.leave()
-                    return nil
-                }
-
-                maybeLength = Int(length32)
-            case 64:
-                guard let length64 = lengthData.maybeNetworkUint64 else
-                {
-                    self.bufferLock.leave()
-                    return nil
-                }
-
-                maybeLength = Int(length64)
-            default:
+            let prefixSizeInBytes = prefixSizeInBits / 8
+            guard self.decryptedReceiveBuffer.count > prefixSizeInBytes else
+            {
+                self.bufferLock.leave()
                 return nil
+            }
+
+            let lengthData = self.decryptedReceiveBuffer[..<prefixSizeInBytes]
+            self.decryptedReceiveBuffer = self.decryptedReceiveBuffer[prefixSizeInBytes...]
+
+            var maybeLength: Int?
+            switch prefixSizeInBits
+            {
+                case 8:
+                    guard let length8 = lengthData.maybeNetworkUint8 else
+                    {
+                        self.bufferLock.leave()
+                        return nil
+                    }
+
+                    maybeLength = Int(length8)
+                case 16:
+                    guard let length16 = lengthData.maybeNetworkUint16 else
+                    {
+                        self.bufferLock.leave()
+                        return nil
+                    }
+
+                    maybeLength = Int(length16)
+                case 32:
+                    guard let length32 = lengthData.maybeNetworkUint32 else
+                    {
+                        self.bufferLock.leave()
+                        return nil
+                    }
+
+                    maybeLength = Int(length32)
+                case 64:
+                    guard let length64 = lengthData.maybeNetworkUint64 else
+                    {
+                        self.bufferLock.leave()
+                        return nil
+                    }
+
+                    maybeLength = Int(length64)
+                default:
+                    return nil
+            }
+
+            guard let length = maybeLength else {return nil}
+            guard self.decryptedReceiveBuffer.count >= length else {return nil}
+
+            let data = self.decryptedReceiveBuffer[..<length]
+            self.decryptedReceiveBuffer = self.decryptedReceiveBuffer[length...]
+
+            return data
         }
-
-        guard let length = maybeLength else {return nil}
-        guard self.decryptedReceiveBuffer.count >= length else {return nil}
-
-        let data = self.decryptedReceiveBuffer[..<length]
-        self.decryptedReceiveBuffer = self.decryptedReceiveBuffer[length...]
-
-        return data
+        else // No Polish
+        {
+            var maybeSizeData: Int?
+            
+            switch prefixSizeInBits
+            {
+                case 8:
+                    guard let dataReceived = self.network.read(size: 1) else
+                        { return nil }
+                    
+                    guard let uintReceived = dataReceived.maybeNetworkUint8 else
+                        { return nil }
+                    
+                    maybeSizeData = Int(uintReceived)
+                case 16:
+                    guard let dataReceived = self.network.read(size: 2) else
+                        { return nil }
+                    
+                    guard let uintReceived = dataReceived.maybeNetworkUint16 else
+                        { return nil }
+                    
+                    maybeSizeData = Int(uintReceived)
+                case 32:
+                    guard let dataReceived = self.network.read(size: 4) else
+                        { return nil }
+                    
+                    guard let uintReceived = dataReceived.maybeNetworkUint32 else
+                        { return nil }
+                    
+                    maybeSizeData = Int(uintReceived)
+                case 64:
+                    guard let dataReceived = self.network.read(size: 8) else
+                        { return nil }
+                    
+                    guard let uintReceived = dataReceived.maybeNetworkUint64 else
+                        { return nil }
+                    
+                    maybeSizeData = Int(uintReceived)
+                default:
+                    return nil
+            }
+            
+            guard let dataSize = maybeSizeData else
+            { return nil }
+            
+            guard let dataReceived = self.network.read(size: dataSize) else
+            { return nil }
+            
+            return dataReceived
+        }
     }
 
     public func write(string: String) -> Bool
@@ -484,6 +537,7 @@ open class ReplicantBaseConnection: Transmission.Connection
         let totalData = lengthData + data
         return self.write(data: totalData)
     }
+
 }
 
 enum ToneBurstError: Error
