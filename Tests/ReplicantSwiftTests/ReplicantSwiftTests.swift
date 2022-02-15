@@ -57,14 +57,14 @@ final class ReplicantSwiftTests: XCTestCase
     
     func testMonotoneFixedItems()
     {
-        var parts: [MonolithConfig] = []
-        let part1: MonolithConfig = .bytes(BytesPart(items: [
+        var parts: [MonolithPart] = []
+        let part1: MonolithPart = .bytes(BytesPart(items: [
             .fixed(FixedByteType(byte: 0x0A)),
             .fixed(FixedByteType(byte: 0x11))
         ]))
         parts.append(part1)
         
-        let part2: MonolithConfig = .bytes(BytesPart(items: [
+        let part2: MonolithPart = .bytes(BytesPart(items: [
             .fixed(FixedByteType(byte: 0xB0)),
             .fixed(FixedByteType(byte: 0xB1))
         ]))
@@ -80,14 +80,14 @@ final class ReplicantSwiftTests: XCTestCase
     func testMonotoneEnumeratedItems()
     {
         let set: [uint8] = [0x11, 0x12, 0x13, 0x14]
-        var parts: [MonolithConfig] = []
-        let part1: MonolithConfig = .bytes(BytesPart(items: [
+        var parts: [MonolithPart] = []
+        let part1: MonolithPart = .bytes(BytesPart(items: [
             .enumerated(EnumeratedByteType(options: set)),
             .enumerated(EnumeratedByteType(options: set))
         ]))
         parts.append(part1)
         
-        let part2: MonolithConfig = .bytes(BytesPart(items: [
+        let part2: MonolithPart = .bytes(BytesPart(items: [
             .enumerated(EnumeratedByteType(options: set)),
             .enumerated(EnumeratedByteType(options: set))
         ]))
@@ -104,14 +104,14 @@ final class ReplicantSwiftTests: XCTestCase
     {
         let set: [uint8] = [0x11, 0x12, 0x13, 0x14]
         
-        var parts: [MonolithConfig] = []
-        let part1: MonolithConfig = .bytes(BytesPart(items: [
+        var parts: [MonolithPart] = []
+        let part1: MonolithPart = .bytes(BytesPart(items: [
             .randomEnumerated(RandomEnumeratedByteType(randomOptions: set)),
             .randomEnumerated(RandomEnumeratedByteType(randomOptions: set))
         ]))
         parts.append(part1)
         
-        let part2: MonolithConfig = .bytes(BytesPart(items: [
+        let part2: MonolithPart = .bytes(BytesPart(items: [
             .randomEnumerated(RandomEnumeratedByteType(randomOptions: set)),
             .randomEnumerated(RandomEnumeratedByteType(randomOptions: set))
         ]))
@@ -126,14 +126,14 @@ final class ReplicantSwiftTests: XCTestCase
     
     func testMonotoneRandomItems()
     {
-        var parts: [MonolithConfig] = []
-        let part1: MonolithConfig = .bytes(BytesPart(items: [
+        var parts: [MonolithPart] = []
+        let part1: MonolithPart = .bytes(BytesPart(items: [
             .random(RandomByteType()),
             .random(RandomByteType())
         ]))
         parts.append(part1)
         
-        let part2: MonolithConfig = .bytes(BytesPart(items: [
+        let part2: MonolithPart = .bytes(BytesPart(items: [
             .random(RandomByteType()),
             .random(RandomByteType())
         ]))

@@ -26,7 +26,7 @@ public class Monotone: ToneBurst
     public func perform(connection: Connection, completion: @escaping (Error?) -> Void)
     {
         var addMessages: [Message] = config.addSequences.messages()
-        var removeParts: [MonolithConfig] = config.removeSequences.parts
+        var removeParts: [MonolithPart] = config.removeSequences.parts
         
         if config.speakFirst
         {
@@ -108,8 +108,7 @@ public class Monotone: ToneBurst
     }
     
     
-    // TODO: Rename MonolithConfig to MonolithPart to avoid confusion?
-    func readAll(connection: Transmission.Connection, part: MonolithConfig, completion: @escaping (Error?) -> Void)
+    func readAll(connection: Transmission.Connection, part: MonolithPart, completion: @escaping (Error?) -> Void)
     {
         switch part
         {
