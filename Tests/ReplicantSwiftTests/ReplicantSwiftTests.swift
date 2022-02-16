@@ -197,6 +197,45 @@ final class ReplicantSwiftTests: XCTestCase
         XCTAssert(savedClientConfig)
     }
     
+    func testCreateMonotoneFixedByteReplicantClientConfig()
+    {
+        var parts: [MonolithPart] = []
+        let part1: MonolithPart = .bytes(BytesPart(items: [
+            .fixed(FixedByteType(byte: 0x0A)),
+            .fixed(FixedByteType(byte: 0x11))
+        ]))
+        parts.append(part1)
+        
+        let part2: MonolithPart = .bytes(BytesPart(items: [
+            .fixed(FixedByteType(byte: 0xB0)),
+            .fixed(FixedByteType(byte: 0xB1))
+        ]))
+        parts.append(part2)
+        
+        let description = Description(parts: parts)
+        let instance = Instance(description: description, args: Args())
+        
+        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: description, speakFirst: true)
+        let toneburstClientConfig = ToneBurstClientConfig.monotone(config: monotoneConfig)
+        let replicantConfigTemplate = ReplicantConfigTemplate(polishClientConfig: nil, toneBurstConfig: toneburstClientConfig)
+        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop/Configs", isDirectory: true)
+        let configPath = configDirectory.appendingPathComponent("FixedByteTypeReplicantClient.json", isDirectory: false).path
+        
+        do
+        {
+            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
+        }
+        catch
+        {
+            print("failed to crate config directory: \(error)")
+            XCTFail()
+            return
+        }
+        
+        let savedClientConfig = replicantConfigTemplate.createClientConfig(atPath: configPath, serverIP: "127.0.0.1", port: 1234)
+        XCTAssert(savedClientConfig)
+    }
+    
     func testCreateToneBurstOnlyReplicantClientConfig()
     {
         let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
