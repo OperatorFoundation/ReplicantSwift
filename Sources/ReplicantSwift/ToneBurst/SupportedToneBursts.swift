@@ -47,13 +47,13 @@ extension ToneBurstClientConfig: Codable
     
     public init(from decoder: Decoder) throws
     {
-        // FIXME: This only inits whalesong flavor
+        // FIXME: This only inits monotone flavor
         
         let container = try decoder.container(keyedBy: CodingKeys.self)
         do
         {
-            let whalesongValue =  try container.decode(WhalesongClient.self, forKey: .whalesong)
-            self = .whalesong(client: whalesongValue)
+            let monotoneValue =  try container.decode(MonotoneConfig.self, forKey: .monotone)
+            self = .monotone(config: monotoneValue)
         }
         catch
         {
