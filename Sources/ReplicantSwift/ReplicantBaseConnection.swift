@@ -537,6 +537,11 @@ open class ReplicantBaseConnection: Transmission.Connection
         let totalData = lengthData + data
         return self.write(data: totalData)
     }
+    
+    public func close()
+    {
+        network.close()
+    }
 
 }
 

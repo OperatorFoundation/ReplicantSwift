@@ -65,6 +65,11 @@ public class ReplicantListener: Transmission.Listener
         
         return newConnection
     }
+    
+    public func close()
+    {
+        listener.close()
+    }
 }
 
 enum ListenerError: Error
