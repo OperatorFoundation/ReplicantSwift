@@ -1,11 +1,13 @@
-// swift-tools-version:5.5
+// swift-tools-version:5.6
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import PackageDescription
 
 let package = Package(
     name: "ReplicantSwift",
-    platforms: [.macOS(.v10_15)],
+    platforms: [.macOS(.v10_15),
+                      .iOS(.v15)
+                     ],
     products: [.library(name: "ReplicantSwift", targets: ["ReplicantSwift"])],
     dependencies: [
         .package(url: "https://github.com/apple/swift-crypto.git", from: "2.0.0"),
