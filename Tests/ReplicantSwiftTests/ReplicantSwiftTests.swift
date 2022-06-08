@@ -48,121 +48,97 @@ final class ReplicantSwiftTests: XCTestCase
     let sequence2 = Data(string: "You say hello, and I say goodbye.")
     let sequence3 = Data(string: "I don't know why you say 'Goodbye', I say 'Hello'.")
 
-    func testToneBurstInit()
-    {
-        let sequence = SequenceModel(sequence: sequence1, length: 256)!
-        let toneBurst = Whalesong(addSequences: [sequence], removeSequences: [sequence])
-        XCTAssertNotNil(toneBurst)
-    }
+//    func testMonotoneFixedItems()
+//    {
+//        var parts: [MonolithPart] = []
+//        let part1: MonolithPart = .bytes(BytesPart(items: [
+//            .fixed(FixedByteType(byte: 0x0A)),
+//            .fixed(FixedByteType(byte: 0x11))
+//        ]))
+//        parts.append(part1)
+//
+//        let part2: MonolithPart = .bytes(BytesPart(items: [
+//            .fixed(FixedByteType(byte: 0xB0)),
+//            .fixed(FixedByteType(byte: 0xB1))
+//        ]))
+//        parts.append(part2)
+//
+//        let description = Description(parts: parts)
+//        let instance = Instance(description: description, args: Args())
+//
+//        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: description, speakFirst: true)
+//        _ = monotoneConfig.construct()
+//    }
     
-    func testMonotoneFixedItems()
-    {
-        var parts: [MonolithPart] = []
-        let part1: MonolithPart = .bytes(BytesPart(items: [
-            .fixed(FixedByteType(byte: 0x0A)),
-            .fixed(FixedByteType(byte: 0x11))
-        ]))
-        parts.append(part1)
-        
-        let part2: MonolithPart = .bytes(BytesPart(items: [
-            .fixed(FixedByteType(byte: 0xB0)),
-            .fixed(FixedByteType(byte: 0xB1))
-        ]))
-        parts.append(part2)
-        
-        let description = Description(parts: parts)
-        let instance = Instance(description: description, args: Args())
-        
-        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: description, speakFirst: true)
-        _ = monotoneConfig.construct()
-    }
+//    func testMonotoneEnumeratedItems()
+//    {
+//        let set: [uint8] = [0x11, 0x12, 0x13, 0x14]
+//        var parts: [MonolithPart] = []
+//        let part1: MonolithPart = .bytes(BytesPart(items: [
+//            .enumerated(EnumeratedByteType(options: set)),
+//            .enumerated(EnumeratedByteType(options: set))
+//        ]))
+//        parts.append(part1)
+//
+//        let part2: MonolithPart = .bytes(BytesPart(items: [
+//            .enumerated(EnumeratedByteType(options: set)),
+//            .enumerated(EnumeratedByteType(options: set))
+//        ]))
+//        parts.append(part2)
+//
+//        let desc = Description(parts: parts)
+//        let args = Args(byteValues: [0x11, 0x12, 0x14, 0x13])
+//        let instance = Instance(description: desc, args: args)
+//        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: desc, speakFirst: true)
+//        _ = monotoneConfig.construct()
+//    }
     
-    func testMonotoneEnumeratedItems()
-    {
-        let set: [uint8] = [0x11, 0x12, 0x13, 0x14]
-        var parts: [MonolithPart] = []
-        let part1: MonolithPart = .bytes(BytesPart(items: [
-            .enumerated(EnumeratedByteType(options: set)),
-            .enumerated(EnumeratedByteType(options: set))
-        ]))
-        parts.append(part1)
-        
-        let part2: MonolithPart = .bytes(BytesPart(items: [
-            .enumerated(EnumeratedByteType(options: set)),
-            .enumerated(EnumeratedByteType(options: set))
-        ]))
-        parts.append(part2)
-        
-        let desc = Description(parts: parts)
-        let args = Args(byteValues: [0x11, 0x12, 0x14, 0x13])
-        let instance = Instance(description: desc, args: args)
-        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: desc, speakFirst: true)
-        _ = monotoneConfig.construct()
-    }
+//    func testMonotoneRandomEnumeratedItems()
+//    {
+//        let set: [uint8] = [0x11, 0x12, 0x13, 0x14]
+//
+//        var parts: [MonolithPart] = []
+//        let part1: MonolithPart = .bytes(BytesPart(items: [
+//            .randomEnumerated(RandomEnumeratedByteType(randomOptions: set)),
+//            .randomEnumerated(RandomEnumeratedByteType(randomOptions: set))
+//        ]))
+//        parts.append(part1)
+//
+//        let part2: MonolithPart = .bytes(BytesPart(items: [
+//            .randomEnumerated(RandomEnumeratedByteType(randomOptions: set)),
+//            .randomEnumerated(RandomEnumeratedByteType(randomOptions: set))
+//        ]))
+//        parts.append(part2)
+//
+//        let desc = Description(parts: parts)
+//        let args = Args(byteValues: [0x11, 0x12, 0x14, 0x13])
+//        let instance = Instance(description: desc, args: args)
+//        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: desc, speakFirst: true)
+//        _ = monotoneConfig.construct()
+//    }
     
-    func testMonotoneRandomEnumeratedItems()
-    {
-        let set: [uint8] = [0x11, 0x12, 0x13, 0x14]
-        
-        var parts: [MonolithPart] = []
-        let part1: MonolithPart = .bytes(BytesPart(items: [
-            .randomEnumerated(RandomEnumeratedByteType(randomOptions: set)),
-            .randomEnumerated(RandomEnumeratedByteType(randomOptions: set))
-        ]))
-        parts.append(part1)
-        
-        let part2: MonolithPart = .bytes(BytesPart(items: [
-            .randomEnumerated(RandomEnumeratedByteType(randomOptions: set)),
-            .randomEnumerated(RandomEnumeratedByteType(randomOptions: set))
-        ]))
-        parts.append(part2)
-        
-        let desc = Description(parts: parts)
-        let args = Args(byteValues: [0x11, 0x12, 0x14, 0x13])
-        let instance = Instance(description: desc, args: args)
-        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: desc, speakFirst: true)
-        _ = monotoneConfig.construct()
-    }
-    
-    func testMonotoneRandomItems()
-    {
-        var parts: [MonolithPart] = []
-        let part1: MonolithPart = .bytes(BytesPart(items: [
-            .random(RandomByteType()),
-            .random(RandomByteType())
-        ]))
-        parts.append(part1)
-        
-        let part2: MonolithPart = .bytes(BytesPart(items: [
-            .random(RandomByteType()),
-            .random(RandomByteType())
-        ]))
-        parts.append(part2)
-        
-        let desc = Description(parts: parts)
-        let args = Args(byteValues: [0x11, 0x12, 0x14, 0x13])
-        let instance = Instance(description: desc, args: args)
-        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: desc, speakFirst: true)
-        _ = monotoneConfig.construct()
-    }
-    
-    func createExampleWhalesongClientConfig() -> ToneBurstClientConfig?
-    {
-        // ToneBurst Config
-        let sequence = SequenceModel(sequence: sequence1, length: 256)!
-        let addSequences = [sequence]
-        let removeSequences = [sequence]
-        
-        guard let whalesongClient = WhalesongClient(addSequences: addSequences, removeSequences: removeSequences)
-        else
-        {
-            return nil
-        }
-        
-        let toneBurstClientConfig = ToneBurstClientConfig.whalesong(client: whalesongClient)
-        return toneBurstClientConfig
-    }
-    
+//    func testMonotoneRandomItems()
+//    {
+//        var parts: [MonolithPart] = []
+//        let part1: MonolithPart = .bytes(BytesPart(items: [
+//            .random(RandomByteType()),
+//            .random(RandomByteType())
+//        ]))
+//        parts.append(part1)
+//
+//        let part2: MonolithPart = .bytes(BytesPart(items: [
+//            .random(RandomByteType()),
+//            .random(RandomByteType())
+//        ]))
+//        parts.append(part2)
+//
+//        let desc = Description(parts: parts)
+//        let args = Args(byteValues: [0x11, 0x12, 0x14, 0x13])
+//        let instance = Instance(description: desc, args: args)
+//        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: desc, speakFirst: true)
+//        _ = monotoneConfig.construct()
+//    }
+
     func testCreateEmptyReplicantClientConfigs()
     {
         let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
@@ -197,176 +173,176 @@ final class ReplicantSwiftTests: XCTestCase
         XCTAssert(savedClientConfig)
     }
     
-    func testCreateMonotoneFixedByteReplicantClientConfig()
-    {
-        var parts: [MonolithPart] = []
-        let part1: MonolithPart = .bytes(BytesPart(items: [
-            .fixed(FixedByteType(byte: 0x0A)),
-            .fixed(FixedByteType(byte: 0x11))
-        ]))
-        parts.append(part1)
-        
-        let part2: MonolithPart = .bytes(BytesPart(items: [
-            .fixed(FixedByteType(byte: 0xB0)),
-            .fixed(FixedByteType(byte: 0xB1))
-        ]))
-        parts.append(part2)
-        
-        let description = Description(parts: parts)
-        let instance = Instance(description: description, args: Args())
-        
-        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: description, speakFirst: true)
-        let toneburstClientConfig = ToneBurstClientConfig.monotone(config: monotoneConfig)
-        let replicantConfigTemplate = ReplicantConfigTemplate(polishClientConfig: nil, toneBurstConfig: toneburstClientConfig)
-        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop/Configs", isDirectory: true)
-        let configPath = configDirectory.appendingPathComponent("FixedByteTypeReplicantClient.json", isDirectory: false).path
-        
-        do
-        {
-            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
-        }
-        catch
-        {
-            print("failed to crate config directory: \(error)")
-            XCTFail()
-            return
-        }
-        
-        let savedClientConfig = replicantConfigTemplate.createClientConfig(atPath: configPath, serverIP: "127.0.0.1", port: 1234)
-        XCTAssert(savedClientConfig)
-    }
+//    func testCreateMonotoneFixedByteReplicantClientConfig()
+//    {
+//        var parts: [MonolithPart] = []
+//        let part1: MonolithPart = .bytes(BytesPart(items: [
+//            .fixed(FixedByteType(byte: 0x0A)),
+//            .fixed(FixedByteType(byte: 0x11))
+//        ]))
+//        parts.append(part1)
+//
+//        let part2: MonolithPart = .bytes(BytesPart(items: [
+//            .fixed(FixedByteType(byte: 0xB0)),
+//            .fixed(FixedByteType(byte: 0xB1))
+//        ]))
+//        parts.append(part2)
+//
+//        let description = Description(parts: parts)
+//        let instance = Instance(description: description, args: Args())
+//
+//        let monotoneConfig = MonotoneConfig(addSequences: instance, removeSequences: description, speakFirst: true)
+//        let toneburstClientConfig = ToneBurstClientConfig.monotone(config: monotoneConfig)
+//        let replicantConfigTemplate = ReplicantConfigTemplate(polishClientConfig: nil, toneBurstConfig: toneburstClientConfig)
+//        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop/Configs", isDirectory: true)
+//        let configPath = configDirectory.appendingPathComponent("FixedByteTypeReplicantClient.json", isDirectory: false).path
+//
+//        do
+//        {
+//            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
+//        }
+//        catch
+//        {
+//            print("failed to crate config directory: \(error)")
+//            XCTFail()
+//            return
+//        }
+//
+//        let savedClientConfig = replicantConfigTemplate.createClientConfig(atPath: configPath, serverIP: "127.0.0.1", port: 1234)
+//        XCTAssert(savedClientConfig)
+//    }
     
-    func testCreateToneBurstOnlyReplicantClientConfig()
-    {
-        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
-        
-        do
-        {
-            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
-        }
-        catch
-        {
-            print("Failed to create the config directory: \(error)")
-            XCTFail()
-        }
-        
-        // Config with ToneBurst only
-        guard let toneBurstClientConfig = createExampleWhalesongClientConfig() else
-        {
-            XCTFail()
-            return
-        }
-        
-        let toneBurstOnlyReplicantTemplate = ReplicantConfigTemplate(polishClientConfig: nil, toneBurstConfig: toneBurstClientConfig)
-        let configPath = configDirectory.appendingPathComponent("toneburstOnlyReplicantConfig.json", isDirectory: false).path
-        
-        if FileManager.default.fileExists(atPath: configPath)
-        {
-            do
-            {
-                try FileManager.default.removeItem(atPath: configPath)
-            }
-            catch
-            {
-                XCTFail()
-            }
-        }
-        
-        let savedClientConfig = toneBurstOnlyReplicantTemplate.createClientConfig(atPath: configPath, serverIP: "127.0.0.1", port: 2277)
-        XCTAssert(savedClientConfig)
-    }
+//    func testCreateToneBurstOnlyReplicantClientConfig()
+//    {
+//        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
+//
+//        do
+//        {
+//            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
+//        }
+//        catch
+//        {
+//            print("Failed to create the config directory: \(error)")
+//            XCTFail()
+//        }
+//
+//        // Config with ToneBurst only
+//        guard let toneBurstClientConfig = createExampleWhalesongClientConfig() else
+//        {
+//            XCTFail()
+//            return
+//        }
+//
+//        let toneBurstOnlyReplicantTemplate = ReplicantConfigTemplate(polishClientConfig: nil, toneBurstConfig: toneBurstClientConfig)
+//        let configPath = configDirectory.appendingPathComponent("toneburstOnlyReplicantConfig.json", isDirectory: false).path
+//
+//        if FileManager.default.fileExists(atPath: configPath)
+//        {
+//            do
+//            {
+//                try FileManager.default.removeItem(atPath: configPath)
+//            }
+//            catch
+//            {
+//                XCTFail()
+//            }
+//        }
+//
+//        let savedClientConfig = toneBurstOnlyReplicantTemplate.createClientConfig(atPath: configPath, serverIP: "127.0.0.1", port: 2277)
+//        XCTAssert(savedClientConfig)
+//    }
     
-    func testCreatePolishOnlyClientConfig()
-    {
-        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
-        
-        do
-        {
-            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
-        }
-        catch
-        {
-            print("Failed to create the config directory: \(error)")
-            XCTFail()
-        }
-        
-        // Encode key as data
-         guard let keyData = "NotARealKey".data(using: .utf8) else
-         {
-             print("Failed to load the provided key String as Data.")
-             XCTFail()
-             return
-         }
-        
-        let polishClientConfig: PolishClientConfig = PolishClientConfig.silver(serverPublicKeyData: keyData, chunkSize: 1000, chunkTimeout: 1000)
-        let polishOnlyReplicantTemplate = ReplicantConfigTemplate(polishClientConfig: polishClientConfig, toneBurstConfig: nil)
-        let configPath = configDirectory.appendingPathComponent("polishOnlyReplicantConfig.json", isDirectory: false).path
-        
-        if FileManager.default.fileExists(atPath: configPath)
-        {
-            do
-            {
-                try FileManager.default.removeItem(atPath: configPath)
-            }
-            catch
-            {
-                XCTFail()
-            }
-        }
-        
-        let savedClientConfig = polishOnlyReplicantTemplate.createClientConfig(atPath: configPath, serverIP: "127.0.0.1", port: 2277)
-        XCTAssert(savedClientConfig)
-    }
+//    func testCreatePolishOnlyClientConfig()
+//    {
+//        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
+//
+//        do
+//        {
+//            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
+//        }
+//        catch
+//        {
+//            print("Failed to create the config directory: \(error)")
+//            XCTFail()
+//        }
+//
+//        // Encode key as data
+//         guard let keyData = "NotARealKey".data(using: .utf8) else
+//         {
+//             print("Failed to load the provided key String as Data.")
+//             XCTFail()
+//             return
+//         }
+//
+//        let polishClientConfig: PolishClientConfig = PolishClientConfig.silver(serverPublicKeyData: keyData, chunkSize: 1000, chunkTimeout: 1000)
+//        let polishOnlyReplicantTemplate = ReplicantConfigTemplate(polishClientConfig: polishClientConfig, toneBurstConfig: nil)
+//        let configPath = configDirectory.appendingPathComponent("polishOnlyReplicantConfig.json", isDirectory: false).path
+//
+//        if FileManager.default.fileExists(atPath: configPath)
+//        {
+//            do
+//            {
+//                try FileManager.default.removeItem(atPath: configPath)
+//            }
+//            catch
+//            {
+//                XCTFail()
+//            }
+//        }
+//
+//        let savedClientConfig = polishOnlyReplicantTemplate.createClientConfig(atPath: configPath, serverIP: "127.0.0.1", port: 2277)
+//        XCTAssert(savedClientConfig)
+//    }
     
-    func testCreateSilverWhalesongClientConfig()
-    {
-        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
-        
-        do
-        {
-            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
-        }
-        catch
-        {
-            print("Failed to create the config directory: \(error)")
-            XCTFail()
-        }
-        
-        // Encode key as data
-         guard let keyData = "NotARealKey".data(using: .utf8) else
-         {
-             print("Failed to load the provided key String as Data.")
-             XCTFail()
-             return
-         }
-        
-        let polishClientConfig: PolishClientConfig = PolishClientConfig.silver(serverPublicKeyData: keyData, chunkSize: 1000, chunkTimeout: 1000)
-
-        guard let toneBurstClientConfig = createExampleWhalesongClientConfig() else
-        {
-            XCTFail()
-            return
-        }
-        
-        let silverWhalesongClientConfigTemplate = ReplicantConfigTemplate(polishClientConfig: polishClientConfig, toneBurstConfig: toneBurstClientConfig)
-        let clientConfigPath = configDirectory.appendingPathComponent("silverWhalesongReplicantClient.json", isDirectory: false).path
-        
-        if FileManager.default.fileExists(atPath: clientConfigPath)
-        {
-            do
-            {
-                try FileManager.default.removeItem(atPath: clientConfigPath)
-            }
-            catch
-            {
-                XCTFail()
-            }
-        }
-        
-        let savedClientConfig = silverWhalesongClientConfigTemplate.createClientConfig(atPath:  clientConfigPath, serverIP: "127.0.0.1", port: 2277)
-        XCTAssert(savedClientConfig)
-    }
-    
+//    func testCreateSilverWhalesongClientConfig()
+//    {
+//        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
+//        
+//        do
+//        {
+//            try FileManager.default.createDirectory(at: configDirectory, withIntermediateDirectories: true)
+//        }
+//        catch
+//        {
+//            print("Failed to create the config directory: \(error)")
+//            XCTFail()
+//        }
+//        
+//        // Encode key as data
+//         guard let keyData = "NotARealKey".data(using: .utf8) else
+//         {
+//             print("Failed to load the provided key String as Data.")
+//             XCTFail()
+//             return
+//         }
+//        
+//        let polishClientConfig: PolishClientConfig = PolishClientConfig.silver(serverPublicKeyData: keyData, chunkSize: 1000, chunkTimeout: 1000)
+//
+//        guard let toneBurstClientConfig = createExampleWhalesongClientConfig() else
+//        {
+//            XCTFail()
+//            return
+//        }
+//        
+//        let silverWhalesongClientConfigTemplate = ReplicantConfigTemplate(polishClientConfig: polishClientConfig, toneBurstConfig: toneBurstClientConfig)
+//        let clientConfigPath = configDirectory.appendingPathComponent("silverWhalesongReplicantClient.json", isDirectory: false).path
+//        
+//        if FileManager.default.fileExists(atPath: clientConfigPath)
+//        {
+//            do
+//            {
+//                try FileManager.default.removeItem(atPath: clientConfigPath)
+//            }
+//            catch
+//            {
+//                XCTFail()
+//            }
+//        }
+//        
+//        let savedClientConfig = silverWhalesongClientConfigTemplate.createClientConfig(atPath:  clientConfigPath, serverIP: "127.0.0.1", port: 2277)
+//        XCTAssert(savedClientConfig)
+//    }
+//    
     
 //
 //    // MARK: Polish Tests
