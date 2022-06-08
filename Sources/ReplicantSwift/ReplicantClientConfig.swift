@@ -8,7 +8,7 @@
 import Foundation
 import Song
 
-public struct ReplicantConfig: Codable
+public struct ReplicantClientConfig: Codable
 {
     //public static var supportsSecureCoding: Bool = true
     public let serverIP: String
@@ -21,7 +21,7 @@ public struct ReplicantConfig: Codable
         let decoder = JSONDecoder()
         do
         {
-            let decoded = try decoder.decode(ReplicantConfig.self, from: data)
+            let decoded = try decoder.decode(ReplicantClientConfig.self, from: data)
             let maybePolishConfig = decoded.polish
             let maybeToneburstConfig = decoded.toneBurst
             

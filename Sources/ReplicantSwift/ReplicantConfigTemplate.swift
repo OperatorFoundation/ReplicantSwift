@@ -88,7 +88,7 @@ public struct ReplicantConfigTemplate: Codable
     {
         let fileManager = FileManager.default
         
-        let replicantConfig = ReplicantConfig(serverIP: serverIP, port: port, polish: self.maybePolishClientConfig, toneBurst: self.maybeToneBurstClientConfig)
+        let replicantConfig = ReplicantClientConfig(serverIP: serverIP, port: port, polish: self.maybePolishClientConfig, toneBurst: self.maybeToneBurstClientConfig)
 
        guard let jsonData = replicantConfig.createJSON()
        else

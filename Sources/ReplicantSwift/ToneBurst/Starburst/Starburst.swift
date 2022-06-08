@@ -20,69 +20,37 @@ public class Starburst: Codable, ToneBurst
         self.config = config
     }
 
-    public func perform(connection: Transmission.Connection, completion: @escaping (Error?) -> Void)
+    public func perform(connection: Transmission.Connection) throws
     {
-        let queue = DispatchQueue(label: "Starburst")
-
-        do
+        for moment in config.moments
         {
-            for moment in config.moments
+            switch moment
             {
-                switch moment
-                {
-                    case .speak(let speak):
-                        let string = try Ghostwriter.generate(speak.template, speak.details)
-                        guard connection.write(string: string) else
-                        {
-                            completion(StarburstError.connectionClosed)
-                            return
-                        }
+                case .speak(let speak):
+                    self.handleSpeak(speak)
 
-                    case .listen(let listen):
-                        self.listening = true
+                case .listen(let listen):
+                    self.handleListen(listen)
 
-                        queue.asyncAfter(deadline: .now() + listen.maxTimeoutSeconds)
-                        {
-                            self.listening = false
-                        }
-
-                        var buffer = Data()
-                        while self.listening
-                        {
-                            guard let byte = connection.read(size: 1) else
-                            {
-                                completion(StarburstError.connectionClosed)
-                                return
-                            }
-
-                            buffer.append(byte)
-
-                            guard let string = String(data: buffer, encoding: .utf8) else
-                            {
-                                // This could fail because we're in the middle of a UTF8 rune.
-                                continue
-                            }
-
-                            let details = try Ghostwriter.parse(listen.template, listen.patterns, string)
-                            for (detail, answer) in zip(details, listen.answers)
-                            {
-                                guard detail == answer else
-                                {
-                                    // This could fail because we don't have all the bytes yet.
-                                    continue
-                                }
-                            }
-                        }
-
-                        completion(StarburstError.timeout)
-                        return
-                }
+                case .wait(let wait):
+                    self.handleWait(wait)
             }
         }
-        catch
-        {
-            completion(error)
-        }
+    }
+
+    func handleSpeak(_ speak: Speak)
+    {
+
+    }
+
+    func handleListen(_ listen: Listen)
+    {
+
+    }
+
+    func handleWait(_ wait: Wait)
+    {
+        Thread.sleep(forTimeInterval: wait.interval)
     }
 }
 

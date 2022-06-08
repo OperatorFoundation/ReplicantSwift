@@ -5,9 +5,10 @@ import PackageDescription
 
 let package = Package(
     name: "ReplicantSwift",
-    platforms: [.macOS(.v10_15),
-                      .iOS(.v15)
-                     ],
+    platforms: [
+        .iOS(.v15),
+        .macOS(.v12),
+    ],
     products: [.library(name: "ReplicantSwift", targets: ["ReplicantSwift"])],
     dependencies: [
         .package(url: "https://github.com/apple/swift-crypto.git", from: "2.0.0"),
@@ -20,6 +21,7 @@ let package = Package(
         .package(url: "https://github.com/OperatorFoundation/Net", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/ShadowSwift", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/Song", branch: "main"),
+        .package(url: "https://github.com/OperatorFoundation/Spacetime", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/SwiftHexTools", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/SwiftQueue", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/Transmission", branch: "main"),
@@ -38,6 +40,9 @@ let package = Package(
                 "Net",
                 "ShadowSwift",
                 "Song",
+                .product(name: "Simulation", package: "Spacetime"),
+                .product(name: "Spacetime", package: "Spacetime"),
+                .product(name: "Universe", package: "Spacetime"),
                 "SwiftHexTools",
                 "SwiftQueue",
                 "Transmission",

@@ -28,21 +28,40 @@ public enum Moment: Codable
 {
     case speak(Speak)
     case listen(Listen)
+    case wait(Wait)
 }
 
-public struct Speak: Codable
+public enum Speak: Codable, CustomStringConvertible
 {
-    let template: Template
-    let details: [Detail]
-
-    public init(_ template: Template, _ details: [Detail])
+    public var description: String
     {
-        self.template = template
-        self.details = details
+        switch self
+        {
+            case .bytes(let value):
+                return "Speak.bytes(\(value))"
+
+            case .text(let value):
+                return "Speak.text(\(value))"
+
+            case .template(let template, let details):
+                return "Speak.bytes(\(template), \(details))"
+        }
     }
+
+    case bytes(Data)
+    case text(String)
+    case template(Template, [Detail])
 }
 
-public struct Listen: Codable
+public enum Listen: Codable
+{
+    case bytes(Int)
+    case text(Int)
+    case parse(ListenTemplate)
+    case match(ListenTemplate)
+}
+
+public struct ListenTemplate: Codable
 {
     let template: Template
     let patterns: [ExtractionPattern]
@@ -72,5 +91,15 @@ public struct Listen: Codable
         self.answers = answers
         self.maxSize = maxSize
         self.maxTimeoutSeconds = maxTimeoutSeconds
+    }
+}
+
+public struct Wait: Codable
+{
+    let interval: TimeInterval
+
+    public init(_ interval: TimeInterval)
+    {
+        self.interval = interval
     }
 }
