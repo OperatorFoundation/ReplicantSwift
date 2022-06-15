@@ -18,13 +18,7 @@ public class StarburstModule: Module
 {
     static public let name = "Starburst"
 
-    let connection: TransmissionTypes.Connection
     let lock: DispatchSemaphore = DispatchSemaphore(value: 0)
-
-    public init(_ connection: TransmissionTypes.Connection)
-    {
-        self.connection = connection
-    }
 
     public func name() -> String
     {
@@ -56,6 +50,8 @@ public class StarburstModule: Module
 
     func speak(_ effect: SpeakRequest) -> Event?
     {
+        let connection = ConnectConnection(universe: effect.universe, effect.uuid)
+
         switch effect.speak
         {
             case .bytes(let data):
@@ -91,10 +87,12 @@ public class StarburstModule: Module
 
     func listen(_ effect: StarburstListenRequest) -> Event?
     {
+        let connection = ListenConnection(universe: effect.universe, effect.uuid)
+
         switch effect.listen
         {
             case .bytes(let size):
-                guard let data = self.connection.read(size: size) else
+                guard let data = connection.read(size: size) else
                 {
                     return Failure(effect.id)
                 }
@@ -104,7 +102,7 @@ public class StarburstModule: Module
                 return StarburstListenResponse(effect.id, result)
 
             case .text(let size):
-                guard let data = self.connection.read(size: size) else
+                guard let data = connection.read(size: size) else
                 {
                     return Failure(effect.id)
                 }
@@ -126,7 +124,7 @@ public class StarburstModule: Module
                     var buffer = Data()
                     while true
                     {
-                        guard let byte = self.connection.read(size: 1) else
+                        guard let byte = connection.read(size: 1) else
                         {
                             resultQueue.enqueue(element: nil)
                             self.lock.signal()
@@ -183,7 +181,7 @@ public class StarburstModule: Module
                     var buffer = Data()
                     while true
                     {
-                        guard let byte = self.connection.read(size: 1) else
+                        guard let byte = connection.read(size: 1) else
                         {
                             resultQueue.enqueue(element: nil)
                             self.lock.signal()

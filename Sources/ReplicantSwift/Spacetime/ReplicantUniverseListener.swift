@@ -26,18 +26,20 @@ open class ReplicantUniverseListener: UniverseListener
         try super.init(universe: universe, address: address, port: port)
     }
 
-    override open func accept() -> TransmissionTypes.Connection?
+    override open func accept() throws -> TransmissionTypes.Connection
     {
-        guard let network = super.accept() else
-        {
-            return nil
-        }
+        let network = try super.accept()
 
         guard let connection = network as? ListenConnection else
         {
-            return nil
+            throw ReplicantUniverseListenerError.wrongListenerType
         }
 
-        return connection.replicantServerTransformation(config, logger)
+        return try connection.replicantServerTransformation(config, logger)
     }
+}
+
+public enum ReplicantUniverseListenerError: Error
+{
+    case wrongListenerType
 }

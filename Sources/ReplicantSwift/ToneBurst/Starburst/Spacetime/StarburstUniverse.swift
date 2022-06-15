@@ -7,44 +7,133 @@
 
 import Foundation
 
+import Ghostwriter
 import Spacetime
 import Universe
 
 public class StarburstUniverse: Universe
 {
-    public func speak(_ string: String) throws
+    public func speak(_ uuid: UUID, _ string: String) throws
     {
-        // FIXME
-        return
+        let parameters = Speak.text(string)
+        try self.speak(uuid, parameters)
     }
 
-    public func speak(_ data: Data) throws
+    public func speak(_ uuid: UUID, _ data: Data) throws
     {
-        // FIXME
-        return
+        let parameters = Speak.bytes(data)
+        try self.speak(uuid, parameters)
     }
 
-    public func speak(_ parameters: Speak) throws
+    public func speak(_ uuid: UUID, _ template: Template, _ details: [Detail]) throws
     {
-        // FIXME
-        return
+        let parameters = Speak.template(template, details)
+        try self.speak(uuid, parameters)
     }
 
-    public func listen(size: Int) throws -> Data
+    func speak(_ uuid: UUID, _ parameters: Speak) throws
     {
-        // FIXME
-        return Data()
+        let effect = SpeakRequest(universe: self, uuid: uuid, speak: parameters)
+        let result: Event = self.processEffect(effect)
+        switch result
+        {
+            case is SpeakResponse:
+                return
+
+            default:
+                throw StarburstUniverseError.speakFailed
+        }
     }
 
-    public func listen(_ parameters: Listen) throws -> String
+    public func listenForData(_ uuid: UUID, size: Int) throws -> Data
     {
-        // FIXME
-        return ""
+        let parameters = Listen.bytes(size)
+        let result = try self.listen(uuid, parameters)
+        switch result
+        {
+            case .data(let value):
+                return value
+
+            default:
+                throw StarburstUniverseError.wrongResultType
+        }
+    }
+
+    public func listenForString(_ uuid: UUID, size: Int) throws -> String
+    {
+        let parameters = Listen.text(size)
+        let result = try self.listen(uuid, parameters)
+        switch result
+        {
+            case .text(let value):
+                return value
+
+            default:
+                throw StarburstUniverseError.wrongResultType
+        }
+    }
+
+    public func listenParse(_ uuid: UUID, template: ListenTemplate) throws -> [Detail]
+    {
+        let parameters = Listen.parse(template)
+        let result = try self.listen(uuid, parameters)
+        switch result
+        {
+            case .parse(let value):
+                return value
+
+            default:
+                throw StarburstUniverseError.wrongResultType
+        }
+    }
+
+    public func listenMatch(_ uuid: UUID, template: ListenTemplate) throws -> Bool
+    {
+        let parameters = Listen.match(template)
+        let result = try self.listen(uuid, parameters)
+        switch result
+        {
+            case .match:
+                return true
+
+            default:
+                return false
+        }
+    }
+
+    func listen(_ uuid: UUID, _ parameters: Listen) throws -> StarburstListenResult
+    {
+        let effect = StarburstListenRequest(self, uuid, parameters)
+        let result: Event = self.processEffect(effect)
+        switch result
+        {
+            case let response as StarburstListenResponse:
+                return response.result
+
+            default:
+                throw StarburstUniverseError.listenFailed
+        }
     }
 
     public func wait(_ interval: TimeInterval) throws
     {
-        // FIXME
-        return
+        let effect = WaitRequest(interval)
+        let result: Event = self.processEffect(effect)
+        switch result
+        {
+            case is WaitResponse:
+                return
+
+            default:
+                throw StarburstUniverseError.waitFailed
+        }
     }
+}
+
+public enum StarburstUniverseError: Error
+{
+    case speakFailed
+    case listenFailed
+    case wrongResultType
+    case waitFailed
 }

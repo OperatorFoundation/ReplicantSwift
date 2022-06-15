@@ -19,58 +19,34 @@ public class ReplicantUniverse: Universe
         return try ReplicantUniverseListener(universe: self, address: address, port: port, config: config, logger: logger)
     }
 
-    public func replicantConnect(_ address: String, _ port: Int, config: ReplicantClientConfig, _ logger: Logger) -> TransmissionTypes.Connection?
+    public func replicantConnect(_ address: String, _ port: Int, config: ReplicantClientConfig, _ logger: Logger) throws -> TransmissionTypes.Connection
     {
-        do
-        {
-            let network = try super.connect(address, port)
+        let network = try super.connect(address, port)
 
-            guard let connection = network as? ConnectConnection else
-            {
-                return nil
-            }
-
-            return connection.replicantClientTransformation(config, logger)
-        }
-        catch
+        guard let connection = network as? ConnectConnection else
         {
-            print(error)
-            return nil
+            throw ReplicantUniverseError.wrongConnectionType
         }
+
+        return try connection.replicantClientTransformation(config, logger)
     }
 }
 
 extension ListenConnection
 {
-    public func replicantServerTransformation(_ config: ReplicantServerConfig, _ logger: Logger) -> TransmissionTypes.Connection?
+    public func replicantServerTransformation(_ config: ReplicantServerConfig, _ logger: Logger) throws -> TransmissionTypes.Connection
     {
         var result: TransmissionTypes.Connection = self
 
         if let toneBurstConfig = config.toneBurst
         {
             var toneBurst = toneBurstConfig.getToneBurst()
-            do
-            {
-                try toneBurst.perform(connection: self)
-            }
-            catch
-            {
-                print(error)
-                return nil
-            }
+            try toneBurst.perform(connection: self)
         }
 
         if let polishConfig = config.polish
         {
-            do
-            {
-                result = try polishConfig.polish(result, logger)
-            }
-            catch
-            {
-                print(error)
-                return nil
-            }
+            result = try polishConfig.polish(result, logger)
         }
 
         return result
@@ -79,37 +55,26 @@ extension ListenConnection
 
 extension ConnectConnection
 {
-    public func replicantClientTransformation(_ config: ReplicantClientConfig, _ logger: Logger) -> TransmissionTypes.Connection?
+    public func replicantClientTransformation(_ config: ReplicantClientConfig, _ logger: Logger) throws -> TransmissionTypes.Connection
     {
         var result: TransmissionTypes.Connection = self
 
         if let toneBurstConfig = config.toneBurst
         {
             var toneBurst = toneBurstConfig.getToneBurst()
-            do
-            {
-                try toneBurst.perform(connection: self)
-            }
-            catch
-            {
-                print(error)
-                return nil
-            }
+            try toneBurst.perform(connection: self)
         }
 
         if let polishConfig = config.polish
         {
-            do
-            {
-                result = try polishConfig.polish(result, logger)
-            }
-            catch
-            {
-                print(error)
-                return nil
-            }
+            result = try polishConfig.polish(result, logger)
         }
 
         return result
     }
+}
+
+public enum ReplicantUniverseError: Error
+{
+    case wrongConnectionType
 }

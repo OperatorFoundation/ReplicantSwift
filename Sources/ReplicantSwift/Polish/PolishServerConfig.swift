@@ -32,8 +32,7 @@ extension PolishServerConfig: PolishConfig
 
                 let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host.ipv4(ipv4), port: NWEndpoint.Port(integerLiteral: config.port))
                 // FIXME
-                let bloomfilter = BloomFilter<Data>(withFileAtPath: "FIXME.json")! // FIXME
-                guard let result = DarkStarServerConnection(connection: connection, endpoint: endpoint, parameters: .tcp, config: config, bloomFilter: bloomfilter, logger: logger) else
+                guard let result = DarkStarServerConnection(connection: connection, endpoint: endpoint, parameters: .tcp, config: config, logger: logger) else
                 {
                     throw PolishServerConfigError.nullDarkStarConnection
                 }
