@@ -22,20 +22,20 @@ public class Starburst: Codable, ToneBurst
 
     public func perform(connection: Transmission.Connection) throws
     {
-        for moment in config.moments
-        {
-            switch moment
-            {
-                case .speak(let speak):
-                    self.handleSpeak(speak)
-
-                case .listen(let listen):
-                    self.handleListen(listen)
-
-                case .wait(let wait):
-                    self.handleWait(wait)
-            }
-        }
+//        for moment in config.moments
+//        {
+//            switch moment
+//            {
+//                case .speak(let speak):
+//                    self.handleSpeak(speak)
+//
+//                case .listen(let listen):
+//                    self.handleListen(listen)
+//
+//                case .wait(let wait):
+//                    self.handleWait(wait)
+//            }
+//        }
     }
 
     func handleSpeak(_ speak: Speak)

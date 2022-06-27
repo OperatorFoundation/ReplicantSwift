@@ -9,15 +9,26 @@ import Foundation
 
 import Ghostwriter
 
-public struct StarburstConfig: Codable
+//public struct StarburstConfig: Codable
+//{
+//    let moments: [Moment]
+//
+//    public init(_ moments: [Moment])
+//    {
+//        self.moments = moments
+//    }
+//
+//    public func construct() -> Starburst
+//    {
+//        return Starburst(self)
+//    }
+//}
+
+public enum StarburstConfig: Codable
 {
-    let moments: [Moment]
-
-    public init(_ moments: [Moment])
-    {
-        self.moments = moments
-    }
-
+    case SMTPServer
+    case SMTPClient
+    
     public func construct() -> Starburst
     {
         return Starburst(self)
