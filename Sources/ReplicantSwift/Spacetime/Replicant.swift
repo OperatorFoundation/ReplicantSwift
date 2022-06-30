@@ -22,8 +22,7 @@ public class Replicant
     public init(logger: Logger)
     {
         self.logger = logger
-        let starburst = StarburstModule()
-        self.simulation = Simulation(capabilities: Capabilities(BuiltinModuleNames.display.rawValue, BuiltinModuleNames.random.rawValue, BuiltinModuleNames.networkConnect.rawValue, BuiltinModuleNames.networkListen.rawValue, StarburstModule.name), userModules: [starburst])
+        self.simulation = Simulation(capabilities: Capabilities(.display, .random, .networkConnect, .networkListen))
         self.universe = ReplicantUniverse(effects: self.simulation.effects, events: self.simulation.events)
     }
 

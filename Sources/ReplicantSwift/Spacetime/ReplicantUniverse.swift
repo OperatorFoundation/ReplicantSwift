@@ -8,6 +8,7 @@
 import Foundation
 import Logging
 
+import Ghostwriter
 import Spacetime
 import TransmissionTypes
 import Universe
@@ -77,4 +78,10 @@ extension ConnectConnection
 public enum ReplicantUniverseError: Error
 {
     case wrongConnectionType
+
+    // Starburst
+    case speakFailed
+    case listenFailed
+    case wrongResultType
+    case waitFailed
 }

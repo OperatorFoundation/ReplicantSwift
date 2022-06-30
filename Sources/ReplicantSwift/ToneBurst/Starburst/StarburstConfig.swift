@@ -9,21 +9,6 @@ import Foundation
 
 import Ghostwriter
 
-//public struct StarburstConfig: Codable
-//{
-//    let moments: [Moment]
-//
-//    public init(_ moments: [Moment])
-//    {
-//        self.moments = moments
-//    }
-//
-//    public func construct() -> Starburst
-//    {
-//        return Starburst(self)
-//    }
-//}
-
 public enum StarburstConfig: Codable
 {
     case SMTPServer
@@ -33,13 +18,6 @@ public enum StarburstConfig: Codable
     {
         return Starburst(self)
     }
-}
-
-public enum Moment: Codable
-{
-    case speak(Speak)
-    case listen(Listen)
-    case wait(Wait)
 }
 
 public enum Speak: Codable, CustomStringConvertible
@@ -76,7 +54,6 @@ public struct ListenTemplate: Codable
 {
     let template: Template
     let patterns: [ExtractionPattern]
-    let answers: [Detail]
     let maxSize: Int
     let maxTimeoutSeconds: Double
 
@@ -99,7 +76,6 @@ public struct ListenTemplate: Codable
 
         self.template = template
         self.patterns = patterns
-        self.answers = answers
         self.maxSize = maxSize
         self.maxTimeoutSeconds = maxTimeoutSeconds
     }
