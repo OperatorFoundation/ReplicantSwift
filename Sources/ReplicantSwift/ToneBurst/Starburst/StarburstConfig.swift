@@ -55,15 +55,10 @@ public struct ListenTemplate: Codable
     let template: Template
     let patterns: [ExtractionPattern]
     let maxSize: Int
-    let maxTimeoutSeconds: Double
+    let maxTimeoutSeconds: Int
 
-    public init?(_ template: Template, patterns: [ExtractionPattern], answers: [Detail], maxSize: Int, maxTimeoutSeconds: Double)
+    public init?(_ template: Template, patterns: [ExtractionPattern], maxSize: Int, maxTimeoutSeconds: Int)
     {
-        guard patterns.count == answers.count else
-        {
-            return nil
-        }
-
         guard maxSize > 0 else
         {
             return nil

@@ -53,12 +53,45 @@ public struct StarburstInstance
 
     func handleSMTPClient() throws
     {
-        // FIXME
+        guard let firstClientListen = ListenTemplate(Template("220 $1 SMTP service ready\r\n"), patterns: [ExtractionPattern("^([a-zA-Z0-9.-]+)", .string)], maxSize: 253, maxTimeoutSeconds: Int.max) else {
+            throw StarburstError.listenFailed
+        }
+        
+        try listen(template: firstClientListen)
+
+        try speak(template: Template("EHLO $1\r\n"), details: [Detail.string("mail.imc.org")])
+
+        guard let secondClientListen = ListenTemplate(Template("$1\r\n"), patterns: [ExtractionPattern("250 (STARTTLS)", .string)], maxSize: 253, maxTimeoutSeconds: 10) else {
+            throw StarburstError.listenFailed
+        }
+        
+        try listen(template: secondClientListen)
+
+        try speak(string: "STARTTLS\r\n")
+
+        guard let thirdClientListen = ListenTemplate(Template("$1\r\n"), patterns: [ExtractionPattern("^(.+)\r", .string)], maxSize: 253, maxTimeoutSeconds: 10) else {
+            throw StarburstError.listenFailed
+        }
+        
+        try listen(template: thirdClientListen)
     }
 
     func handleSMTPServer() throws
     {
-        // FIXME
+        try speak(template: Template("220 $1 SMTP service ready\r\n"), details: [Detail.string("mail.imc.org")])
+        
+        guard let firstServerListen = ListenTemplate(Template("EHLO $1\r\n"), patterns: [ExtractionPattern("^([a-zA-Z0-9.-]+)\r", .string)], maxSize: 253, maxTimeoutSeconds: 10) else {
+            throw StarburstError.listenFailed
+        }
+        
+        try listen(template: firstServerListen)
+
+        try speak(template: Template("250-$1 offers a warm hug of welcome\r\n250-$2\r\n250-$3\r\n250 $4\r\n"), details: [Detail.string("mail.imc.org"), Detail.string("8BITMIME"), Detail.string("DSN"), Detail.string("STARTTLS")])
+
+        // FIXME: not sure about this size
+        let listenString: String = try listen(size: "STARTTLS\r\n".count)
+
+        try speak(template: Template("220 $1\r\n"), details: [Detail.string("Go ahead")])
     }
 
     func speak(data: Data) throws
@@ -119,11 +152,12 @@ public struct StarburstInstance
         let lock = DispatchSemaphore(value: 0)
         let resultQueue = BlockingQueue<[Detail]?>()
         let queue = DispatchQueue(label: "Starburst.listen")
-
+        var running = true
+        
         queue.async
         {
             var buffer = Data()
-            while true
+            while buffer.count < template.maxSize && running
             {
                 guard let byte = connection.read(size: 1) else
                 {
@@ -149,15 +183,17 @@ public struct StarburstInstance
                 }
                 catch
                 {
-                    print(error)
-                    resultQueue.enqueue(element: nil)
-                    lock.signal()
-                    return
+                    continue
                 }
             }
+            
+            resultQueue.enqueue(element: nil)
+            lock.signal()
+            return
         }
 
-        let waitResult = lock.wait(timeout: .now() + template.maxTimeoutSeconds)
+        // .now() + DispatchTimeoutInterval.seconds(maxtimeoutinseconds)
+        let waitResult = lock.wait(timeout: DispatchTime.distantFuture)
         switch waitResult
         {
             case .success:
@@ -169,6 +205,7 @@ public struct StarburstInstance
                 return details
 
             case .timedOut:
+                running = false
                 throw StarburstError.timeout
         }
     }
@@ -186,4 +223,7 @@ public enum StarburstError: Error
     case connectionClosed
     case writeFailed
     case readFailed
+    case listenFailed
+    case speakFailed
+    case maxSizeReached
 }

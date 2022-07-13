@@ -2,6 +2,7 @@ import XCTest
 import Foundation
 
 import Datable
+import Logging
 import Monolith
 import SwiftQueue
 
@@ -9,6 +10,56 @@ import SwiftQueue
 
 final class ReplicantSwiftTests: XCTestCase
 {
+    func testStarburst() throws {
+        let serverSendData = "success".data
+        let clientSendData = "pass".data
+        
+        let starburstServer = StarburstConfig.SMTPServer
+        let starburstClient = StarburstConfig.SMTPClient
+        
+        let toneburstServerConfig = ToneBurstServerConfig.starburst(config: starburstServer)
+        let toneBurstClientConfig = ToneBurstClientConfig.starburst(config: starburstClient)
+        
+        guard let replicantServerConfig = ReplicantServerConfig(polish: nil, toneBurst: toneburstServerConfig) else {
+            XCTFail()
+            return
+        }
+        
+        let replicantClientConfig = ReplicantClientConfig(serverIP: "127.0.0.1", port: 1234, polish: nil, toneBurst: toneBurstClientConfig)
+        
+        let replicant = Replicant(logger: Logger(label: "ReplicantTest"))
+        
+        let replicantListener = try replicant.listen(address: "127.0.0.1", port: 1234, config: replicantServerConfig)
+        Task {
+            let replicantConnection = try replicantListener.accept()
+            
+            guard let serverReadData = replicantConnection.read(size: clientSendData.count) else {
+                XCTFail()
+                return
+            }
+            
+            guard replicantConnection.write(data: serverSendData) else {
+                XCTFail()
+                return
+            }
+            
+            XCTAssertEqual(serverReadData.string, clientSendData.string)
+        }
+        
+        let replicantClient = try replicant.connect(host: "127.0.0.1", port: 1234, config: replicantClientConfig)
+        
+        guard replicantClient.write(data: clientSendData) else {
+            XCTFail()
+            return
+        }
+        
+        guard let clientReadData = replicantClient.read(size: serverSendData.count) else {
+            XCTFail()
+            return
+        }
+        
+        XCTAssertEqual(clientReadData.string, serverSendData.string)
+    }
     
 //    let logQueue = Queue<String>()
 //    var polishClientModel: SilverClientConnection!
