@@ -69,7 +69,7 @@ public struct StarburstInstance
 
         try speak(string: "STARTTLS\r\n")
 
-        guard let thirdClientListen = ListenTemplate(Template("$1\r\n"), patterns: [ExtractionPattern("^(.+)\r", .string)], maxSize: 253, maxTimeoutSeconds: 10) else {
+        guard let thirdClientListen = ListenTemplate(Template("$1\r\n"), patterns: [ExtractionPattern("^(.+)\r\n", .string)], maxSize: 253, maxTimeoutSeconds: 10) else {
             throw StarburstError.listenFailed
         }
         
@@ -89,7 +89,7 @@ public struct StarburstInstance
         try speak(template: Template("250-$1 offers a warm hug of welcome\r\n250-$2\r\n250-$3\r\n250 $4\r\n"), details: [Detail.string("mail.imc.org"), Detail.string("8BITMIME"), Detail.string("DSN"), Detail.string("STARTTLS")])
 
         // FIXME: not sure about this size
-        let listenString: String = try listen(size: "STARTTLS\r\n".count)
+        let listenString: String = try listen(size: "STARTTLS\r\n".count + 1) // \r\n is counted as one on .count
 
         try speak(template: Template("220 $1\r\n"), details: [Detail.string("Go ahead")])
     }

@@ -33,12 +33,6 @@ final class ReplicantSwiftTests: XCTestCase
         Task {
             let replicantConnection = try replicantListener.accept()
             
-            // FIXME: this read discards a mysterious extra byte at the front
-            guard (replicantConnection.read(size: 1)) != nil  else {
-                XCTFail()
-                return
-            }
-            
             guard let serverReadData = replicantConnection.read(size: clientSendData.count) else {
                 XCTFail()
                 return
