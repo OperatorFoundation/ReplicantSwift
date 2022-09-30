@@ -4,6 +4,7 @@ import Foundation
 import Datable
 import Logging
 import Monolith
+import ShadowSwift
 import SwiftQueue
 
 @testable import ReplicantSwift
@@ -59,6 +60,39 @@ final class ReplicantSwiftTests: XCTestCase
         }
         
         XCTAssertEqual(clientReadData.string, serverSendData.string)
+    }
+    
+    func testCreateConfigs() {
+        let starburstServer = StarburstConfig.SMTPServer
+        let starburstClient = StarburstConfig.SMTPClient
+        let shadowClientConfig = ShadowConfig(key: "<ServerPublicKey>", serverIP: "<serverIP>", port: 1234, mode: .DARKSTAR)
+        let shadowServerConfig = ShadowConfig(key: "<ServerPrivateKey>", serverIP: "<serverIP>", port: 1234, mode: .DARKSTAR)
+        let polishClientConfig = PolishClientConfig.darkStar(shadowClientConfig)
+        let polishServerConfig = PolishServerConfig.darkStar(shadowServerConfig)
+        let toneburstClientConfig = ToneBurstClientConfig.starburst(config: starburstClient)
+        let toneburstServerConfig = ToneBurstServerConfig.starburst(config: starburstServer)
+        let clientConfig = ReplicantClientConfig(serverIP: "<serverIP>", port: 1234, polish: polishClientConfig, toneBurst: toneburstClientConfig)
+        let serverConfig = ReplicantServerConfig(polish: polishServerConfig, toneBurst: toneburstServerConfig)
+        
+        guard let clientJson = clientConfig.createJSON() else {
+            XCTFail()
+            return
+        }
+        
+        guard let serverJson = serverConfig?.createJSON() else {
+            XCTFail()
+            return
+        }
+        
+        let fileManager = FileManager.default
+        let clientConfigDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true)
+        let clientConfigPath = clientConfigDirectory.appendingPathComponent("ReplicantClientConfig.json", isDirectory: false).path
+        let serverConfigDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true)
+        let serverConfigPath = serverConfigDirectory.appendingPathComponent("ReplicantServerConfig.json", isDirectory: false).path
+        let clientConfigCreated = fileManager.createFile(atPath: clientConfigPath, contents: clientJson)
+        let serverConfigCreated = fileManager.createFile(atPath: serverConfigPath, contents: serverJson)
+        XCTAssertTrue(clientConfigCreated)
+        XCTAssertTrue(serverConfigCreated)
     }
     
 //    let logQueue = Queue<String>()
