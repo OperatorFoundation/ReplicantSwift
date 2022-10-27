@@ -86,7 +86,27 @@ public struct StarburstInstance
         
         try listen(template: firstServerListen)
 
-        try speak(template: Template("250-$1 offers a warm hug of welcome\r\n250-$2\r\n250-$3\r\n250 $4\r\n"), details: [Detail.string("mail.imc.org"), Detail.string("8BITMIME"), Detail.string("DSN"), Detail.string("STARTTLS")])
+        let hour = Calendar.current.component(.hour, from: Date()) % 5
+        let welcome: String
+        switch hour
+        {
+            // These are all real SMTP welcome messages found in online examples of SMTP conversations.
+            case 0:
+                welcome = "offers a warm hug of welcome"
+            case 1:
+                welcome = "is my domain name."
+            case 2:
+                welcome = "I am glad to meet you"
+            case 3:
+                welcome = "says hello"
+            case 4:
+                welcome = "Hello"
+
+            default:
+                welcome = ""
+        }
+
+        try speak(template: Template("250-$1 $2\r\n250-$3\r\n250-$4\r\n250 $5\r\n"), details: [Detail.string("mail.imc.org"), Detail.string(welcome), Detail.string("8BITMIME"), Detail.string("DSN"), Detail.string("STARTTLS")])
 
         // FIXME: not sure about this size
         let listenString: String = try listen(size: "STARTTLS\r\n".count + 1) // \r\n is counted as one on .count
