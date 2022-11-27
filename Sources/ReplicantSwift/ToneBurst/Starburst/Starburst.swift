@@ -86,6 +86,7 @@ public struct StarburstInstance
         
         try listen(template: firstServerListen)
 
+        // % 5 is mod, which divides by five, discards the result, then returns the remainder
         let hour = Calendar.current.component(.hour, from: Date()) % 5
         let welcome: String
         switch hour

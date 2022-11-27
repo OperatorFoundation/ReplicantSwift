@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import os.log
 import Logging
 
 import Simulation
@@ -15,15 +16,15 @@ import Universe
 
 public class Replicant
 {
-    var logger: Logger
+    var logger: Logging.Logger
     let simulation: Simulation
     let universe: ReplicantUniverse
 
-    public init(logger: Logger)
+    public init(logger: Logging.Logger, osLogger: os.Logger?)
     {
         self.logger = logger
         self.simulation = Simulation(capabilities: Capabilities(.display, .random, .networkConnect, .networkListen))
-        self.universe = ReplicantUniverse(effects: self.simulation.effects, events: self.simulation.events)
+        self.universe = ReplicantUniverse(effects: self.simulation.effects, events: self.simulation.events, logger: osLogger)
     }
 
     public func listen(address: String, port: Int, config: ReplicantServerConfig) throws -> TransmissionTypes.Listener

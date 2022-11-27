@@ -95,35 +95,35 @@ final class ReplicantSwiftTests: XCTestCase
         XCTAssertTrue(serverConfigCreated)
     }
     
-    func testCreateSimplyShadowConfigs() {
-        let shadowConfigs = ShadowConfig.generateNewConfigPair(serverIP: "0.0.0.0", serverPort: 0, cipher: .DARKSTAR)
-
-        let polishClientConfig = PolishClientConfig.darkStar(shadowConfigs.clientConfig)
-        let polishServerConfig = PolishServerConfig.darkStar(shadowConfigs.serverConfig)
-        
-        let clientConfig = ReplicantClientConfig(serverIP: shadowConfigs.clientConfig.serverIP, port: shadowConfigs.clientConfig.port, polish: polishClientConfig, toneBurst: nil)
-        let serverConfig = ReplicantServerConfig(polish: polishServerConfig, toneBurst: nil)
-        
-        guard let clientJson = clientConfig.createJSON() else {
-            XCTFail()
-            return
-        }
-        
-        guard let serverJson = serverConfig?.createJSON() else {
-            XCTFail()
-            return
-        }
-        
-        let fileManager = FileManager.default
-        let clientConfigDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true)
-        let clientConfigPath = clientConfigDirectory.appendingPathComponent("ReplicantSimplyShadowClientConfig.json", isDirectory: false).path
-        let serverConfigDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true)
-        let serverConfigPath = serverConfigDirectory.appendingPathComponent("ReplicantSilmplyShadowServerConfig.json", isDirectory: false).path
-        let clientConfigCreated = fileManager.createFile(atPath: clientConfigPath, contents: clientJson)
-        let serverConfigCreated = fileManager.createFile(atPath: serverConfigPath, contents: serverJson)
-        XCTAssertTrue(clientConfigCreated)
-        XCTAssertTrue(serverConfigCreated)
-    }
+//    func testCreateSimplyShadowConfigs() {
+//        let shadowConfigs = ShadowConfig.generateNewConfigPair(serverIP: "0.0.0.0", serverPort: 0, cipher: .DARKSTAR)
+//
+//        let polishClientConfig = PolishClientConfig.darkStar(shadowConfigs.clientConfig)
+//        let polishServerConfig = PolishServerConfig.darkStar(shadowConfigs.serverConfig)
+//
+//        let clientConfig = ReplicantClientConfig(serverIP: shadowConfigs.clientConfig.serverIP, port: shadowConfigs.clientConfig.port, polish: polishClientConfig, toneBurst: nil)
+//        let serverConfig = ReplicantServerConfig(polish: polishServerConfig, toneBurst: nil)
+//
+//        guard let clientJson = clientConfig.createJSON() else {
+//            XCTFail()
+//            return
+//        }
+//
+//        guard let serverJson = serverConfig?.createJSON() else {
+//            XCTFail()
+//            return
+//        }
+//
+//        let fileManager = FileManager.default
+//        let clientConfigDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true)
+//        let clientConfigPath = clientConfigDirectory.appendingPathComponent("ReplicantSimplyShadowClientConfig.json", isDirectory: false).path
+//        let serverConfigDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true)
+//        let serverConfigPath = serverConfigDirectory.appendingPathComponent("ReplicantSilmplyShadowServerConfig.json", isDirectory: false).path
+//        let clientConfigCreated = fileManager.createFile(atPath: clientConfigPath, contents: clientJson)
+//        let serverConfigCreated = fileManager.createFile(atPath: serverConfigPath, contents: serverJson)
+//        XCTAssertTrue(clientConfigCreated)
+//        XCTAssertTrue(serverConfigCreated)
+//    }
     
 //    let logQueue = Queue<String>()
 //    var polishClientModel: SilverClientConnection!
@@ -256,7 +256,7 @@ final class ReplicantSwiftTests: XCTestCase
 
     func testCreateEmptyReplicantClientConfigs()
     {
-        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop", isDirectory: true).appendingPathComponent("Configs", isDirectory: true)
+        let configDirectory = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent("Desktop/Configs", isDirectory: true)
         
         do
         {
