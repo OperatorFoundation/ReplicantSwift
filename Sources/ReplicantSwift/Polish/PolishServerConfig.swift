@@ -13,10 +13,15 @@ import ShadowSwift
 import TransmissionTypes
 import TransmissionTransport
 
-public struct PolishServerConfig: Codable
+public class PolishServerConfig: Codable
 {
     public let serverAddress: String
     public let serverPrivateKey: String
+    
+    init(serverAddress: String, serverPrivateKey: String) {
+        self.serverAddress = serverAddress
+        self.serverPrivateKey = serverPrivateKey
+    }
 }
 
 extension PolishServerConfig: PolishConfig

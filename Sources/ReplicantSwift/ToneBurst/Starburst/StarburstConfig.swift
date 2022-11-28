@@ -9,9 +9,13 @@ import Foundation
 
 import Ghostwriter
 
-public struct StarburstConfig: Codable
+public class StarburstConfig: Codable
 {
     public let mode: StarburstMode
+    
+    init(mode: StarburstMode) {
+        self.mode = mode
+    }
     
     public func construct() -> Starburst
     {
