@@ -13,7 +13,7 @@ public class StarburstConfig: Codable
 {
     public let mode: StarburstMode
     
-    init(mode: StarburstMode) {
+    public init(mode: StarburstMode) {
         self.mode = mode
     }
     

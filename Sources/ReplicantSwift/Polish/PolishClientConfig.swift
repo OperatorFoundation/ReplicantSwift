@@ -18,7 +18,7 @@ public class PolishClientConfig: Codable
     public let serverAddress: String
     public let serverPublicKey: String
     
-    init(serverAddress: String, serverPublicKey: String) {
+    public init(serverAddress: String, serverPublicKey: String) {
         self.serverAddress = serverAddress
         self.serverPublicKey = serverPublicKey
     }
