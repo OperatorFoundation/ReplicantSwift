@@ -15,20 +15,17 @@ final class ReplicantSwiftTests: XCTestCase
         let serverSendData = "success".data
         let clientSendData = "pass".data
         
-        let starburstServer = StarburstConfig.SMTPServer
-        let starburstClient = StarburstConfig.SMTPClient
+        let starburstServer = StarburstConfig(mode: StarburstMode.SMTPServer)
+        let starburstClient = StarburstConfig(mode: StarburstMode.SMTPClient)
         
         let toneburstServerConfig = ToneBurstServerConfig.starburst(config: starburstServer)
         let toneBurstClientConfig = ToneBurstClientConfig.starburst(config: starburstClient)
         
-        guard let replicantServerConfig = ReplicantServerConfig(polish: nil, toneBurst: toneburstServerConfig) else {
-            XCTFail()
-            return
-        }
+        let replicantServerConfig = ReplicantServerConfig(serverAddress: "127.0.0.1:1234", polish: nil, toneBurst: toneburstServerConfig, transport: "replicant")
         
-        let replicantClientConfig = ReplicantClientConfig(serverIP: "127.0.0.1", port: 1234, polish: nil, toneBurst: toneBurstClientConfig)
+        let replicantClientConfig = ReplicantClientConfig(serverAddress: "127.0.0.1:1234", polish: nil, toneBurst: toneBurstClientConfig, transport: "replicant")
         
-        let replicant = Replicant(logger: Logger(label: "ReplicantTest"))
+        let replicant = Replicant(logger: Logger(label: "ReplicantTest"), osLogger: nil)
         
         let replicantListener = try replicant.listen(address: "127.0.0.1", port: 1234, config: replicantServerConfig)
         Task {
@@ -63,23 +60,23 @@ final class ReplicantSwiftTests: XCTestCase
     }
     
     func testCreateConfigs() {
-        let starburstServer = StarburstConfig.SMTPServer
-        let starburstClient = StarburstConfig.SMTPClient
-        let shadowClientConfig = ShadowConfig(key: "<ServerPublicKey>", serverIP: "<serverIP>", port: 1234, mode: .DARKSTAR)
-        let shadowServerConfig = ShadowConfig(key: "<ServerPrivateKey>", serverIP: "<serverIP>", port: 1234, mode: .DARKSTAR)
-        let polishClientConfig = PolishClientConfig.darkStar(shadowClientConfig)
-        let polishServerConfig = PolishServerConfig.darkStar(shadowServerConfig)
+        let starburstServer = StarburstConfig(mode: StarburstMode.SMTPServer)
+        let starburstClient = StarburstConfig(mode: StarburstMode.SMTPClient)
+        let shadowClientConfig = ShadowConfig.ShadowClientConfig(serverAddress: "<serverAddress>", serverPublicKey: "<serverPublicKey>", mode: .DARKSTAR, transport: "shadow")
+        let shadowServerConfig = ShadowConfig.ShadowServerConfig(serverAddress: "<serverAddress>", serverPrivateKey: "<serverPrivateKey>", mode: .DARKSTAR, transport: "shadow")
+        let polishClientConfig = PolishClientConfig(serverAddress: "<serverAddress>", serverPublicKey: "<serverPublicKey>")
+        let polishServerConfig = PolishServerConfig(serverAddress: "<serverAddress>", serverPrivateKey: "<serverPrivateKey>")
         let toneburstClientConfig = ToneBurstClientConfig.starburst(config: starburstClient)
         let toneburstServerConfig = ToneBurstServerConfig.starburst(config: starburstServer)
-        let clientConfig = ReplicantClientConfig(serverIP: "<serverIP>", port: 1234, polish: polishClientConfig, toneBurst: toneburstClientConfig)
-        let serverConfig = ReplicantServerConfig(polish: polishServerConfig, toneBurst: toneburstServerConfig)
+        let clientConfig = ReplicantClientConfig(serverAddress: "<serverAddress>", polish: polishClientConfig, toneBurst: toneburstClientConfig, transport: "replicant")
+        let serverConfig = ReplicantServerConfig(serverAddress: "<serverAddress>", polish: polishServerConfig, toneBurst: toneburstServerConfig, transport: "replicant")
         
         guard let clientJson = clientConfig.createJSON() else {
             XCTFail()
             return
         }
         
-        guard let serverJson = serverConfig?.createJSON() else {
+        guard let serverJson = serverConfig.createJSON() else {
             XCTFail()
             return
         }
@@ -284,7 +281,7 @@ final class ReplicantSwiftTests: XCTestCase
             }
         }
         
-        let savedClientConfig = emptyTemplate.createClientConfig(atPath: configPath, serverIP: "127.0.0.1", port: 2277)
+        let savedClientConfig = emptyTemplate.createClientConfig(atPath: configPath, serverAddress: "127.0.0.1:2277")
         XCTAssert(savedClientConfig)
     }
     

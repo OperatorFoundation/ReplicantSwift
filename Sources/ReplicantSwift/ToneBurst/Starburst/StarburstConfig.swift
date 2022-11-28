@@ -9,15 +9,19 @@ import Foundation
 
 import Ghostwriter
 
-public enum StarburstConfig: Codable
+public struct StarburstConfig: Codable
 {
-    case SMTPServer
-    case SMTPClient
+    public let mode: StarburstMode
     
     public func construct() -> Starburst
     {
         return Starburst(self)
     }
+}
+
+public enum StarburstMode: Codable {
+    case SMTPServer
+    case SMTPClient
 }
 
 public enum Speak: Codable, CustomStringConvertible

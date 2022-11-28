@@ -9,13 +9,17 @@ import Foundation
 
 public struct ReplicantServerConfig: Codable
 {
+    public let serverAddress: String
     public var polish: PolishServerConfig?
     public var toneBurst: ToneBurstServerConfig?
+    public var transport: String
     
-    public init?(polish: PolishServerConfig?, toneBurst: ToneBurstServerConfig?)
+    public init(serverAddress: String, polish maybePolish: PolishServerConfig?, toneBurst maybeToneBurst: ToneBurstServerConfig?, transport: String)
     {
-        self.toneBurst = toneBurst
-        self.polish = polish
+        self.serverAddress = serverAddress
+        self.polish = maybePolish
+        self.toneBurst = maybeToneBurst
+        self.transport = transport
     }
     
     public init?(withConfigAtPath path: String)

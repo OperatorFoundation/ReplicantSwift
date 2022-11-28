@@ -11,10 +11,10 @@ import Song
 public struct ReplicantClientConfig: Codable
 {
     //public static var supportsSecureCoding: Bool = true
-    public let serverIP: String
-    public let port: UInt16
+    public let serverAddress: String
     public var polish: PolishClientConfig?
     public var toneBurst: ToneBurstClientConfig?
+    public var transport: String
     
     public init?(from data: Data)
     {
@@ -25,7 +25,7 @@ public struct ReplicantClientConfig: Codable
             let maybePolishConfig = decoded.polish
             let maybeToneburstConfig = decoded.toneBurst
             
-            self.init(serverIP: decoded.serverIP, port: decoded.port, polish: maybePolishConfig, toneBurst: maybeToneburstConfig)
+            self.init(serverAddress: decoded.serverAddress, polish: maybePolishConfig, toneBurst: maybeToneburstConfig, transport: decoded.transport)
         }
         catch let decodeError
         {
@@ -34,12 +34,12 @@ public struct ReplicantClientConfig: Codable
         }
     }
     
-    public init(serverIP: String, port: UInt16, polish maybePolish: PolishClientConfig?, toneBurst maybeToneBurst: ToneBurstClientConfig?)
+    public init(serverAddress: String, polish maybePolish: PolishClientConfig?, toneBurst maybeToneBurst: ToneBurstClientConfig?, transport: String)
     {
-        self.serverIP = serverIP
-        self.port = port
+        self.serverAddress = serverAddress
         self.polish = maybePolish
         self.toneBurst = maybeToneBurst
+        self.transport = transport
     }
     
     public init?(withConfigAtPath path: String)

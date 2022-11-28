@@ -41,7 +41,7 @@ public struct StarburstInstance
 
     public func perform() throws
     {
-        switch config
+        switch config.mode
         {
             case .SMTPClient:
                 try handleSMTPClient()

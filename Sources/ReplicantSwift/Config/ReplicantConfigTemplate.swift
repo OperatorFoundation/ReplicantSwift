@@ -84,11 +84,11 @@ public struct ReplicantConfigTemplate: Codable
     ///      - port: The port the provided server will be listening on for Replicant traffic as a UInt16
     ///      - serverPublicKey: The public key for the Replicant server. This is required in order for the client to be able to communicate with the server.
     /// - Returns: A boolean indicating whether or not the config was created successfully
-    public func createClientConfig(atPath path: String, serverIP: String, port: UInt16) -> Bool
+    public func createClientConfig(atPath path: String, serverAddress: String) -> Bool
     {
         let fileManager = FileManager.default
         
-        let replicantConfig = ReplicantClientConfig(serverIP: serverIP, port: port, polish: self.maybePolishClientConfig, toneBurst: self.maybeToneBurstClientConfig)
+        let replicantConfig = ReplicantClientConfig(serverAddress: serverAddress, polish: self.maybePolishClientConfig, toneBurst: self.maybeToneBurstClientConfig, transport: "replicant")
 
        guard let jsonData = replicantConfig.createJSON()
        else
