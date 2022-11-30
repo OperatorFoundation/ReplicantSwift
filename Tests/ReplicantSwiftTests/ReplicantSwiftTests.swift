@@ -59,6 +59,102 @@ final class ReplicantSwiftTests: XCTestCase
         XCTAssertEqual(clientReadData.string, serverSendData.string)
     }
     
+    func testDarkstar() throws {
+        let serverSendData = "success".data
+        let clientSendData = "pass".data
+        
+        let polishClient = PolishClientConfig(serverAddress: "127.0.0.1:1234", serverPublicKey: "6LukZ8KqZLQ7eOdaTVFkBVqMA8NS1AUxwqG17L/kHnQ=")
+        let polishServer = PolishServerConfig(serverAddress: "127.0.0.1:1234", serverPrivateKey: "RaHouPFVOazVSqInoMm8BSO9o/7J493y4cUVofmwXAU=")
+        
+        let replicantServerConfig = ReplicantServerConfig(serverAddress: "127.0.0.1:1234", polish: polishServer, toneBurst: nil, transport: "replicant")
+        
+        let replicantClientConfig = ReplicantClientConfig(serverAddress: "127.0.0.1:1234", polish: polishClient, toneBurst: nil, transport: "replicant")
+        
+        let replicant = Replicant(logger: Logger(label: "ReplicantTest"), osLogger: nil)
+        
+        let replicantListener = try replicant.listen(address: "127.0.0.1", port: 1234, config: replicantServerConfig)
+        Task {
+            let replicantConnection = try replicantListener.accept()
+            
+            guard let serverReadData = replicantConnection.read(size: clientSendData.count) else {
+                XCTFail()
+                return
+            }
+            
+            guard replicantConnection.write(data: serverSendData) else {
+                XCTFail()
+                return
+            }
+            
+            XCTAssertEqual(serverReadData.string, clientSendData.string)
+        }
+        
+        let replicantClient = try replicant.connect(host: "127.0.0.1", port: 1234, config: replicantClientConfig)
+        
+        guard replicantClient.write(data: clientSendData) else {
+            XCTFail()
+            return
+        }
+        
+        guard let clientReadData = replicantClient.read(size: serverSendData.count) else {
+            XCTFail()
+            return
+        }
+        
+        XCTAssertEqual(clientReadData.string, serverSendData.string)
+    }
+    
+    func testStarburstAndDarkstar() throws {
+        let serverSendData = "success".data
+        let clientSendData = "pass".data
+        
+        let starburstServer = StarburstConfig(mode: StarburstMode.SMTPServer)
+        let starburstClient = StarburstConfig(mode: StarburstMode.SMTPClient)
+        
+        let toneburstServerConfig = ToneBurstServerConfig.starburst(config: starburstServer)
+        let toneBurstClientConfig = ToneBurstClientConfig.starburst(config: starburstClient)
+        
+        let polishClient = PolishClientConfig(serverAddress: "127.0.0.1:1234", serverPublicKey: "6LukZ8KqZLQ7eOdaTVFkBVqMA8NS1AUxwqG17L/kHnQ=")
+        let polishServer = PolishServerConfig(serverAddress: "127.0.0.1:1234", serverPrivateKey: "RaHouPFVOazVSqInoMm8BSO9o/7J493y4cUVofmwXAU=")
+        
+        let replicantServerConfig = ReplicantServerConfig(serverAddress: "127.0.0.1:1234", polish: polishServer, toneBurst: toneburstServerConfig, transport: "replicant")
+        
+        let replicantClientConfig = ReplicantClientConfig(serverAddress: "127.0.0.1:1234", polish: polishClient, toneBurst: toneBurstClientConfig, transport: "replicant")
+        
+        let replicant = Replicant(logger: Logger(label: "ReplicantTest"), osLogger: nil)
+        
+        let replicantListener = try replicant.listen(address: "127.0.0.1", port: 1234, config: replicantServerConfig)
+        Task {
+            let replicantConnection = try replicantListener.accept()
+            
+            guard let serverReadData = replicantConnection.read(size: clientSendData.count) else {
+                XCTFail()
+                return
+            }
+            
+            guard replicantConnection.write(data: serverSendData) else {
+                XCTFail()
+                return
+            }
+            
+            XCTAssertEqual(serverReadData.string, clientSendData.string)
+        }
+        
+        let replicantClient = try replicant.connect(host: "127.0.0.1", port: 1234, config: replicantClientConfig)
+        
+        guard replicantClient.write(data: clientSendData) else {
+            XCTFail()
+            return
+        }
+        
+        guard let clientReadData = replicantClient.read(size: serverSendData.count) else {
+            XCTFail()
+            return
+        }
+        
+        XCTAssertEqual(clientReadData.string, serverSendData.string)
+    }
+    
     func testCreateConfigs() {
         let starburstServer = StarburstConfig(mode: StarburstMode.SMTPServer)
         let starburstClient = StarburstConfig(mode: StarburstMode.SMTPClient)
