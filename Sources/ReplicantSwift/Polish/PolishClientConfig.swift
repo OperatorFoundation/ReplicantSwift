@@ -40,7 +40,7 @@ extension PolishClientConfig: PolishConfig
         }
 
         let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host.ipv4(ipv4), port: NWEndpoint.Port(integerLiteral: port))
-        let config = ShadowConfig.ShadowClientConfig(serverAddress: self.serverAddress, serverPublicKey: self.serverPublicKey, mode: .DARKSTAR, transport: "shadow")
+        let config = ShadowConfig.ShadowClientConfig(serverAddress: self.serverAddress, serverPublicKey: self.serverPublicKey, mode: .DARKSTAR, transport: "Shadow")
         guard let result = DarkStarClientConnection(connection: connection, endpoint: endpoint, parameters: .tcp, config: config, logger: logger) else
         {
             throw PolishClientConfigError.nullDarkStarConnection

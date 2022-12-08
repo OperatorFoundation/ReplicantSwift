@@ -21,9 +21,9 @@ final class ReplicantSwiftTests: XCTestCase
         let toneburstServerConfig = ToneBurstServerConfig.starburst(config: starburstServer)
         let toneBurstClientConfig = ToneBurstClientConfig.starburst(config: starburstClient)
         
-        let replicantServerConfig = ReplicantServerConfig(serverAddress: "127.0.0.1:1234", polish: nil, toneBurst: toneburstServerConfig, transport: "replicant")
+        let replicantServerConfig = ReplicantServerConfig(serverAddress: "127.0.0.1:1234", polish: nil, toneBurst: toneburstServerConfig, transport: "Replicant")
         
-        let replicantClientConfig = ReplicantClientConfig(serverAddress: "127.0.0.1:1234", polish: nil, toneBurst: toneBurstClientConfig, transport: "replicant")
+        let replicantClientConfig = ReplicantClientConfig(serverAddress: "127.0.0.1:1234", polish: nil, toneBurst: toneBurstClientConfig, transport: "Replicant")
         
         let replicant = Replicant(logger: Logger(label: "ReplicantTest"), osLogger: nil)
         
@@ -66,9 +66,9 @@ final class ReplicantSwiftTests: XCTestCase
         let polishClient = PolishClientConfig(serverAddress: "127.0.0.1:1234", serverPublicKey: "6LukZ8KqZLQ7eOdaTVFkBVqMA8NS1AUxwqG17L/kHnQ=")
         let polishServer = PolishServerConfig(serverAddress: "127.0.0.1:1234", serverPrivateKey: "RaHouPFVOazVSqInoMm8BSO9o/7J493y4cUVofmwXAU=")
         
-        let replicantServerConfig = ReplicantServerConfig(serverAddress: "127.0.0.1:1234", polish: polishServer, toneBurst: nil, transport: "replicant")
+        let replicantServerConfig = ReplicantServerConfig(serverAddress: "127.0.0.1:1234", polish: polishServer, toneBurst: nil, transport: "Replicant")
         
-        let replicantClientConfig = ReplicantClientConfig(serverAddress: "127.0.0.1:1234", polish: polishClient, toneBurst: nil, transport: "replicant")
+        let replicantClientConfig = ReplicantClientConfig(serverAddress: "127.0.0.1:1234", polish: polishClient, toneBurst: nil, transport: "Replicant")
         
         let replicant = Replicant(logger: Logger(label: "ReplicantTest"), osLogger: nil)
         
@@ -117,9 +117,9 @@ final class ReplicantSwiftTests: XCTestCase
         let polishClient = PolishClientConfig(serverAddress: "127.0.0.1:1234", serverPublicKey: "6LukZ8KqZLQ7eOdaTVFkBVqMA8NS1AUxwqG17L/kHnQ=")
         let polishServer = PolishServerConfig(serverAddress: "127.0.0.1:1234", serverPrivateKey: "RaHouPFVOazVSqInoMm8BSO9o/7J493y4cUVofmwXAU=")
         
-        let replicantServerConfig = ReplicantServerConfig(serverAddress: "127.0.0.1:1234", polish: polishServer, toneBurst: toneburstServerConfig, transport: "replicant")
+        let replicantServerConfig = ReplicantServerConfig(serverAddress: "127.0.0.1:1234", polish: polishServer, toneBurst: toneburstServerConfig, transport: "Replicant")
         
-        let replicantClientConfig = ReplicantClientConfig(serverAddress: "127.0.0.1:1234", polish: polishClient, toneBurst: toneBurstClientConfig, transport: "replicant")
+        let replicantClientConfig = ReplicantClientConfig(serverAddress: "127.0.0.1:1234", polish: polishClient, toneBurst: toneBurstClientConfig, transport: "Replicant")
         
         let replicant = Replicant(logger: Logger(label: "ReplicantTest"), osLogger: nil)
         
@@ -158,14 +158,14 @@ final class ReplicantSwiftTests: XCTestCase
     func testCreateConfigs() {
         let starburstServer = StarburstConfig(mode: StarburstMode.SMTPServer)
         let starburstClient = StarburstConfig(mode: StarburstMode.SMTPClient)
-        let shadowClientConfig = ShadowConfig.ShadowClientConfig(serverAddress: "<serverAddress>", serverPublicKey: "<serverPublicKey>", mode: .DARKSTAR, transport: "shadow")
-        let shadowServerConfig = ShadowConfig.ShadowServerConfig(serverAddress: "<serverAddress>", serverPrivateKey: "<serverPrivateKey>", mode: .DARKSTAR, transport: "shadow")
+        let shadowClientConfig = ShadowConfig.ShadowClientConfig(serverAddress: "<serverAddress>", serverPublicKey: "<serverPublicKey>", mode: .DARKSTAR, transport: "Shadow")
+        let shadowServerConfig = ShadowConfig.ShadowServerConfig(serverAddress: "<serverAddress>", serverPrivateKey: "<serverPrivateKey>", mode: .DARKSTAR, transport: "Shadow")
         let polishClientConfig = PolishClientConfig(serverAddress: "<serverAddress>", serverPublicKey: "<serverPublicKey>")
         let polishServerConfig = PolishServerConfig(serverAddress: "<serverAddress>", serverPrivateKey: "<serverPrivateKey>")
         let toneburstClientConfig = ToneBurstClientConfig.starburst(config: starburstClient)
         let toneburstServerConfig = ToneBurstServerConfig.starburst(config: starburstServer)
-        let clientConfig = ReplicantClientConfig(serverAddress: "<serverAddress>", polish: polishClientConfig, toneBurst: toneburstClientConfig, transport: "replicant")
-        let serverConfig = ReplicantServerConfig(serverAddress: "<serverAddress>", polish: polishServerConfig, toneBurst: toneburstServerConfig, transport: "replicant")
+        let clientConfig = ReplicantClientConfig(serverAddress: "<serverAddress>", polish: polishClientConfig, toneBurst: toneburstClientConfig, transport: "Replicant")
+        let serverConfig = ReplicantServerConfig(serverAddress: "<serverAddress>", polish: polishServerConfig, toneBurst: toneburstServerConfig, transport: "Replicant")
         
         guard let clientJson = clientConfig.createJSON() else {
             XCTFail()
