@@ -8,6 +8,7 @@
 import Foundation
 import Logging
 
+import KeychainTypes
 import Net
 import ShadowSwift
 import TransmissionTypes
@@ -16,9 +17,9 @@ import TransmissionTransport
 public class PolishServerConfig: Codable
 {
     public let serverAddress: String
-    public let serverPrivateKey: String
+    public let serverPrivateKey: PrivateKey
     
-    public init(serverAddress: String, serverPrivateKey: String) {
+    public init(serverAddress: String, serverPrivateKey: PrivateKey) {
         self.serverAddress = serverAddress
         self.serverPrivateKey = serverPrivateKey
     }

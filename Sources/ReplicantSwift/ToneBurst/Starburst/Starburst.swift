@@ -57,7 +57,7 @@ public struct StarburstInstance
             throw StarburstError.listenFailed
         }
         
-        try listen(template: firstClientListen)
+        let _ = try listen(template: firstClientListen)
 
         try speak(template: Template("EHLO $1\r\n"), details: [Detail.string("mail.imc.org")])
 
@@ -65,7 +65,7 @@ public struct StarburstInstance
             throw StarburstError.listenFailed
         }
         
-        try listen(template: secondClientListen)
+        _ = try listen(template: secondClientListen)
 
         try speak(string: "STARTTLS\r\n")
 
@@ -73,7 +73,7 @@ public struct StarburstInstance
             throw StarburstError.listenFailed
         }
         
-        try listen(template: thirdClientListen)
+        _ = try listen(template: thirdClientListen)
     }
 
     func handleSMTPServer() throws
@@ -84,7 +84,7 @@ public struct StarburstInstance
             throw StarburstError.listenFailed
         }
         
-        try listen(template: firstServerListen)
+        _ = try listen(template: firstServerListen)
 
         // % 5 is mod, which divides by five, discards the result, then returns the remainder
         let hour = Calendar.current.component(.hour, from: Date()) % 5
@@ -110,7 +110,7 @@ public struct StarburstInstance
         try speak(template: Template("250-$1 $2\r\n250-$3\r\n250-$4\r\n250 $5\r\n"), details: [Detail.string("mail.imc.org"), Detail.string(welcome), Detail.string("8BITMIME"), Detail.string("DSN"), Detail.string("STARTTLS")])
 
         // FIXME: not sure about this size
-        let listenString: String = try listen(size: "STARTTLS\r\n".count + 1) // \r\n is counted as one on .count
+        let _: String = try listen(size: "STARTTLS\r\n".count + 1) // \r\n is counted as one on .count
 
         try speak(template: Template("220 $1\r\n"), details: [Detail.string("Go ahead")])
     }

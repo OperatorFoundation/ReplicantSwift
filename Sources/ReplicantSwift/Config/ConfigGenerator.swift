@@ -1,5 +1,5 @@
 //
-//  File.swift
+//  ConfigGenerator.swift
 //  
 //
 //  Created by Joshua Clark on 12/19/22.
@@ -7,7 +7,9 @@
 
 import Crypto
 import Foundation
+
 import Gardener
+import KeychainTypes
 import ShadowSwift
 
 public func createNewConfigFiles(inDirectory saveDirectory: URL, serverAddress: String, polish: Bool, toneburst: Bool)  -> Bool
@@ -62,14 +64,10 @@ public func generateNewConfigPair(serverAddress: String, polish: Bool, toneburst
         toneburstServerConfig = ToneBurstServerConfig.starburst(config: starburstServer)
     }
     if polish {
-        let privateKey = P256.KeyAgreement.PrivateKey()
-        let privateKeyData = privateKey.rawRepresentation
-        let privateKeyString = privateKeyData.base64EncodedString()
+        let privateKey = PrivateKey.P256KeyAgreement(P256.KeyAgreement.PrivateKey())
         let publicKey = privateKey.publicKey
-        let publicKeyData = publicKey.compactRepresentation
-        let publicKeyString = publicKeyData!.base64EncodedString()
-        polishClientConfig = PolishClientConfig(serverAddress: serverAddress, serverPublicKey: publicKeyString)
-        polishServerConfig = PolishServerConfig(serverAddress: serverAddress, serverPrivateKey: privateKeyString)
+        polishClientConfig = PolishClientConfig(serverAddress: serverAddress, serverPublicKey: publicKey)
+        polishServerConfig = PolishServerConfig(serverAddress: serverAddress, serverPrivateKey: privateKey)
     }
     
     let clientConfig = ReplicantClientConfig(serverAddress: "<serverAddress>", polish: polishClientConfig, toneBurst: toneburstClientConfig, transport: "Replicant")
