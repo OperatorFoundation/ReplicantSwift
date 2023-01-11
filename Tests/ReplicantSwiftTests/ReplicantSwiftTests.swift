@@ -2,6 +2,7 @@ import XCTest
 import Foundation
 
 import Datable
+import KeychainTypes
 import Logging
 import Monolith
 import ShadowSwift
@@ -62,9 +63,9 @@ final class ReplicantSwiftTests: XCTestCase
     func testDarkstar() throws {
         let serverSendData = "success".data
         let clientSendData = "pass".data
-        
-        let polishClient = PolishClientConfig(serverAddress: "127.0.0.1:1234", serverPublicKey: "6LukZ8KqZLQ7eOdaTVFkBVqMA8NS1AUxwqG17L/kHnQ=")
-        let polishServer = PolishServerConfig(serverAddress: "127.0.0.1:1234", serverPrivateKey: "RaHouPFVOazVSqInoMm8BSO9o/7J493y4cUVofmwXAU=")
+        let privateKey = try PrivateKey(type: .P256KeyAgreement)
+        let polishClient = PolishClientConfig(serverAddress: "127.0.0.1:1234", serverPublicKey: privateKey.publicKey)
+        let polishServer = PolishServerConfig(serverAddress: "127.0.0.1:1234", serverPrivateKey: privateKey)
         
         let replicantServerConfig = ReplicantServerConfig(serverAddress: "127.0.0.1:1234", polish: polishServer, toneBurst: nil, transport: "Replicant")
         
@@ -113,9 +114,9 @@ final class ReplicantSwiftTests: XCTestCase
         
         let toneburstServerConfig = ToneBurstServerConfig.starburst(config: starburstServer)
         let toneBurstClientConfig = ToneBurstClientConfig.starburst(config: starburstClient)
-        
-        let polishClient = PolishClientConfig(serverAddress: "127.0.0.1:1234", serverPublicKey: "6LukZ8KqZLQ7eOdaTVFkBVqMA8NS1AUxwqG17L/kHnQ=")
-        let polishServer = PolishServerConfig(serverAddress: "127.0.0.1:1234", serverPrivateKey: "RaHouPFVOazVSqInoMm8BSO9o/7J493y4cUVofmwXAU=")
+        let privateKey = try PrivateKey(type: .P256KeyAgreement)
+        let polishClient = PolishClientConfig(serverAddress: "127.0.0.1:1234", serverPublicKey: privateKey.publicKey)
+        let polishServer = PolishServerConfig(serverAddress: "127.0.0.1:1234", serverPrivateKey: privateKey)
         
         let replicantServerConfig = ReplicantServerConfig(serverAddress: "127.0.0.1:1234", polish: polishServer, toneBurst: toneburstServerConfig, transport: "Replicant")
         
@@ -155,13 +156,14 @@ final class ReplicantSwiftTests: XCTestCase
         XCTAssertEqual(clientReadData.string, serverSendData.string)
     }
     
-    func testCreateConfigs() {
+    func testCreateConfigs() throws {
         let starburstServer = StarburstConfig(mode: StarburstMode.SMTPServer)
         let starburstClient = StarburstConfig(mode: StarburstMode.SMTPClient)
         let shadowClientConfig = ShadowConfig.ShadowClientConfig(serverAddress: "<serverAddress>", serverPublicKey: "<serverPublicKey>", mode: .DARKSTAR, transport: "Shadow")
         let shadowServerConfig = ShadowConfig.ShadowServerConfig(serverAddress: "<serverAddress>", serverPrivateKey: "<serverPrivateKey>", mode: .DARKSTAR, transport: "Shadow")
-        let polishClientConfig = PolishClientConfig(serverAddress: "<serverAddress>", serverPublicKey: "<serverPublicKey>")
-        let polishServerConfig = PolishServerConfig(serverAddress: "<serverAddress>", serverPrivateKey: "<serverPrivateKey>")
+        let privateKey = try PrivateKey(type: .P256KeyAgreement)
+        let polishClientConfig = PolishClientConfig(serverAddress: "<serverAddress>", serverPublicKey: privateKey.publicKey)
+        let polishServerConfig = PolishServerConfig(serverAddress: "<serverAddress>", serverPrivateKey: privateKey)
         let toneburstClientConfig = ToneBurstClientConfig.starburst(config: starburstClient)
         let toneburstServerConfig = ToneBurstServerConfig.starburst(config: starburstServer)
         let clientConfig = ReplicantClientConfig(serverAddress: "<serverAddress>", polish: polishClientConfig, toneBurst: toneburstClientConfig, transport: "Replicant")
