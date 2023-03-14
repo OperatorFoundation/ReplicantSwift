@@ -159,10 +159,15 @@ final class ReplicantSwiftTests: XCTestCase
     func testCreateConfigs() throws {
         let starburstServer = StarburstConfig(mode: StarburstMode.SMTPServer)
         let starburstClient = StarburstConfig(mode: StarburstMode.SMTPClient)
-        let shadowClientConfig = ShadowConfig.ShadowClientConfig(serverAddress: "<serverAddress>", serverPublicKey: "<serverPublicKey>", mode: .DARKSTAR, transport: "Shadow")
-        let shadowServerConfig = ShadowConfig.ShadowServerConfig(serverAddress: "<serverAddress>", serverPrivateKey: "<serverPrivateKey>", mode: .DARKSTAR, transport: "Shadow")
-        let privateKey = try PrivateKey(type: .P256KeyAgreement)
-        let polishClientConfig = PolishClientConfig(serverAddress: "<serverAddress>", serverPublicKey: privateKey.publicKey)
+        guard let privateKey = try? PrivateKey(type: .P256KeyAgreement) else {
+            XCTFail()
+            return
+        }
+        
+        let publicKey = privateKey.publicKey
+        let shadowClientConfig = ShadowConfig.ShadowClientConfig(serverAddress: "<serverAddress>", serverPublicKey: publicKey, mode: .DARKSTAR)
+        let shadowServerConfig = ShadowConfig.ShadowServerConfig(serverAddress: "<serverAddress>", serverPrivateKey: privateKey, mode: .DARKSTAR)
+        let polishClientConfig = PolishClientConfig(serverAddress: "<serverAddress>", serverPublicKey: publicKey)
         let polishServerConfig = PolishServerConfig(serverAddress: "<serverAddress>", serverPrivateKey: privateKey)
         let toneburstClientConfig = ToneBurstClientConfig.starburst(config: starburstClient)
         let toneburstServerConfig = ToneBurstServerConfig.starburst(config: starburstServer)
