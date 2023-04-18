@@ -169,4 +169,4 @@ assert(configCreated == true)
 ```
 
 ### Credits
-* Shadowsocks was developed by the Shadowsocks team. [whitepaper](https://shadowsocks.org/assets/whitepaper.pdf)
+* [Shadowsocks](https://shadowsocks.org/) was developed by the Shadowsocks team. 
