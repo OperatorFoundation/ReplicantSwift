@@ -6,7 +6,12 @@
 //
 
 import Foundation
+
+#if os(macOS) || os(iOS)
+import os.log
+#else
 import Logging
+#endif
 
 import Spacetime
 import TransmissionTypes

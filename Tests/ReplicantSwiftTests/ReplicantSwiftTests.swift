@@ -1,9 +1,14 @@
 import XCTest
 import Foundation
 
+#if os(macOS) || os(iOS)
+import os.log
+#else
+import Logging
+#endif
+
 import Datable
 import KeychainTypes
-import Logging
 import Monolith
 import ShadowSwift
 import SwiftQueue
@@ -12,6 +17,12 @@ import SwiftQueue
 
 final class ReplicantSwiftTests: XCTestCase
 {
+    #if os(macOS) || os(iOS)
+    let logger = Logger(subsystem: "org.operatorfoundation.replicant", category: "Test")
+    #else
+    let logger = Logger(label: "ReplicantTest")
+    #endif
+    
     func testStarburst() throws {
         let serverSendData = "success".data
         let clientSendData = "pass".data
@@ -26,7 +37,7 @@ final class ReplicantSwiftTests: XCTestCase
         
         let replicantClientConfig = ReplicantClientConfig(serverAddress: "127.0.0.1:1234", polish: nil, toneBurst: toneBurstClientConfig, transport: "Replicant")
         
-        let replicant = Replicant(logger: Logger(label: "ReplicantTest"), osLogger: nil)
+        let replicant = Replicant(logger: self.logger)
         
         let replicantListener = try replicant.listen(address: "127.0.0.1", port: 1234, config: replicantServerConfig)
         Task {
@@ -71,7 +82,7 @@ final class ReplicantSwiftTests: XCTestCase
         
         let replicantClientConfig = ReplicantClientConfig(serverAddress: "127.0.0.1:1234", polish: polishClient, toneBurst: nil, transport: "Replicant")
         
-        let replicant = Replicant(logger: Logger(label: "ReplicantTest"), osLogger: nil)
+        let replicant = Replicant(logger: self.logger)
         
         let replicantListener = try replicant.listen(address: "127.0.0.1", port: 1234, config: replicantServerConfig)
         Task {
@@ -122,7 +133,7 @@ final class ReplicantSwiftTests: XCTestCase
         
         let replicantClientConfig = ReplicantClientConfig(serverAddress: "127.0.0.1:1234", polish: polishClient, toneBurst: toneBurstClientConfig, transport: "Replicant")
         
-        let replicant = Replicant(logger: Logger(label: "ReplicantTest"), osLogger: nil)
+        let replicant = Replicant(logger: self.logger)
         
         let replicantListener = try replicant.listen(address: "127.0.0.1", port: 1234, config: replicantServerConfig)
         Task {
