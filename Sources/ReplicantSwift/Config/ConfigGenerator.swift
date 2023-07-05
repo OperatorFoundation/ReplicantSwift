@@ -59,10 +59,8 @@ public func generateNewConfigPair(serverAddress: String, polish: Bool, toneburst
     var polishServerConfig: PolishServerConfig? = nil
     
     if toneburst {
-        let starburstServer = StarburstJsonConfig(mode: "SMTPServer")
-        let starburstClient = StarburstJsonConfig(mode: "SMTPClient")
-        toneburstClientConfig = ToneBurstClientJsonConfig.starburst(config: starburstClient)
-        toneburstServerConfig = ToneBurstServerJsonConfig.starburst(config: starburstServer)
+        toneburstClientConfig = ToneBurstClientJsonConfig(mode: "SMTPClient")
+        toneburstServerConfig = ToneBurstServerJsonConfig(mode: "SMTPServer")
     }
     if polish {
         let privateKey = PrivateKey.P256KeyAgreement(P256.KeyAgreement.PrivateKey())

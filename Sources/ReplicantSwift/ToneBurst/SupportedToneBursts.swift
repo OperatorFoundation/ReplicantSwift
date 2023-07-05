@@ -24,8 +24,12 @@ public enum ToneBurstClientConfig
     case starburst(config: StarburstConfig)
 }
 
-public enum ToneBurstClientJsonConfig: Codable {
-    case starburst(config: StarburstJsonConfig)
+public class ToneBurstClientJsonConfig: Codable {
+    let mode: String
+    
+    init(mode: String) {
+        self.mode = mode
+    }
 }
 
 extension ToneBurstClientConfig: ToneBurstConfig
@@ -83,8 +87,12 @@ public enum ToneBurstServerConfig
     case starburst(config: StarburstConfig)
 }
 
-public enum ToneBurstServerJsonConfig: Codable {
-    case starburst(config: StarburstJsonConfig)
+public class ToneBurstServerJsonConfig: Codable {
+    let mode: String
+    
+    init(mode: String) {
+        self.mode = mode
+    }
 }
 
 extension ToneBurstServerConfig: ToneBurstConfig

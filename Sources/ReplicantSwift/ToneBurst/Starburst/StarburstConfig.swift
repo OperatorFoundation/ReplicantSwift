@@ -23,15 +23,6 @@ public class StarburstConfig: Codable
     }
 }
 
-public class StarburstJsonConfig: Codable
-{
-    public let mode: String
-    
-    public init(mode: String) {
-        self.mode = mode
-    }
-}
-
 public enum StarburstMode: Codable {
     case SMTPServer
     case SMTPClient
