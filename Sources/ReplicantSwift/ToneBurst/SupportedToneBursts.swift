@@ -24,6 +24,10 @@ public enum ToneBurstClientConfig
     case starburst(config: StarburstConfig)
 }
 
+public enum ToneBurstClientJsonConfig: Codable {
+    case starburst(config: StarburstJsonConfig)
+}
+
 extension ToneBurstClientConfig: ToneBurstConfig
 {
     public func getToneBurst() -> ToneBurst {
@@ -77,6 +81,10 @@ public enum ToneBurstServerConfig
 {
 //    case monotone(config: MonotoneConfig)
     case starburst(config: StarburstConfig)
+}
+
+public enum ToneBurstServerJsonConfig: Codable {
+    case starburst(config: StarburstJsonConfig)
 }
 
 extension ToneBurstServerConfig: ToneBurstConfig

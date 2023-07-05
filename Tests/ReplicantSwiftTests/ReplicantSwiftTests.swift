@@ -23,6 +23,33 @@ final class ReplicantSwiftTests: XCTestCase
     let logger = Logger(label: "ReplicantTest")
     #endif
     
+    func testStarburstAndDarkstarServer() throws {
+        let serverSendData = "success".data
+        let clientSendData = "pass".data
+        guard let replicantServerConfig = ReplicantServerConfig(withConfigAtPath: "/Users/bluesaxorcist/Desktop/ReplicantServerConfig.json") else {
+            XCTFail()
+            return
+        }
+        let replicant = Replicant(logger: self.logger)
+        
+        let replicantListener = try replicant.listen(address: "127.0.0.1", port: 1234, config: replicantServerConfig)
+        
+        let replicantConnection = try replicantListener.accept()
+        
+        guard let serverReadData = replicantConnection.read(size: clientSendData.count) else {
+            XCTFail()
+            return
+        }
+        
+        guard replicantConnection.write(data: serverSendData) else {
+            XCTFail()
+            return
+        }
+        
+        XCTAssertEqual(serverReadData.string, clientSendData.string)
+        
+    }
+    
     func testStarburst() throws {
         let serverSendData = "success".data
         let clientSendData = "pass".data
@@ -176,14 +203,14 @@ final class ReplicantSwiftTests: XCTestCase
         }
         
         let publicKey = privateKey.publicKey
-        let shadowClientConfig = ShadowConfig.ShadowClientConfig(serverAddress: "<serverAddress>", serverPublicKey: publicKey, mode: .DARKSTAR)
-        let shadowServerConfig = ShadowConfig.ShadowServerConfig(serverAddress: "<serverAddress>", serverPrivateKey: privateKey, mode: .DARKSTAR)
-        let polishClientConfig = PolishClientConfig(serverAddress: "<serverAddress>", serverPublicKey: publicKey)
-        let polishServerConfig = PolishServerConfig(serverAddress: "<serverAddress>", serverPrivateKey: privateKey)
+        let shadowClientConfig = ShadowConfig.ShadowClientConfig(serverAddress: "127.0.0.1:1234", serverPublicKey: publicKey, mode: .DARKSTAR)
+        let shadowServerConfig = ShadowConfig.ShadowServerConfig(serverAddress: "127.0.0.1:1234", serverPrivateKey: privateKey, mode: .DARKSTAR)
+        let polishClientConfig = PolishClientConfig(serverAddress: "127.0.0.1:1234", serverPublicKey: publicKey)
+        let polishServerConfig = PolishServerConfig(serverAddress: "127.0.0.1:1234", serverPrivateKey: privateKey)
         let toneburstClientConfig = ToneBurstClientConfig.starburst(config: starburstClient)
         let toneburstServerConfig = ToneBurstServerConfig.starburst(config: starburstServer)
-        let clientConfig = ReplicantClientConfig(serverAddress: "<serverAddress>", polish: polishClientConfig, toneBurst: toneburstClientConfig, transport: "Replicant")
-        let serverConfig = ReplicantServerConfig(serverAddress: "<serverAddress>", polish: polishServerConfig, toneBurst: toneburstServerConfig, transport: "Replicant")
+        let clientConfig = ReplicantClientConfig(serverAddress: "127.0.0.1:1234", polish: polishClientConfig, toneBurst: toneburstClientConfig, transport: "Replicant")
+        let serverConfig = ReplicantServerConfig(serverAddress: "127.0.0.1:1234", polish: polishServerConfig, toneBurst: toneburstServerConfig, transport: "Replicant")
         
         guard let clientJson = clientConfig.createJSON() else {
             XCTFail()

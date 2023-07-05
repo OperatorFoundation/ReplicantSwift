@@ -11,14 +11,14 @@ public struct ReplicantServerConfig: Codable
 {
     public let serverAddress: String
     public var polish: PolishServerConfig?
-    public var toneBurst: ToneBurstServerConfig?
+    public var toneburst: ToneBurstServerConfig?
     public var transport: String
     
     public init(serverAddress: String, polish maybePolish: PolishServerConfig?, toneBurst maybeToneBurst: ToneBurstServerConfig?, transport: String)
     {
         self.serverAddress = serverAddress
         self.polish = maybePolish
-        self.toneBurst = maybeToneBurst
+        self.toneburst = maybeToneBurst
         self.transport = transport
     }
     
@@ -69,7 +69,10 @@ public struct ReplicantServerConfig: Codable
         
         do
         {
-            let config = try decoder.decode(ReplicantServerConfig.self, from: jsonData)
+            let jsonConfig = try decoder.decode(ReplicantServerJsonConfig.self, from: jsonData)
+            let toneBurstConfig = ToneBurstServerConfig.starburst(config: StarburstConfig(mode: .SMTPServer))
+            let config = ReplicantServerConfig(serverAddress: jsonConfig.serverAddress, polish: jsonConfig.polish, toneBurst: toneBurstConfig, transport: jsonConfig.transport)
+            
             return config
         }
         catch (let error)
@@ -78,5 +81,37 @@ public struct ReplicantServerConfig: Codable
             return nil
         }
     }
+}
 
+public struct ReplicantServerJsonConfig: Codable
+{
+    public let serverAddress: String
+    public var polish: PolishServerConfig?
+    public var toneburst: ToneBurstServerJsonConfig?
+    public var transport: String
+    
+    public init(serverAddress: String, polish maybePolish: PolishServerConfig?, toneBurst maybeToneBurst: ToneBurstServerJsonConfig?, transport: String)
+    {
+        self.serverAddress = serverAddress
+        self.polish = maybePolish
+        self.toneburst = maybeToneBurst
+        self.transport = transport
+    }
+    
+    public func createJSON() -> Data?
+    {
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+
+        do
+        {
+            let configData = try encoder.encode(self)
+            return configData
+        }
+        catch (let error)
+        {
+            print("Failed to encode config into JSON format: \(error)")
+            return nil
+        }
+    }
 }

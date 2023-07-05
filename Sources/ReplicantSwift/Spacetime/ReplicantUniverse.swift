@@ -44,7 +44,7 @@ extension ListenConnection
     {
         var result: TransmissionTypes.Connection = self
 
-        if let toneBurstConfig = config.toneBurst
+        if let toneBurstConfig = config.toneburst
         {
             var toneBurst = toneBurstConfig.getToneBurst()
             try toneBurst.perform(connection: self)
