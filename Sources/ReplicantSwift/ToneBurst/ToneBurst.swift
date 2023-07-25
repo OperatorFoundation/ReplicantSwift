@@ -10,8 +10,10 @@ import Datable
 import Transmission
 
 /// Injects byte sequences into a stream of bytes
-public protocol ToneBurst//: Codable
+public protocol ToneBurst: Codable
 {
+    var type: ToneBurstType { get set }
+    
     mutating func perform(connection: Transmission.Connection) throws
 }
 

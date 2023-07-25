@@ -12,36 +12,38 @@ import Datable
 import Ghostwriter
 import Transmission
 
-public class Starburst: ToneBurst
+public class Starburst: ToneBurst, Codable
 {
-    let config: StarburstConfig
+    public var type: ToneBurstType = .starburst
+    
+    let mode: StarburstMode
 
-    public init(_ config: StarburstConfig)
+    public init(_ mode: StarburstMode)
     {
-        self.config = config
+        self.mode = mode
     }
 
     public func perform(connection: Transmission.Connection) throws
     {
-        let instance = StarburstInstance(self.config, connection)
+        let instance = StarburstInstance(self.mode, connection)
         try instance.perform()
     }
 }
 
 public struct StarburstInstance
 {
-    let config: StarburstConfig
     let connection: Transmission.Connection
+    let mode: StarburstMode
 
-    public init(_ config: StarburstConfig, _ connection: Transmission.Connection)
+    public init(_ mode: StarburstMode, _ connection: Transmission.Connection)
     {
-        self.config = config
+        self.mode = mode
         self.connection = connection
     }
 
     public func perform() throws
     {
-        switch config.mode
+        switch mode
         {
             case .SMTPClient:
                 try handleSMTPClient()

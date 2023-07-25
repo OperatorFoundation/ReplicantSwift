@@ -43,11 +43,11 @@ extension ListenConnection
     public func replicantServerTransformation(_ config: ReplicantServerConfig, _ logger: Logger) throws -> TransmissionTypes.Connection
     {
         var result: TransmissionTypes.Connection = self
-
-        if let toneBurstConfig = config.toneburst
+        
+        // TODO: Add more ToneBurst types as they become available
+        if let starBurst = config.toneBurst as? Starburst
         {
-            var toneBurst = toneBurstConfig.getToneBurst()
-            try toneBurst.perform(connection: self)
+            try starBurst.perform(connection: self)
         }
 
         if let polishConfig = config.polish
@@ -65,10 +65,9 @@ extension ConnectConnection
     {
         var result: TransmissionTypes.Connection = self
 
-        if let toneBurstConfig = config.toneBurst
+        if let starBurst = config.toneBurst as? Starburst
         {
-            var toneBurst = toneBurstConfig.getToneBurst()
-            try toneBurst.perform(connection: self)
+            try starBurst.perform(connection: self)
         }
 
         if let polishConfig = config.polish

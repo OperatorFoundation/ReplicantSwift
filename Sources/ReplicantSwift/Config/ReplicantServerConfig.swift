@@ -7,18 +7,26 @@
 
 import Foundation
 
-public struct ReplicantServerConfig: Codable
+public struct ReplicantServerConfig
 {
     public let serverAddress: String
     public var polish: PolishServerConfig?
-    public var toneburst: ToneBurstServerConfig?
+    public var toneBurst: ToneBurst?
     public var transport: String
     
-    public init(serverAddress: String, polish maybePolish: PolishServerConfig?, toneBurst maybeToneBurst: ToneBurstServerConfig?, transport: String)
+    enum CodingKeys: String, CodingKey
+    {
+        case serverAddress
+        case polish
+        case toneburst
+        case transport
+    }
+    
+    public init(serverAddress: String, polish maybePolish: PolishServerConfig?, toneBurst maybeToneBurst: ToneBurst?, transport: String)
     {
         self.serverAddress = serverAddress
         self.polish = maybePolish
-        self.toneburst = maybeToneBurst
+        self.toneBurst = maybeToneBurst
         self.transport = transport
     }
     
@@ -69,9 +77,8 @@ public struct ReplicantServerConfig: Codable
         
         do
         {
-            let jsonConfig = try decoder.decode(ReplicantServerJsonConfig.self, from: jsonData)
-            let toneBurstConfig = ToneBurstServerConfig.starburst(config: StarburstConfig(mode: .SMTPServer))
-            let config = ReplicantServerConfig(serverAddress: jsonConfig.serverAddress, polish: jsonConfig.polish, toneBurst: toneBurstConfig, transport: jsonConfig.transport)
+            let jsonConfig = try decoder.decode(ReplicantServerConfig.self, from: jsonData)
+            let config = ReplicantServerConfig(serverAddress: jsonConfig.serverAddress, polish: jsonConfig.polish, toneBurst: jsonConfig.toneBurst, transport: jsonConfig.transport)
             
             return config
         }
@@ -83,35 +90,69 @@ public struct ReplicantServerConfig: Codable
     }
 }
 
-public struct ReplicantServerJsonConfig: Codable
+extension ReplicantServerConfig: Encodable
 {
-    public let serverAddress: String
-    public var polish: PolishServerConfig?
-    public var toneburst: ToneBurstServerJsonConfig?
-    public var transport: String
-    
-    public init(serverAddress: String, polish maybePolish: PolishServerConfig?, toneBurst maybeToneBurst: ToneBurstServerJsonConfig?, transport: String)
+    public func encode(to encoder: Encoder) throws
     {
-        self.serverAddress = serverAddress
-        self.polish = maybePolish
-        self.toneburst = maybeToneBurst
-        self.transport = transport
-    }
-    
-    public func createJSON() -> Data?
-    {
-        let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
-
-        do
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(serverAddress, forKey: .serverAddress)
+        try container.encode(transport, forKey: .transport)
+        try container.encode(polish, forKey: .polish)
+        
+        // TODO: Add additional Toneburst types here
+        if let starburst = toneBurst as? Starburst
         {
-            let configData = try encoder.encode(self)
-            return configData
-        }
-        catch (let error)
-        {
-            print("Failed to encode config into JSON format: \(error)")
-            return nil
+            try container.encode(starburst, forKey: .toneburst)
         }
     }
 }
+
+extension ReplicantServerConfig: Decodable
+{
+    public init(from decoder: Decoder) throws
+    {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.serverAddress = try container.decode(String.self, forKey: .serverAddress)
+        self.transport = try container.decode(String.self, forKey: .transport)
+        self.polish = try container.decodeIfPresent(PolishServerConfig.self, forKey: .polish)
+        
+        // TODO: Add additional ToneBurst types here
+        if let starburst = try container.decodeIfPresent(Starburst.self, forKey: .toneburst)
+        {
+            self.toneBurst = starburst
+        }
+    }
+}
+
+//public struct ReplicantServerJsonConfig: Codable
+//{
+//    public let serverAddress: String
+//    public var polish: PolishServerConfig?
+//    public var toneburst: ToneBurstServerJsonConfig?
+//    public var transport: String
+//
+//    public init(serverAddress: String, polish maybePolish: PolishServerConfig?, toneBurst maybeToneBurst: ToneBurstServerJsonConfig?, transport: String)
+//    {
+//        self.serverAddress = serverAddress
+//        self.polish = maybePolish
+//        self.toneburst = maybeToneBurst
+//        self.transport = transport
+//    }
+//
+//    public func createJSON() -> Data?
+//    {
+//        let encoder = JSONEncoder()
+//        encoder.outputFormatting = .prettyPrinted
+//
+//        do
+//        {
+//            let configData = try encoder.encode(self)
+//            return configData
+//        }
+//        catch (let error)
+//        {
+//            print("Failed to encode config into JSON format: \(error)")
+//            return nil
+//        }
+//    }
+//}

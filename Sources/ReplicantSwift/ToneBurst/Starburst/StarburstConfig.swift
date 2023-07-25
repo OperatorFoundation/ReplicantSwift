@@ -9,21 +9,7 @@ import Foundation
 
 import Ghostwriter
 
-public class StarburstConfig: Codable
-{
-    public let mode: StarburstMode
-    
-    public init(mode: StarburstMode) {
-        self.mode = mode
-    }
-    
-    public func construct() -> Starburst
-    {
-        return Starburst(self)
-    }
-}
-
-public enum StarburstMode: Codable {
+public enum StarburstMode: String, Codable {
     case SMTPServer
     case SMTPClient
 }

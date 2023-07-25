@@ -20,7 +20,7 @@ public func createNewConfigFiles(inDirectory saveDirectory: URL, serverAddress: 
         return false
     }
     
-    guard let newConfigs = generateNewConfigPair(serverAddress: serverAddress, polish: polish, toneburst: toneburst) else
+    guard let newConfigs = generateNewConfigPair(serverAddress: serverAddress, usePolish: polish, useToneburst: toneburst) else
     {
         return false
     }
@@ -52,25 +52,33 @@ public func createNewConfigFiles(inDirectory saveDirectory: URL, serverAddress: 
     return true
 }
 
-public func generateNewConfigPair(serverAddress: String, polish: Bool, toneburst: Bool) -> (serverConfig: ReplicantServerJsonConfig, clientConfig: ReplicantClientJsonConfig)?{
-    var toneburstClientConfig: ToneBurstClientJsonConfig? = nil
-    var toneburstServerConfig: ToneBurstServerJsonConfig? = nil
+public func generateNewConfigPair(serverAddress: String, usePolish: Bool, useToneburst: Bool) -> (serverConfig: ReplicantServerConfig, clientConfig: ReplicantClientConfig)?
+{
+    var toneBurstClient: ToneBurst? = nil
+    var toneBurstServer: ToneBurst? = nil
     var polishClientConfig: PolishClientConfig? = nil
     var polishServerConfig: PolishServerConfig? = nil
     
-    if toneburst {
-        toneburstClientConfig = ToneBurstClientJsonConfig(mode: "SMTPClient")
-        toneburstServerConfig = ToneBurstServerJsonConfig(mode: "SMTPServer")
+    if useToneburst {
+        toneBurstClient = Starburst(.SMTPClient)
+//        ToneBurstClientJsonConfig(mode: "SMTPClient")
+        toneBurstServer = Starburst(.SMTPServer)
+//        toneburstServerConfig = ToneBurstServerJsonConfig(mode: "SMTPServer")
     }
-    if polish {
+    
+    if usePolish {
         let privateKey = PrivateKey.P256KeyAgreement(P256.KeyAgreement.PrivateKey())
         let publicKey = privateKey.publicKey
         polishClientConfig = PolishClientConfig(serverAddress: serverAddress, serverPublicKey: publicKey)
         polishServerConfig = PolishServerConfig(serverAddress: serverAddress, serverPrivateKey: privateKey)
     }
     
-    let clientConfig = ReplicantClientJsonConfig(serverAddress: serverAddress, polish: polishClientConfig, toneBurst: toneburstClientConfig, transport: "Replicant")
-    let serverConfig = ReplicantServerJsonConfig(serverAddress: serverAddress, polish: polishServerConfig, toneBurst: toneburstServerConfig, transport: "Replicant")
+    guard let clientConfig = ReplicantClientConfig(serverAddress: serverAddress, polish: polishClientConfig, toneBurst: toneBurstClient, transport: "Replicant") else
+    {
+        return nil
+    }
+    
+    let serverConfig = ReplicantServerConfig(serverAddress: serverAddress, polish: polishServerConfig, toneBurst: toneBurstServer, transport: "Replicant")
     
     return (serverConfig, clientConfig)
 }
