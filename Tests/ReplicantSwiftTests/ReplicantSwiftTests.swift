@@ -26,7 +26,7 @@ final class ReplicantSwiftTests: XCTestCase
     func testStarburstAndDarkstarServer() throws {
         let serverSendData = "success".data
         let clientSendData = "pass".data
-        guard let replicantServerConfig = ReplicantServerConfig(withConfigAtPath: "/Users/bluesaxorcist/Desktop/ReplicantServerConfig.json") else {
+        guard let replicantServerConfig = ReplicantServerConfig(withConfigAtPath: "~/ReplicantServerConfig.json") else {
             XCTFail()
             return
         }

@@ -26,6 +26,7 @@ let package = Package(
         .package(url: "https://github.com/OperatorFoundation/SwiftHexTools", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/SwiftQueue", branch: "main"),
         .package(url: "https://github.com/OperatorFoundation/Transmission", branch: "main"),
+        .package(url: "https://github.com/OperatorFoundation/TransmissionAsync", branch: "main"),
     ],
     targets: [
         .target(
@@ -47,6 +48,7 @@ let package = Package(
                 "SwiftHexTools",
                 "SwiftQueue",
                 "Transmission",
+                "TransmissionAsync"
             ]
         ),
         .testTarget(
