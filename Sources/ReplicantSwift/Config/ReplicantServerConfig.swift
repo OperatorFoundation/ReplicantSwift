@@ -45,7 +45,8 @@ public struct ReplicantServerConfig
     public func createJSON() -> Data?
     {
         let encoder = JSONEncoder()
-        encoder.outputFormatting = .prettyPrinted
+        encoder.outputFormatting.insert(.prettyPrinted)
+        encoder.outputFormatting.insert(.withoutEscapingSlashes)
         
         do
         {
