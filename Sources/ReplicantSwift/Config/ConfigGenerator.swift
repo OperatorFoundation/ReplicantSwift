@@ -67,7 +67,10 @@ public func generateNewConfigPair(serverAddress: String, usePolish: Bool, useTon
     }
     
     if usePolish {
-        let privateKey = PrivateKey.P256KeyAgreement(P256.KeyAgreement.PrivateKey())
+        let compactRepresentable = P256.KeyAgreement.PrivateKey(compactRepresentable: true)
+        print("raw representation: \(compactRepresentable.rawRepresentation.hex) (count: \(compactRepresentable.rawRepresentation.count)) | x963 representation: \(compactRepresentable.x963Representation.hex) (count: \(compactRepresentable.x963Representation.count)")
+        let privateKey = PrivateKey.P256KeyAgreement(compactRepresentable)
+        
         let publicKey = privateKey.publicKey
         polishClientConfig = PolishClientConfig(serverAddress: serverAddress, serverPublicKey: publicKey)
         polishServerConfig = PolishServerConfig(serverAddress: serverAddress, serverPrivateKey: privateKey)
