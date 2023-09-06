@@ -18,7 +18,7 @@ extension PolishServerConfig: PolishAsync
 {
     public func polish(_ connection: TransmissionAsync.AsyncConnection, _ logger: Logger) async throws -> TransmissionAsync.AsyncConnection
     {
-        let config = ShadowConfig.ShadowServerConfig(serverAddress: self.serverAddress, serverPrivateKey: self.serverPrivateKey, mode: .DARKSTAR)
+        let config = try ShadowConfig.ShadowServerConfig(serverAddress: self.serverAddress, serverPrivateKey: self.serverPrivateKey, mode: .DARKSTAR)
         return try await AsyncDarkstarServerConnection(connection, config, logger)
     }
 }
