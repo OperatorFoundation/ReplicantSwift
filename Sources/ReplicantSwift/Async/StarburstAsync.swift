@@ -185,7 +185,7 @@ public struct StarburstInstanceAsync
             return nil
         }
         
-        let timeout = Task {
+        let _ = Task {
             try await Task.sleep(for: .seconds(60))
             listenTask.cancel()
         }

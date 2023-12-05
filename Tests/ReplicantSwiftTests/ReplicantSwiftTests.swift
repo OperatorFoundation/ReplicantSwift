@@ -1,11 +1,6 @@
 import XCTest
 import Foundation
-
-#if os(macOS) || os(iOS)
-import os.log
-#else
 import Logging
-#endif
 
 import Datable
 import KeychainTypes
@@ -17,11 +12,7 @@ import SwiftQueue
 
 final class ReplicantSwiftTests: XCTestCase
 {
-    #if os(macOS) || os(iOS)
-    let logger = Logger(subsystem: "org.operatorfoundation.replicant", category: "Test")
-    #else
     let logger = Logger(label: "ReplicantTest")
-    #endif
     
     func testStarburstAndDarkstarServer() throws {
         let serverSendData = "success".data

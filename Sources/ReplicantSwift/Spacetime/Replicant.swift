@@ -6,12 +6,7 @@
 //
 
 import Foundation
-
-#if os(macOS) || os(iOS)
-import os.log
-#else
 import Logging
-#endif
 
 import Simulation
 import Spacetime
@@ -28,7 +23,9 @@ public class Replicant
     {
         self.logger = logger
         self.simulation = Simulation(capabilities: Capabilities(.display, .random, .networkConnect, .networkListen))
-        self.universe = ReplicantUniverse(effects: self.simulation.effects, events: self.simulation.events, logger: self.logger)
+        
+        // TODO: Update universe to accept Logger instead of os.Logger
+        self.universe = ReplicantUniverse(effects: self.simulation.effects, events: self.simulation.events, logger: nil)
     }
 
     public func listen(address: String, port: Int, config: ReplicantServerConfig) throws -> TransmissionTypes.Listener
