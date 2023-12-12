@@ -30,7 +30,12 @@ open class ReplicantListenerAsync: TransmissionAsync.AsyncListener
 
         return try await self.replicantServerTransformation(connection: network, config, logger)
     }
-    
+
+    open func close() async throws
+    {
+        try await self.listener.close()
+    }
+
     public func replicantServerTransformation(connection: TransmissionAsync.AsyncConnection, _ config: ReplicantServerConfig, _ logger: Logger) async throws -> TransmissionAsync.AsyncConnection
         {
             var result: TransmissionAsync.AsyncConnection = connection
