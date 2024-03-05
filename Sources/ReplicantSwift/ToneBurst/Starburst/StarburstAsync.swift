@@ -12,7 +12,7 @@ import Datable
 import Ghostwriter
 import TransmissionAsync
 
-public class StarburstAsync: ToneBurstAsync, Codable
+open class StarburstAsync: ToneBurstAsync, Codable
 {
     public var type: ToneBurstType = .starburst
     
