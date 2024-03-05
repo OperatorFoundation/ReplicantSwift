@@ -36,7 +36,7 @@ public class ReplicantAsync
     {
         var result: TransmissionAsync.AsyncConnection = connection
 
-        if let starBurst = config.toneBurst as? StarburstAsync
+        if var starBurst = config.toneBurst as? ToneBurstAsync
         {
             try await starBurst.perform(connection: connection)
         }
