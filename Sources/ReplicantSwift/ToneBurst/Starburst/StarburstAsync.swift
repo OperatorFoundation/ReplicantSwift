@@ -23,7 +23,7 @@ open class StarburstAsync: ToneBurstAsync, Codable
         self.mode = mode
     }
 
-    public func perform(connection: TransmissionAsync.AsyncConnection) async throws
+    open func perform(connection: TransmissionAsync.AsyncConnection) async throws
     {
         let instance = StarburstInstanceAsync(self.mode, connection)
         try await instance.perform()
