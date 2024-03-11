@@ -214,9 +214,9 @@ public struct StarburstInstanceAsync
         }
     }
     
-    func listen(structuredText: StructuredText, maxSize: Int = 255, timeout: Duration = .seconds(60)) async throws -> Bool
+    func listen(structuredText: StructuredText, maxSize: Int = 255, timeout: Duration = .seconds(60)) async throws -> MatchResult
     {
-        let listenTask: Task<Bool?, Error> = Task {
+        let listenTask: Task<MatchResult?, Error> = Task {
             var buffer = Data()
             while buffer.count < maxSize
             {

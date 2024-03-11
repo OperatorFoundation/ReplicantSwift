@@ -250,14 +250,14 @@ public struct StarburstInstance
         }
     }
     
-    func listen(structuredText: StructuredText, maxSize: Int = 255) -> Bool
+    func listen(structuredText: StructuredText, maxSize: Int = 255) -> MatchResult
     {
         var buffer = Data()
         while buffer.count < maxSize
         {
             guard let byte = connection.read(size: 1) else
             {
-                return false
+                return MatchResult.SHORT
             }
 
             buffer.append(byte)
@@ -277,7 +277,7 @@ public struct StarburstInstance
                 continue
             }
         }
-        return true
+        return MatchResult.SUCCESS("")
     }
     
 
