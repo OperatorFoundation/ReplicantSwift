@@ -140,6 +140,20 @@ public struct StarburstInstanceAsync
             throw StarburstError.writeFailed
         }
     }
+    
+    func speak(structuredText: StructuredText) async throws
+    {
+        do
+        {
+            let string = structuredText.string
+            try await connection.writeString(string: string)
+        }
+        catch
+        {
+            print(error)
+            throw StarburstError.writeFailed
+        }
+    }
 
     func listen(size: Int) async throws -> Data
     {
@@ -187,6 +201,54 @@ public struct StarburstInstanceAsync
         
         let _ = Task {
             try await Task.sleep(for: .seconds(60))
+            listenTask.cancel()
+        }
+        
+        do {
+            guard let result = try await listenTask.value else {
+                throw StarburstError.readFailed
+            }
+            return result
+        } catch {
+            throw StarburstError.timeout
+        }
+    }
+    
+    func listen(structuredText: StructuredText, maxSize: Int = 255, timeout: Duration = .seconds(60)) async throws -> Bool
+    {
+        let listenTask: Task<Bool?, Error> = Task {
+            var buffer = Data()
+            while buffer.count < maxSize
+            {
+                do {
+                    let byte = try await connection.readSize(1)
+                    
+                    buffer.append(byte)
+                    
+                    guard let string = String(data: buffer, encoding: .utf8) else
+                    {
+                        // This could fail because we're in the middle of a UTF8 rune.
+                        continue
+                    }
+                    
+                    do
+                    {
+                        return try structuredText.match(string: string)
+                    }
+                    catch
+                    {
+                        continue
+                    }
+                } catch {
+                    return nil
+                }
+            }
+            
+            return nil
+        }
+        
+        let _ = Task {
+            try await Task.sleep(for: timeout)
             listenTask.cancel()
         }
         

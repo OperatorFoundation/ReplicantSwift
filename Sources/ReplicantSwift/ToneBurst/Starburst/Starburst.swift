@@ -149,6 +149,23 @@ public struct StarburstInstance
             throw StarburstError.writeFailed
         }
     }
+    
+    func speak(structuredText: StructuredText) throws
+    {
+        do
+        {
+            let string = structuredText.string
+            guard connection.write(string: string) else
+            {
+                throw StarburstError.writeFailed
+            }
+        }
+        catch
+        {
+            print(error)
+            throw StarburstError.writeFailed
+        }
+    }
 
     func listen(size: Int) throws -> Data
     {
@@ -232,6 +249,37 @@ public struct StarburstInstance
                 throw StarburstError.timeout
         }
     }
+    
+    func listen(structuredText: StructuredText, maxSize: Int = 255) -> Bool
+    {
+        var buffer = Data()
+        while buffer.count < maxSize
+        {
+            guard let byte = connection.read(size: 1) else
+            {
+                return false
+            }
+
+            buffer.append(byte)
+
+            guard let string = String(data: buffer, encoding: .utf8) else
+            {
+                // This could fail because we're in the middle of a UTF8 rune.
+                continue
+            }
+
+            do
+            {
+                return try structuredText.match(string: string)
+            }
+            catch
+            {
+                continue
+            }
+        }
+        return true
+    }
+    
 
     func wait(seconds: Double)
     {
