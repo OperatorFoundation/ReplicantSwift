@@ -24,20 +24,29 @@ public class ReplicantAsync
         return try ReplicantListenerAsync(config: config, logger: logger)
     }
 
-    public func connect(host: String, port: Int, config: ReplicantClientConfig) async throws -> TransmissionAsync.AsyncConnection
+    public func connect(host: String, port: Int, config: ReplicantConfigAsync.ClientConfig) async throws -> TransmissionAsync.AsyncConnection
     {
         let network = try await AsyncTcpSocketConnection(host, port, logger)
         return try await self.replicantClientTransformationAsync(connection: network, config, logger)
     }
     
-    public func replicantClientTransformationAsync(connection: TransmissionAsync.AsyncConnection, _ config: ReplicantClientConfig, _ logger: Logger) async throws -> TransmissionAsync.AsyncConnection
+    public func replicantClientTransformationAsync(connection: TransmissionAsync.AsyncConnection, _ config: ReplicantConfigAsync.ClientConfig, _ logger: Logger) async throws -> TransmissionAsync.AsyncConnection
     {
         var result: TransmissionAsync.AsyncConnection = connection
-
-        if var starBurst = config.toneBurst as? ToneBurstAsync
+        
+        switch config.toneburstType 
         {
-            try await starBurst.perform(connection: connection)
+            case .starburst:
+                guard let starBurst = config.toneburst as? StarburstAsync else
+                {
+                    throw ReplicantError.invalidToneburst
+                }
+                try await starBurst.perform(connection: connection)
+                
+            case .none:
+                print("replicantClientTransformationAsync skipping Toneburst: none provided")
         }
+        
 
         if let polishConfig = config.polish
         {
