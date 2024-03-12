@@ -239,7 +239,7 @@ public struct StarburstInstanceAsync
 
                         switch matchResult
                         {
-                            case .SUCCESS(let value):
+                            case .SUCCESS(_):
                                 return matchResult
 
                             case .SHORT:

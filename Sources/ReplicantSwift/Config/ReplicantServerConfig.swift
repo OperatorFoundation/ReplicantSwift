@@ -124,36 +124,3 @@ extension ReplicantServerConfig: Decodable
         }
     }
 }
-
-//public struct ReplicantServerJsonConfig: Codable
-//{
-//    public let serverAddress: String
-//    public var polish: PolishServerConfig?
-//    public var toneburst: ToneBurstServerJsonConfig?
-//    public var transport: String
-//
-//    public init(serverAddress: String, polish maybePolish: PolishServerConfig?, toneBurst maybeToneBurst: ToneBurstServerJsonConfig?, transport: String)
-//    {
-//        self.serverAddress = serverAddress
-//        self.polish = maybePolish
-//        self.toneburst = maybeToneBurst
-//        self.transport = transport
-//    }
-//
-//    public func createJSON() -> Data?
-//    {
-//        let encoder = JSONEncoder()
-//        encoder.outputFormatting = .prettyPrinted
-//
-//        do
-//        {
-//            let configData = try encoder.encode(self)
-//            return configData
-//        }
-//        catch (let error)
-//        {
-//            print("Failed to encode config into JSON format: \(error)")
-//            return nil
-//        }
-//    }
-//}
