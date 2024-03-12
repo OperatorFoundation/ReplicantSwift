@@ -27,10 +27,10 @@ public class ReplicantAsync
     public func connect(host: String, port: Int, config: ReplicantConfigAsync.ClientConfig) async throws -> TransmissionAsync.AsyncConnection
     {
         let network = try await AsyncTcpSocketConnection(host, port, logger)
-        return try await self.replicantClientTransformationAsync(connection: network, config, logger)
+        return try await self.replicantClientTransformationAsync(connection: network, config: config, logger: logger)
     }
     
-    public func replicantClientTransformationAsync(connection: TransmissionAsync.AsyncConnection, _ config: ReplicantConfigAsync.ClientConfig, _ logger: Logger) async throws -> TransmissionAsync.AsyncConnection
+    public func replicantClientTransformationAsync(connection: TransmissionAsync.AsyncConnection, config: ReplicantConfigAsync.ClientConfig, logger: Logger) async throws -> TransmissionAsync.AsyncConnection
     {
         var result: TransmissionAsync.AsyncConnection = connection
         
