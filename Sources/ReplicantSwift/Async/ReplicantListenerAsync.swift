@@ -17,11 +17,11 @@ open class ReplicantListenerAsync: TransmissionAsync.AsyncListener
     let logger: Logger
     let listener: AsyncListener
 
-    public init(address: String, port: Int, config: ReplicantServerConfig, logger: Logger) throws
+    public init(serverIP: String, port: Int, config: ReplicantServerConfig, logger: Logger) throws
     {
         self.config = config
         self.logger = logger
-        self.listener = try AsyncTcpSocketListener(host: address, port: port, logger)
+        self.listener = try AsyncTcpSocketListener(host: serverIP, port: port, logger)
     }
 
     open func accept() async throws -> TransmissionAsync.AsyncConnection

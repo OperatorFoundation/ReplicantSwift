@@ -19,9 +19,9 @@ public class ReplicantAsync
         self.logger = logger
     }
 
-    public func listen(address: String, port: Int, config: ReplicantServerConfig) async throws -> TransmissionAsync.AsyncListener
+    public func listen(serverIP: String, port: Int, config: ReplicantServerConfig) async throws -> TransmissionAsync.AsyncListener
     {
-        return try ReplicantListenerAsync(address: address, port: port, config: config, logger: logger)
+        return try ReplicantListenerAsync(serverIP: serverIP, port: port, config: config, logger: logger)
     }
 
     public func connect(host: String, port: Int, config: ReplicantClientConfig) async throws -> TransmissionAsync.AsyncConnection
