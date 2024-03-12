@@ -61,9 +61,7 @@ public func generateNewConfigPair(serverAddress: String, usePolish: Bool, useTon
     
     if useToneburst {
         toneBurstClient = Starburst(.SMTPClient)
-//        ToneBurstClientJsonConfig(mode: "SMTPClient")
         toneBurstServer = Starburst(.SMTPServer)
-//        toneburstServerConfig = ToneBurstServerJsonConfig(mode: "SMTPServer")
     }
     
     if usePolish {
