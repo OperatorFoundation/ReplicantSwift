@@ -214,32 +214,48 @@ public struct StarburstInstanceAsync
         }
     }
     
-    func listen(structuredText: StructuredText, maxSize: Int = 255, timeout: Duration = .seconds(60)) async throws -> MatchResult
+    func listen(structuredText: StructuredText, maxSize: Int = 255, timeout: Duration = .seconds(60)) async throws -> String
     {
-        let listenTask: Task<MatchResult?, Error> = Task {
+        let listenTask: Task<MatchResult?, Error> = Task
+        {
             var buffer = Data()
             while buffer.count < maxSize
             {
-                do {
+                do
+                {
                     let byte = try await connection.readSize(1)
                     
                     buffer.append(byte)
                     
                     guard let string = String(data: buffer, encoding: .utf8) else
                     {
-                        // This could fail because we're in the middle of a UTF8 rune.
+                        // This could fail because we're in the middle of a UTF8 rune that is encoded as multiple bytes.
                         continue
                     }
                     
                     do
                     {
-                        return try structuredText.match(string: string)
+                        let matchResult = try structuredText.match(string: string)
+
+                        switch matchResult
+                        {
+                            case .SUCCESS(let value):
+                                return value
+
+                            case .SHORT:
+                                continue
+
+                            case .FAILURE:
+                                throw StarburstError.listenFailed
+                        }
                     }
                     catch
                     {
                         continue
                     }
-                } catch {
+                }
+                catch
+                {
                     return nil
                 }
             }
@@ -247,17 +263,22 @@ public struct StarburstInstanceAsync
             return nil
         }
         
-        let _ = Task {
+        let _ = Task
+        {
             try await Task.sleep(for: timeout)
             listenTask.cancel()
         }
         
-        do {
-            guard let result = try await listenTask.value else {
+        do
+        {
+            guard let result = try await listenTask.value else
+            {
                 throw StarburstError.readFailed
             }
             return result
-        } catch {
+        }
+        catch
+        {
             throw StarburstError.timeout
         }
     }
