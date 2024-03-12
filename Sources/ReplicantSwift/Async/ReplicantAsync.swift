@@ -19,17 +19,15 @@ public class ReplicantAsync
         self.logger = logger
     }
 
-    public func listen(serverIP: String, port: Int, config: ReplicantServerConfig) async throws -> TransmissionAsync.AsyncListener
+    public func listen(serverIP: String, port: Int, config: ReplicantConfigAsync.ServerConfig) async throws -> TransmissionAsync.AsyncListener
     {
-        return try ReplicantListenerAsync(serverIP: serverIP, port: port, config: config, logger: logger)
+        return try ReplicantListenerAsync(config: config, logger: logger)
     }
 
     public func connect(host: String, port: Int, config: ReplicantClientConfig) async throws -> TransmissionAsync.AsyncConnection
     {
         let network = try await AsyncTcpSocketConnection(host, port, logger)
-
         return try await self.replicantClientTransformationAsync(connection: network, config, logger)
-        
     }
     
     public func replicantClientTransformationAsync(connection: TransmissionAsync.AsyncConnection, _ config: ReplicantClientConfig, _ logger: Logger) async throws -> TransmissionAsync.AsyncConnection

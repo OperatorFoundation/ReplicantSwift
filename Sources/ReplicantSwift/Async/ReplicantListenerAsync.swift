@@ -13,22 +13,21 @@ import TransmissionAsync
 // This is just a normal TCP listener, except for the config and special accept behavior.
 open class ReplicantListenerAsync: TransmissionAsync.AsyncListener
 {
-    let config: ReplicantServerConfig
+    let config: ReplicantConfigAsync.ServerConfig
     let logger: Logger
     let listener: AsyncListener
 
-    public init(serverIP: String, port: Int, config: ReplicantServerConfig, logger: Logger) throws
+    public init(config: ReplicantConfigAsync.ServerConfig, logger: Logger) throws
     {
         self.config = config
         self.logger = logger
-        self.listener = try AsyncTcpSocketListener(host: serverIP, port: port, logger)
+        self.listener = try AsyncTcpSocketListener(host: config.serverIP, port: Int(config.serverPort), logger)
     }
 
     open func accept() async throws -> TransmissionAsync.AsyncConnection
     {
         let network = try await self.listener.accept()
-
-        return try await self.replicantServerTransformation(connection: network, config, logger)
+        return try await self.replicantServerTransformation(connection: network, config: config, logger: logger)
     }
 
     open func close() async throws
@@ -36,15 +35,26 @@ open class ReplicantListenerAsync: TransmissionAsync.AsyncListener
         try await self.listener.close()
     }
 
-    public func replicantServerTransformation(connection: TransmissionAsync.AsyncConnection, _ config: ReplicantServerConfig, _ logger: Logger) async throws -> TransmissionAsync.AsyncConnection
+    public func replicantServerTransformation(connection: TransmissionAsync.AsyncConnection, config: ReplicantConfigAsync.ServerConfig, logger: Logger) async throws -> TransmissionAsync.AsyncConnection
         {
             var result: TransmissionAsync.AsyncConnection = connection
     
             // TODO: Add more ToneBurst types as they become available
-            if let starBurst = config.toneBurst as? StarburstAsync
+            switch config.toneburstType 
             {
-                try await starBurst.perform(connection: connection)
+                case .starburst:
+                    if let starBurst = config.toneburst as? StarburstAsync
+                    {
+                        try await starBurst.perform(connection: connection)
+                    }
+                    else
+                    {
+                        throw ReplicantError.invalidToneburst
+                    }
+                case .none:
+                    print("ReplicantServerTransformation: Skipping Toneburst.")
             }
+            
     
             if let polishConfig = config.polish
             {
