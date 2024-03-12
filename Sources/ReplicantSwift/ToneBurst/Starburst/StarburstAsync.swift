@@ -240,7 +240,7 @@ public struct StarburstInstanceAsync
                         switch matchResult
                         {
                             case .SUCCESS(let value):
-                                return value
+                                return matchResult
 
                             case .SHORT:
                                 continue
@@ -275,7 +275,15 @@ public struct StarburstInstanceAsync
             {
                 throw StarburstError.readFailed
             }
-            return result
+            
+            switch result
+            {
+                case .SUCCESS(let value):
+                    return value
+
+                default:
+                    throw StarburstError.listenFailed
+            }
         }
         catch
         {
