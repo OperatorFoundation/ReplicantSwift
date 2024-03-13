@@ -49,6 +49,7 @@ open class ReplicantListenerAsync: TransmissionAsync.AsyncListener
                     }
                     else
                     {
+                        logger.error("Invalid Replicant Server Config toneburst type: \(String(describing: config.toneburstType))")
                         throw ReplicantError.invalidToneburst
                     }
                 case .none:
