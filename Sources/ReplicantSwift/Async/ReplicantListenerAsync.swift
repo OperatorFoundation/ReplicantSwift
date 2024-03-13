@@ -36,32 +36,35 @@ open class ReplicantListenerAsync: TransmissionAsync.AsyncListener
     }
 
     public func replicantServerTransformation(connection: TransmissionAsync.AsyncConnection, config: ReplicantConfigAsync.ServerConfig, logger: Logger) async throws -> TransmissionAsync.AsyncConnection
+    {
+        var result: TransmissionAsync.AsyncConnection = connection
+
+        // TODO: Add more ToneBurst types as they become available
+        switch config.toneburstType
         {
-            var result: TransmissionAsync.AsyncConnection = connection
-    
-            // TODO: Add more ToneBurst types as they become available
-            switch config.toneburstType 
-            {
-                case .starburst:
-                    if let starBurst = config.toneburst as? StarburstAsync
-                    {
-                        try await starBurst.perform(connection: connection)
-                    }
-                    else
-                    {
-                        logger.error("Invalid Replicant Server Config toneburst type: \(String(describing: config.toneburstType))")
-                        throw ReplicantError.invalidToneburst
-                    }
-                case .none:
-                    print("ReplicantServerTransformation: Skipping Toneburst.")
-            }
-            
-    
-            if let polishConfig = config.polish
-            {
-                result = try await polishConfig.polish(result, logger)
-            }
-    
-            return result
+            case .starburst:
+                if let starburst = config.toneburst as? StarburstAsync
+                {
+                    try await starburst.perform(connection: connection)
+                }
+                else if let starburst = config.toneburst as? Omnitone
+                {
+                    try await starburst.perform(connection: connection)
+                }
+                else
+                {
+                    logger.error("Invalid Replicant Server Config toneburst type is starburst, but toneburst could not be initialized.")
+                    throw ReplicantError.invalidToneburst
+                }
+            case .none:
+                print("ReplicantServerTransformation: Skipping Toneburst.")
         }
+        
+        if let polishConfig = config.polish
+        {
+            result = try await polishConfig.polish(result, logger)
+        }
+
+        return result
+    }
 }
