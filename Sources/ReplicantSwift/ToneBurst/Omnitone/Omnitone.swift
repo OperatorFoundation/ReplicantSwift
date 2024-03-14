@@ -50,13 +50,11 @@ public struct OmnitoneInstance
     {
         switch mode
         {
-            
             case .POP3Client:
                 try await handlePOP3Client()
             
             case .POP3Server:
                 try await handlePOP3Server()
-            
         }
     }
     
