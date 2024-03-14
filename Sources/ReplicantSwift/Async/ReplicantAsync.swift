@@ -37,12 +37,18 @@ public class ReplicantAsync
         switch config.toneburstType 
         {
             case .starburst:
-                guard let starBurst = config.toneburst as? StarburstAsync else
+                switch config.toneburst
                 {
-                    throw ReplicantError.invalidToneburst
+                    case let starBurst as StarburstAsync:
+                        try await starBurst.perform(connection: connection)
+
+                    case let omnitone as Omnitone:
+                        try await omnitone.perform(connection: connection)
+
+                    default:
+                        throw ReplicantError.invalidToneburst
                 }
-                try await starBurst.perform(connection: connection)
-                
+
             case .none:
                 print("replicantClientTransformationAsync skipping Toneburst: none provided")
         }
