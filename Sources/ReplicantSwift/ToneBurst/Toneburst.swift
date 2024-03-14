@@ -7,13 +7,12 @@
 
 import Foundation
 import Datable
-import Transmission
+import TransmissionAsync
 
 /// Injects byte sequences into a stream of bytes
 public protocol ToneBurst: Codable
 {
     var type: ToneBurstType { get set }
     
-    mutating func perform(connection: Transmission.Connection) throws
+    mutating func perform(connection: TransmissionAsync.AsyncConnection) async throws
 }
-

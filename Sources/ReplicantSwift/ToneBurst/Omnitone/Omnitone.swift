@@ -17,7 +17,7 @@ public enum OmnitoneMode: String, Codable
     
 }
 
-public class Omnitone: ToneBurstAsync, Codable
+public class Omnitone: ToneBurst, Codable
 {
     public var type: ReplicantSwift.ToneBurstType = .starburst
     
@@ -75,7 +75,7 @@ public struct OmnitoneInstance
                     continue
                 }
 
-                let result = structuredText.match(string: string)
+                let result = try structuredText.match(string: string)
                 switch result
                 {
                     case .FAILURE:

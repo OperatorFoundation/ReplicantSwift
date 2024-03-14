@@ -10,7 +10,7 @@ import Foundation
 import Logging
 import TransmissionAsync
 
-public class ReplicantAsync
+public class Replicant
 {
     var logger: Logger
 
@@ -19,18 +19,18 @@ public class ReplicantAsync
         self.logger = logger
     }
 
-    public func listen(serverIP: String, port: Int, config: ReplicantConfigAsync.ServerConfig) async throws -> TransmissionAsync.AsyncListener
+    public func listen(serverIP: String, port: Int, config: ReplicantConfig.ServerConfig) async throws -> TransmissionAsync.AsyncListener
     {
-        return try ReplicantListenerAsync(config: config, logger: logger)
+        return try ReplicantListener(config: config, logger: logger)
     }
 
-    public func connect(host: String, port: Int, config: ReplicantConfigAsync.ClientConfig) async throws -> TransmissionAsync.AsyncConnection
+    public func connect(host: String, port: Int, config: ReplicantConfig.ClientConfig) async throws -> TransmissionAsync.AsyncConnection
     {
         let network = try await AsyncTcpSocketConnection(host, port, logger)
-        return try await self.replicantClientTransformationAsync(connection: network, config: config, logger: logger)
+        return try await self.replicantClientTransformation(connection: network, config: config, logger: logger)
     }
     
-    public func replicantClientTransformationAsync(connection: TransmissionAsync.AsyncConnection, config: ReplicantConfigAsync.ClientConfig, logger: Logger) async throws -> TransmissionAsync.AsyncConnection
+    public func replicantClientTransformation(connection: TransmissionAsync.AsyncConnection, config: ReplicantConfig.ClientConfig, logger: Logger) async throws -> TransmissionAsync.AsyncConnection
     {
         var result: TransmissionAsync.AsyncConnection = connection
         
@@ -39,7 +39,7 @@ public class ReplicantAsync
             case .starburst:
                 switch config.toneburst
                 {
-                    case let starBurst as StarburstAsync:
+                    case let starBurst as Starburst:
                         try await starBurst.perform(connection: connection)
 
                     case let omnitone as Omnitone:

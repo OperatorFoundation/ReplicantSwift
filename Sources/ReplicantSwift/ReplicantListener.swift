@@ -11,13 +11,13 @@ import Logging
 import TransmissionAsync
 
 // This is just a normal TCP listener, except for the config and special accept behavior.
-open class ReplicantListenerAsync: TransmissionAsync.AsyncListener
+open class ReplicantListener: TransmissionAsync.AsyncListener
 {
-    let config: ReplicantConfigAsync.ServerConfig
+    let config: ReplicantConfig.ServerConfig
     let logger: Logger
     let listener: AsyncListener
 
-    public init(config: ReplicantConfigAsync.ServerConfig, logger: Logger) throws
+    public init(config: ReplicantConfig.ServerConfig, logger: Logger) throws
     {
         self.config = config
         self.logger = logger
@@ -35,7 +35,7 @@ open class ReplicantListenerAsync: TransmissionAsync.AsyncListener
         try await self.listener.close()
     }
 
-    public func replicantServerTransformation(connection: TransmissionAsync.AsyncConnection, config: ReplicantConfigAsync.ServerConfig, logger: Logger) async throws -> TransmissionAsync.AsyncConnection
+    public func replicantServerTransformation(connection: TransmissionAsync.AsyncConnection, config: ReplicantConfig.ServerConfig, logger: Logger) async throws -> TransmissionAsync.AsyncConnection
     {
         var result: TransmissionAsync.AsyncConnection = connection
 
@@ -43,7 +43,7 @@ open class ReplicantListenerAsync: TransmissionAsync.AsyncListener
         switch config.toneburstType
         {
             case .starburst:
-                if let starburst = config.toneburst as? StarburstAsync
+                if let starburst = config.toneburst as? Starburst
                 {
                     try await starburst.perform(connection: connection)
                 }

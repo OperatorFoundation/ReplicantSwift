@@ -11,13 +11,12 @@ import Foundation
 import Gardener
 import KeychainTypes
 
-// TODO: Should eventually replace the old non-async Replicant config classes
-public class ReplicantConfigAsync
+public class ReplicantConfig
 {
     public static func generateNewConfigPair(serverAddress: String, polish: Bool, toneburstType: ToneBurstType?) throws -> (serverConfig: ServerConfig, clientConfig: ClientConfig)
     {
-        var toneburstClient: ToneBurstAsync? = nil
-        var toneburstServer: ToneBurstAsync? = nil
+        var toneburstClient: ToneBurst? = nil
+        var toneburstServer: ToneBurst? = nil
         var polishClient: PolishClientConfig? = nil
         var polishServer: PolishServerConfig? = nil
         
@@ -25,8 +24,8 @@ public class ReplicantConfigAsync
         switch toneburstType
         {
             case .starburst:
-                toneburstClient = StarburstAsync(.SMTPClient)
-                toneburstServer = StarburstAsync(.SMTPServer)
+                toneburstClient = Starburst(.SMTPClient)
+                toneburstServer = Starburst(.SMTPServer)
             case .none:
                 toneburstClient = nil
                 toneburstServer = nil
@@ -82,7 +81,7 @@ public class ReplicantConfigAsync
         public let serverIP: String
         public let serverPort: UInt16
         public let polish: PolishServerConfig?
-        public let toneburst: ToneBurstAsync?
+        public let toneburst: ToneBurst?
         public let toneburstType: ToneBurstType?
         public var transportName = "replicant"
         
@@ -95,7 +94,7 @@ public class ReplicantConfigAsync
             case transportName = "transport"
         }
         
-        public init(serverAddress: String, polish maybePolish: PolishServerConfig?, toneBurst maybeToneBurst: ToneBurstAsync?) throws
+        public init(serverAddress: String, polish maybePolish: PolishServerConfig?, toneBurst maybeToneBurst: ToneBurst?) throws
         {
             let addressStrings = serverAddress.replacingOccurrences(of: " ", with: "").split(separator: ":")
             guard let port = UInt16(addressStrings[1]) else
@@ -167,7 +166,7 @@ public class ReplicantConfigAsync
             switch self.toneburstType
             {
                 case .starburst:
-                    self.toneburst = try container.decodeIfPresent(StarburstAsync.self, forKey: .toneburst)
+                    self.toneburst = try container.decodeIfPresent(Starburst.self, forKey: .toneburst)
                 case .none:
                     print("No supported Toneburst type was indicated while decoding a Replicant server config. Skipping Toneburst setup.")
                     self.toneburst = nil
@@ -220,7 +219,7 @@ public class ReplicantConfigAsync
         public let serverIP: String
         public let serverPort: UInt16
         public let polish: PolishClientConfig?
-        public let toneburst: ToneBurstAsync?
+        public let toneburst: ToneBurst?
         public let toneburstType: ToneBurstType?
         public var transportName = "replicant"
         
@@ -233,7 +232,7 @@ public class ReplicantConfigAsync
             case transportName = "transport"
         }
         
-        public init(serverAddress: String, polish maybePolish: PolishClientConfig?, toneBurst maybeToneBurst: ToneBurstAsync?) throws
+        public init(serverAddress: String, polish maybePolish: PolishClientConfig?, toneBurst maybeToneBurst: ToneBurst?) throws
         {
             let addressStrings = serverAddress.replacingOccurrences(of: " ", with: "").split(separator: ":")
             guard let port = UInt16(addressStrings[1]) else
@@ -305,7 +304,7 @@ public class ReplicantConfigAsync
             switch self.toneburstType
             {
                 case .starburst:
-                    self.toneburst = try container.decodeIfPresent(StarburstAsync.self, forKey: .toneburst)
+                    self.toneburst = try container.decodeIfPresent(Starburst.self, forKey: .toneburst)
                 case .none:
                     print("No supported Toneburst type was indicated while decoding a Replicant client config. Skipping Toneburst setup.")
                     self.toneburst = nil
