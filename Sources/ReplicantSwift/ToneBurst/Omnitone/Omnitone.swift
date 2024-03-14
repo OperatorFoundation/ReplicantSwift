@@ -62,50 +62,45 @@ public struct OmnitoneInstance
     
     func listen(structuredText: StructuredText, maxSize: Int = 255, timeout: Duration = .seconds(60)) async throws -> MatchResult
     {
-        let listenTask: Task<MatchResult?, Error> = Task {
+        let listenTask: Task<MatchResult, Error> = Task
+        {
             var buffer = Data()
             while buffer.count < maxSize
             {
-                do {
-                    let byte = try await connection.readSize(1)
-                    
-                    buffer.append(byte)
-                    
-                    guard let string = String(data: buffer, encoding: .utf8) else
-                    {
-                        // This could fail because we're in the middle of a UTF8 rune.
+                let byte = try await connection.readSize(1)
+
+                buffer.append(byte)
+
+                guard let string = String(data: buffer, encoding: .utf8) else
+                {
+                    // This could fail because we're in the middle of a UTF8 rune.
+                    continue
+                }
+
+                let result = structuredText.match(string: string)
+                switch result
+                {
+                    case .FAILURE:
+                        return result
+
+                    case .SHORT:
                         continue
-                    }
-                    
-                    do
-                    {
-                        return try structuredText.match(string: string)
-                    }
-                    catch
-                    {
-                        continue
-                    }
-                } catch {
-                    return nil
+
+                    case .SUCCESS(_):
+                        return result
                 }
             }
-            
-            return nil
+
+            throw StarburstError.maxSizeReached
         }
         
-        let _ = Task {
+        Task
+        {
             try await Task.sleep(for: timeout)
             listenTask.cancel()
         }
         
-        do {
-            guard let result = try await listenTask.value else {
-                throw StarburstError.readFailed
-            }
-            return result
-        } catch {
-            throw StarburstError.timeout
-        }
+        return try await listenTask.value
     }
     
     func speak(structuredText: StructuredText) async throws
