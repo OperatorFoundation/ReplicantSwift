@@ -83,6 +83,42 @@ public struct StarburstInstanceAsync
         
         _ = try await listen(template: thirdClientListen)
     }
+    
+    func handleSMTPClient2() async throws
+    {
+//        guard let firstClientListen = ListenTemplate(Template("220 $1 SMTP service ready\r\n"), patterns: [ExtractionPattern("^([a-zA-Z0-9.-]+)", .string)], maxSize: 253, maxTimeoutSeconds: Int.max) else {
+//            throw StarburstError.listenFailed
+//        }
+        
+        let _ = try await listen(structuredText: StructuredText(TypedText.text("220 "), TypedText.regexp("^([a-zA-Z0-9.-]+)"), TypedText.text(" SMTP service ready"), TypedText.newline(.crlf)), maxSize: 253, timeout: .seconds(Int.max))
+
+        // try await speak(template: Template("EHLO $1\r\n"), details: [Detail.string("mail.imc.org")])
+        try await speak(structuredText: StructuredText(TypedText.text("EHLO mail.imc.org"), TypedText.newline(.crlf)))
+
+//        guard let secondClientListen = ListenTemplate(Template("$1\r\n"), patterns: [ExtractionPattern("250 (STARTTLS)", .string)], maxSize: 253, maxTimeoutSeconds: 10) else {
+//            throw StarburstError.listenFailed
+//        }
+        
+        _ = try await listen(structuredText: StructuredText(TypedText.text("250 STARTTLS"), TypedText.newline(.crlf)), maxSize: 253, timeout: .seconds(10))
+
+        // try await speak(string: "STARTTLS\r\n")
+        try await speak(structuredText: StructuredText(TypedText.text("STARTTLS"), TypedText.newline(.crlf)))
+
+//        guard let thirdClientListen = ListenTemplate(Template("$1\r\n"), patterns: [ExtractionPattern("^(.+)\r\n", .string)], maxSize: 253, maxTimeoutSeconds: 10) else {
+//            throw StarburstError.listenFailed
+//        }
+        
+        _ = try await listen(structuredText: StructuredText(TypedText.regexp("^(.+)$"), TypedText.newline(.crlf)), maxSize: 253, timeout: .seconds(10))
+    }
+    
+    private func handleSMTPClient3() async throws
+    {
+        let _ = try await self.listen(structuredText: StructuredText(TypedText.text("220 "), TypedText.regexp("^([a-zA-Z0-9.-]+)"), TypedText.text(" SMTP service ready"), TypedText.newline(Newline.crlf)), maxSize: 253, timeout: Duration.seconds(9223372036854775807))
+        try await self.speak(structuredText: StructuredText(TypedText.text("EHLO mail.imc.org"), TypedText.newline(Newline.crlf)))
+        let _ = try await self.listen(structuredText: StructuredText(TypedText.text("250 STARTTLS"), TypedText.newline(Newline.crlf)), maxSize: 253, timeout: Duration.seconds(10))
+        try await self.speak(structuredText: StructuredText(TypedText.text("STARTTLS"), TypedText.newline(Newline.crlf)))
+        let _ = try await self.listen(structuredText: StructuredText(TypedText.regexp("^(.+)$"), TypedText.newline(Newline.crlf)), maxSize: 253, timeout: Duration.seconds(10))
+    }
 
     func handleSMTPServer() async throws
     {
