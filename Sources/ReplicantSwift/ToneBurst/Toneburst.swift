@@ -12,6 +12,8 @@ import TransmissionAsync
 /// Injects byte sequences into a stream of bytes
 open class ToneBurst: Codable
 {
+    public init(){}
+    
     open func perform(connection: TransmissionAsync.AsyncConnection) async throws
     {
         throw ReplicantError.unimplemented
