@@ -12,18 +12,24 @@ import Datable
 import Ghostwriter
 import TransmissionAsync
 
-open class Starburst: ToneBurst, Codable
+open class Starburst: ToneBurst
 {
-    public var type: ToneBurstType = .starburst
-    
     let mode: StarburstMode
 
     public init(_ mode: StarburstMode)
     {
         self.mode = mode
+        super.init()
     }
-
-    open func perform(connection: TransmissionAsync.AsyncConnection) async throws
+    
+    required public init(from decoder: any Decoder) throws 
+    {
+        let container = try decoder.singleValueContainer()
+        self.mode = try container.decode(StarburstMode.self)
+        super.init()
+    }
+    
+    open override func perform(connection: TransmissionAsync.AsyncConnection) async throws
     {
         let instance = StarburstInstanceAsync(self.mode, connection)
         try await instance.perform()

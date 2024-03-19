@@ -42,4 +42,5 @@ public enum ReplicantError: Error
     case serverError
     case serverUnavailable
     case invalidToneburst
+    case unimplemented
 }

@@ -11,4 +11,5 @@ import Foundation
 public enum ToneBurstType: String, Codable
 {
     case starburst
+    case omnitone
 }
