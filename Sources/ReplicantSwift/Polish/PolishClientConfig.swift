@@ -9,10 +9,8 @@ import Foundation
 import Logging
 
 import KeychainTypes
-import Net
 import ShadowSwift
-import TransmissionTypes
-import TransmissionTransport
+import TransmissionAsync
 
 public class PolishClientConfig: Codable
 {
@@ -25,36 +23,12 @@ public class PolishClientConfig: Codable
     }
 }
 
-extension PolishClientConfig: PolishConfig
+extension PolishClientConfig: Polish
 {
-    public func polish(_ connection: TransmissionTypes.Connection, _ logger: Logger) throws -> TransmissionTypes.Connection
+    public func polish(_ connection: TransmissionAsync.AsyncConnection, _ logger: Logger) async throws -> TransmissionAsync.AsyncConnection
     {
-        let addressArray = self.serverAddress.split(separator: ":")
-        let host = String(addressArray[0])
-        guard let port = UInt16(addressArray[1]) else {
-            throw PolishClientConfigError.invalidPort
-        }
-        
-        guard let ipv4 = IPv4Address(host) else
-        {
-            throw PolishClientConfigError.notV4Address(host)
-        }
-
-        let endpoint = NWEndpoint.hostPort(host: NWEndpoint.Host.ipv4(ipv4), port: NWEndpoint.Port(integerLiteral: port))
         let config = try ShadowConfig.ShadowClientConfig(serverAddress: self.serverAddress, serverPublicKey: self.serverPublicKey, mode: .DARKSTAR)
-        
-        guard let result = DarkStarClientConnection(connection: connection, endpoint: endpoint, parameters: .tcp, config: config, logger: logger) else
-        {
-            throw PolishClientConfigError.nullDarkStarConnection
-        }
-
-        guard let transmission = TransportToTransmissionConnection({return result}) else
-        {
-            throw PolishClientConfigError.transportToTransmissionFailed
-        }
-
-        return transmission
-        
+        return try await AsyncDarkstarClientConnection(connection, config, logger)
     }
 }
 

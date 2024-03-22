@@ -10,9 +10,12 @@ import Datable
 import TransmissionAsync
 
 /// Injects byte sequences into a stream of bytes
-public protocol ToneBurstAsync: Codable
+open class ToneBurst: Codable
 {
-    var type: ToneBurstType { get set }
+    public init(){}
     
-    mutating func perform(connection: TransmissionAsync.AsyncConnection) async throws
+    open func perform(connection: TransmissionAsync.AsyncConnection) async throws
+    {
+        throw ReplicantError.unimplemented
+    }
 }
