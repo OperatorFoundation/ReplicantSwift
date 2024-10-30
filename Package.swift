@@ -15,14 +15,14 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-log", from: "1.5.3"),
 
         .package(url: "https://github.com/OperatorFoundation/Datable", from: "4.0.1"),
-        .package(url: "https://github.com/OperatorFoundation/Gardener", from: "0.1.2"),
-        .package(url: "https://github.com/OperatorFoundation/Ghostwriter", from: "1.0.1"),
+        .package(url: "https://github.com/OperatorFoundation/Gardener", from: "0.1.3"),
+        .package(url: "https://github.com/OperatorFoundation/Ghostwriter", from: "1.0.2"),
         .package(url: "https://github.com/OperatorFoundation/KeychainTypes", from: "1.0.2"),
-        .package(url: "https://github.com/OperatorFoundation/Monolith", from: "1.0.6"),
-        .package(url: "https://github.com/OperatorFoundation/ShadowSwift", from: "5.0.3"),
+        .package(url: "https://github.com/OperatorFoundation/Monolith", from: "1.0.7"),
+        .package(url: "https://github.com/OperatorFoundation/ShadowSwift", from: "5.0.4"),
         .package(url: "https://github.com/OperatorFoundation/SwiftHexTools", from: "1.2.6"),
         .package(url: "https://github.com/OperatorFoundation/SwiftQueue", from: "0.1.3"),
-        .package(url: "https://github.com/OperatorFoundation/TransmissionAsync", from: "0.1.5"),
+        .package(url: "https://github.com/OperatorFoundation/TransmissionAsync", from: "0.1.6"),
     ],
     targets: [
         .target(
